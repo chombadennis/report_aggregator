@@ -29,11 +29,22 @@ class ReportParser:
         CRITICAL EXTRACTION RULES:
         - WEATHER: Locate the 'WEATHER:' section in the SITE REPORT table. Extract the conditions for 'Morning', 'Afternoon', and 'Night' (map Night to 'evening' in the JSON schema).
         - LABOUR: Capture ALL labour categories listed in the table (e.g., Site Agent/PM, Ass. Site Agent, Office Attendant, Office Assistant, Foreman, Operator, Mason, Electrician, Painters, Carpenters, Steel fixers, Drivers, Surveyors, Intern, Unskilled, Safety officer, Store keeper, Security, etc). 
-        - BUILDING WORKS: Focus ONLY on Section 'F. WORKS CARRIED OUT ON SITE'. Capture all tasks grouped by component/block. CRITICAL: DO NOT include content from Section Q here. They may be or seem similar but must be kept strictly separate in the JSON.
+        
+        === SECTION F vs SECTION Q — THESE ARE COMPLETELY DIFFERENT AND MUST NEVER BE MIXED ===
+        - BUILDING WORKS → maps to JSON field: "building_works"
+          Source: ONLY from Section "F. WORKS CARRIED OUT ON SITE"
+          This section lists TODAY'S specific construction activities (e.g. "Steel fixing", "Casting of blinding").
+          STRICT RULE: If the page header or title says "SUMMARY OF WORKS" or "Q.", DO NOT put any of that content into "building_works". Leave "building_works" empty for that page.
+          
+        - SUMMARY OF WORKS → maps to JSON field: "summary_of_works"
+          Source: ONLY from Section "Q. SUMMARY OF WORKS DONE TO DATE"
+          This section lists cumulative works to date per block (e.g. BLOCK B1, BLOCK B2, GENERAL WORKS, etc.)
+          STRICT RULE: If the page header or title says "WORKS CARRIED OUT" or "F.", DO NOT put any of that content into "summary_of_works". Leave "summary_of_works" empty for that page.
+        ==================================================================================
+
         - SITE INSTRUCTIONS: Capture "REF. NO", "INSTRUCTION ISSUED", "DATE", and "INSTRUCTIONS GIVEN BY".
         - MACHINERY: Note the Quantity and Status (Working/Idle).
         - MATERIALS DELIVERED: Focus ONLY on Section 'G. MATERIALS DELIVERED TO SITE'. It has columns S/N, DESCRIPTION, QTY. Use lowercase keys: 'description', 'quantity', 'units'.
-        - SUMMARY OF WORKS: Focus ONLY on Section 'Q. SUMMARY OF WORKS DONE TO DATE' (usually at the end of the report). Capture the 'Summary to Date' text for EVERY block listed across all pages (e.g. GENERAL WORKS, BLOCK B1, BLOCK B2, BLOCK B3, BLOCK B4, BLOCK C5, UNDERGROUND TANK, KINDERGATEN, SWIMMING POOL, CLUB HOUSE, SEPTIC TANK, GARBAGE RECEPTCLE, WTP). Do not miss any!
         - VISITORS: Locate the visitors section and extract the exact text verbatim (e.g. "2 visitors on site").
         - INTERNS: Extract the specific values and names.
         
@@ -105,7 +116,7 @@ class ReportParser:
             trigger_skip = False
             if scanning_mode == "EXTRACTING":
                 # We do not want to trigger on the Table of Contents page (Page 1 or 2)
-                if i > 1 and ("PROGRESS PHOTOS" in text or "MATERIALS ON SITE" in text):
+                if i > 1 and "PROGRESS PHOTOS" in text:
                     logger.info("🏁 End of extractable sections detected on this page. Will skip after scanning it.")
                     trigger_skip = True
 

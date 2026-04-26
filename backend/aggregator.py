@@ -33,7 +33,7 @@ class Aggregator:
             json.dump(data, f, indent=2)
         return history_path
 
-    def compile_weekly_data(self, daily_reports):
+    async def compile_weekly_data(self, daily_reports):
         """Builds a high-fidelity Weekly summary from daily reports."""
         days_map = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
         
@@ -57,7 +57,7 @@ class Aggregator:
             day_values = []
             for r in reports_by_day:
                 val = r.get("labour", {}).get(cat, "0") if r else "0"
-                day_values.append(val)
+                day_values.append(str(val))
             labour_matrix[cat] = day_values
 
         # 2. Weather Grid
@@ -105,50 +105,96 @@ class Aggregator:
         for r in reports_by_day:
             if r: compiled_instructions.extend(r.get("instructions", []))
 
-        # 6. Building Works
-        works_by_day = []
+        # 6. Works by Day (AI Professional Semantic Summary)
+        raw_weekly_blocks = {}
         for r in reports_by_day:
-            day_text = []
-            if r:
-                for block, tasks in r.get("building_works", {}).items():
-                    day_text.append(f"{block}: {', '.join(tasks)}")
-                day_text.extend(r.get("general_works", []))
-            works_by_day.append("\n".join(day_text))
+            if not r: continue
+            for block, tasks in r.get("building_works", {}).items():
+                if block not in raw_weekly_blocks:
+                    raw_weekly_blocks[block] = []
+                raw_weekly_blocks[block].extend(tasks)
 
-        # Calculate total visitors and map by day
+        works_by_day_summary = {}
+        if raw_weekly_blocks:
+            prompt = f"""
+            Act as a highly experienced construction engineer. I am providing you with a list of tasks accomplished across a 7-day week for various building components on my site.
+            
+            Your job is to provide a professional-level summary of the work done during the week for EACH component.
+            - Consolidate identical or semantically similar tasks so you DO NOT repeat yourself.
+            - MUST write the summary as a bulleted list where each bullet point starts with the black dot character '• '.
+            - If no activities were reported for a component, just output a single bullet: '• None'
+            - Do NOT include dates or days of the week in the summary.
+            
+            Return the output as a perfect JSON object where the keys are the block names and the values are the professional summary string (with newlines separating bullets).
+            Example: {{"BLOCK B4": "• Steel fixing to the raft foundation.\\n• Installation of starter columns.", "SWIMMING POOL": "• None"}}
+            
+            Raw Data:
+            {json.dumps(raw_weekly_blocks)}
+            """
+            from ai_client import generate_summary_json
+            try:
+                works_by_day_summary = await generate_summary_json(prompt)
+            except Exception as e:
+                works_by_day_summary = {"Error": f"Could not generate AI summary: {e}"}
+
+        # Calculate total visitors 
         total_visitors = 0
-        weekly_visitors = []
         for i, r in enumerate(reports_by_day):
             if not r: continue
-            day_name = days_map[i].capitalize()
             for v in r.get("visitors", []):
                 v_str = str(v).strip()
                 if not v_str: continue
-                weekly_visitors.append({day_name: v_str})
-                
-                # Extract the first consecutive sequence of digits
                 import re
                 match = re.search(r'\d+', v_str)
                 if match:
                     total_visitors += int(match.group())
                 else:
                     total_visitors += 1
-        
-        if weekly_visitors:
-            weekly_visitors.append({"total_visitors": str(total_visitors)})
-        
+                    
+        # Intelligent Security & Health and Safety Aggregation
+        raw_security = [r.get("security_status", "") for r in reports_by_day if r and r.get("security_status")]
+        security_issues = [s for s in raw_security if "secure" not in s.lower() and "no" not in s.lower()]
+        if not security_issues:
+            final_security = "The site was secure throughout the week."
+        else:
+            final_security = f"There were {len(security_issues)} security issues reported during the week: " + "; ".join(security_issues)
+
+        raw_hs = [r.get("health_safety_status", "") for r in reports_by_day if r and r.get("health_safety_status")]
+        hs_issues = [h for h in raw_hs if "no accident" not in h.lower() and "no incident" not in h.lower() and h.strip()]
+        if not hs_issues:
+            final_hs = "No accidents or incidents reported during the week."
+        else:
+            final_hs = f"There were {len(hs_issues)} health and safety incidents reported during the week: " + "; ".join(hs_issues)
+
+        # Intelligent Challenges Deduplication
+        raw_challenges = [c.strip() for r in reports_by_day if r for c in r.get("challenges", []) if c and str(c).strip()]
+        seen = set()
+        unique_challenges = []
+        for c in raw_challenges:
+            key = c.lower()
+            if key not in seen:
+                seen.add(key)
+                unique_challenges.append(c)
+
+        if not unique_challenges:
+            final_challenges = "None"
+        elif len(unique_challenges) == 1:
+            final_challenges = unique_challenges[0]
+        else:
+            final_challenges = "\n".join(f"• {c}" for c in unique_challenges)
+
         result = {
             "labour": labour_matrix,
             "weather": weather_grid,
-            "works_by_day": works_by_day,
+            "works_by_day": works_by_day_summary,
             "materials_sum": materials_summary,
             "machinery": machinery_final,
             "instructions": compiled_instructions,
             "interns": [r.get("interns", {}) if r else {} for r in reports_by_day],
-            "security": [r.get("security_status", "") for r in reports_by_day if r and r.get("security_status")],
-            "health_safety": [r.get("health_safety_status", "") for r in reports_by_day if r and r.get("health_safety_status")],
-            "visitors": weekly_visitors,
-            "challenges": [c for r in reports_by_day if r for c in r.get("challenges", [])],
+            "security": final_security,
+            "health_safety": final_hs,
+            "total_visitors_count": total_visitors,
+            "challenges": final_challenges,
             "summary_to_date": next((r.get("summary_of_works", {}) for r in reversed(reports_by_day) if r), {}),
             "report_date": daily_reports[0].get("report_date", "6th – 12th April 2026")
         }
