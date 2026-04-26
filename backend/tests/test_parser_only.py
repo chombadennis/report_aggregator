@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import shutil
 
 # Add the backend directory to sys.path so we can import our modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -9,6 +10,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from parser import ReportParser
 
 async def test_extraction():
+    # Always clear cache for testing to ensure a fresh scan
+    shutil.rmtree("cache_test", ignore_errors=True)
     parser = ReportParser(cache_dir="cache_test")
     # PDF is in the project root, two levels up from backend
     sample_pdf = os.path.join("..", "..", "MAKINDU AHP DAILY PROGRESS REPORT Saturday 18th April 2026.pdf")

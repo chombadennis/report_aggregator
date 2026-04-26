@@ -45,7 +45,7 @@ class DailyReportSchema(BaseModel):
     interns: Dict[str, str] = Field(default_factory=dict) # e.g. {"TVETS": "2"}
     security_status: str = Field(default="")
     health_safety_status: str = Field(default="")
-    visitors: List[Dict[str, str]] = Field(default_factory=list)
+    visitors: List[str] = Field(default_factory=list)
     challenges: List[str] = Field(default_factory=list)
     
     summary_of_works: Dict[str, str] = Field(default_factory=dict) # {Component: Description}

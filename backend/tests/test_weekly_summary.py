@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import shutil
 
 # Add the backend directory to sys.path so we can import our modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -10,7 +11,9 @@ from parser import ReportParser
 from aggregator import Aggregator
 
 async def test_full_week():
-    parser = ReportParser()
+    # Always clear cache for testing to ensure a fresh scan
+    shutil.rmtree("cache_test_weekly", ignore_errors=True)
+    parser = ReportParser(cache_dir="cache_test_weekly")
     aggregator = Aggregator()
     
     sample_pdf = r"d:\maks_ahp\MAKINDU AHP DAILY PROGRESS REPORT Saturday 18th April 2026.pdf"
@@ -45,8 +48,8 @@ async def test_full_week():
         print(f"{w['day']}: {w['morning']} | {w['afternoon']}")
 
     print("\n--- MATERIALS DELIVERED THIS WEEK ---")
-    for m in weekly_summary["materials"][:5]:
-        print(f"- {m['item']}: {m['qty']}")
+    for name, data in list(weekly_summary["materials_sum"].items())[:5]:
+        print(f"- {name}: {data['qty']} {data.get('unit', '')}")
 
 if __name__ == "__main__":
     asyncio.run(test_full_week())

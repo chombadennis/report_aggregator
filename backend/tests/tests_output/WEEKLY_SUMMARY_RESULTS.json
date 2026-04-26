@@ -1,0 +1,312 @@
+{
+  "labour": {
+    "Ass. Site Agent": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(m)",
+      "0"
+    ],
+    "Carpenters": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "2(m)",
+      "0"
+    ],
+    "Drivers": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "Electrician": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "Foreman": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "4(m)",
+      "0"
+    ],
+    "Intern": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1 (m)",
+      "0"
+    ],
+    "Mason": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(m)",
+      "0"
+    ],
+    "Office Assistant": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "2(m)",
+      "0"
+    ],
+    "Office Attendant": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(f)",
+      "0"
+    ],
+    "Operator": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "7(m)",
+      "0"
+    ],
+    "Painters": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "2 (m)",
+      "0"
+    ],
+    "Safety officer": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(m)",
+      "0"
+    ],
+    "Security (day&night)": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "8(7m, 1f)",
+      "0"
+    ],
+    "Site Agent/PM": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(m)",
+      "0"
+    ],
+    "Steel fixers": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "13(12m, 1f)",
+      "0"
+    ],
+    "Store keeper": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1(m)",
+      "0"
+    ],
+    "Surveyors": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "2(1f, 1m)",
+      "0"
+    ],
+    "TOTAL": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "88",
+      "0"
+    ],
+    "Unskilled": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "41(7f, 34m)",
+      "0"
+    ]
+  },
+  "weather": [
+    {
+      "day": "Mon",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    },
+    {
+      "day": "Tue",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    },
+    {
+      "day": "Wed",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    },
+    {
+      "day": "Thu",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    },
+    {
+      "day": "Fri",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    },
+    {
+      "day": "Sat",
+      "morning": "Sunny-Favorable for work",
+      "afternoon": "Sunny -Favorable for work",
+      "evening": "Cloudy",
+      "condition": "-"
+    },
+    {
+      "day": "Sun",
+      "morning": "-",
+      "afternoon": "-",
+      "evening": "-",
+      "condition": "-"
+    }
+  ],
+  "works_by_day": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "Block Type B: Block B4: Steel fixing to the raft foundation, Block B4: Setting of starter columns, Block B4: Fixing of raft foundation formwork\nKindergarten: Hardcore and murram filling, Compaction of hardcore and murram backfills\nBranding of site hoarding",
+    ""
+  ],
+  "materials_sum": {
+    "FOUNDATION STONES": {
+      "qty": 689.0,
+      "unit": "ft"
+    },
+    "HARDCORE": {
+      "qty": 2.0,
+      "unit": "tippers"
+    }
+  },
+  "machinery": {
+    "CONCRETE MIXER": {
+      "qty": "2",
+      "status": "Idle"
+    },
+    "BATCHING PLANT": {
+      "qty": "1",
+      "status": "Idle"
+    },
+    "EXCAVATOR": {
+      "qty": "1",
+      "status": "Idle"
+    },
+    "BACKHOE EXCAVATOR": {
+      "qty": "1",
+      "status": "Working"
+    },
+    "ROLLER": {
+      "qty": "1",
+      "status": "Working"
+    }
+  },
+  "instructions": [],
+  "interns": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {
+      "status_text": "There were no interns on Site"
+    },
+    {}
+  ],
+  "security": [
+    "The site was secure."
+  ],
+  "health_safety": [
+    "No accident nor incident reported."
+  ],
+  "visitors": [
+    {
+      "Sat": "2 visitors on site."
+    },
+    {
+      "total_visitors": "2"
+    }
+  ],
+  "challenges": [
+    "Work behind schedule"
+  ],
+  "summary_to_date": {
+    "GENERAL WORKS": "Hoarding; Construction of site office; Construction of Cement store; Construction of general store; Construction of Operation room for the batching plant; Construction of 7No. Ablution blocks; Construction of changing rooms (male and female); Electrical power connection; Borehole drilling; 3-phase power connection",
+    "BLOCK B1": "Site clearance; Setting out; Mass excavation; Compaction of excavated section; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation; Casting of foundation columns and lift walling",
+    "BLOCK B2": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Formwork to foundation lift wall – done",
+    "BLOCK B3": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m., Levelling and compaction., FDD Test, Blinding works- done, Reinforcement to the raft foundation- done, Casting of raft foundation- done, Formwork to foundation lift wall – done",
+    "BLOCK B4": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m, Blinding works, Reinforcement to the raft foundation - ongoing, Formwork to raft foundation - ongoing",
+    "BLOCK C5": "Site clearance, Setting Out, Excavation of raft foundation to a depth of 3m, Blinding works to the raft foundation - done",
+    "UNDERGROUND TANK": "Site clearance, Setting out, Excavation - ongoing",
+    "KINDERGATEN": "Site clearance, Excavation for pad footings and trenches for strip footing., Levelling and compaction., Concrete blinding., Casting of strip and pad footings., Casting of substructure columns., Foundation walling, Hardcore backfilling, Murram backfilling",
+    "SWIMMING POOL": "None",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "GARBAGE RECEPTCLE": "None",
+    "WTP": "None"
+  },
+  "report_date": "6th – 12th April 2026"
+}

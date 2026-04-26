@@ -27,14 +27,15 @@ class ReportParser:
         3. FOCUS ON: "SITE REPORT" through "SUMMARY OF WORKS DONE TO DATE".
         
         CRITICAL EXTRACTION RULES:
-        - LABOUR: Capture categories (e.g. Mason, Steel Fixer). If a report shows 'Day' and 'Night' shifts, capture them separately (e.g., {{"Mason": {{"Day": "5", "Night": "2"}}}}).
+        - WEATHER: Locate the 'WEATHER:' section in the SITE REPORT table. Extract the conditions for 'Morning', 'Afternoon', and 'Night' (map Night to 'evening' in the JSON schema).
+        - LABOUR: Capture ALL labour categories listed in the table (e.g., Site Agent/PM, Ass. Site Agent, Office Attendant, Office Assistant, Foreman, Operator, Mason, Electrician, Painters, Carpenters, Steel fixers, Drivers, Surveyors, Intern, Unskilled, Safety officer, Store keeper, Security, etc). 
+        - BUILDING WORKS: Focus ONLY on Section 'F. WORKS CARRIED OUT ON SITE'. Capture all tasks grouped by component/block. CRITICAL: DO NOT include content from Section Q here. They may be or seem similar but must be kept strictly separate in the JSON.
         - SITE INSTRUCTIONS: Capture "REF. NO", "INSTRUCTION ISSUED", "DATE", and "INSTRUCTIONS GIVEN BY".
-        - WEATHER: Locate the 'WEATHER:' label. It is a 2-column table with periods (Morning, Afternoon, Night) in the first column and the condition (e.g. 'Sunny', 'Cloudy') in the second column. Map 'Night' to 'evening'. Extract the exact condition text for "morning", "afternoon", and "evening".
         - MACHINERY: Note the Quantity and Status (Working/Idle).
-        - MATERIALS DELIVERED: Capture "Description", "Quantity", and "Units".
-        - SUMMARY OF WORKS: Capture the 'Summary to Date' text for each component/block.
-        - INTERNS & VISITORS: Extract the specific values and names.
-        - SKIP: "Progress Photos" and "Materials on Site" sections.
+        - MATERIALS DELIVERED: Focus ONLY on Section 'G. MATERIALS DELIVERED TO SITE'. It has columns S/N, DESCRIPTION, QTY. Use lowercase keys: 'description', 'quantity', 'units'.
+        - SUMMARY OF WORKS: Focus ONLY on Section 'Q. SUMMARY OF WORKS DONE TO DATE' (usually at the end of the report). Capture the 'Summary to Date' text for EVERY block listed across all pages (e.g. GENERAL WORKS, BLOCK B1, BLOCK B2, BLOCK B3, BLOCK B4, BLOCK C5, UNDERGROUND TANK, KINDERGATEN, SWIMMING POOL, CLUB HOUSE, SEPTIC TANK, GARBAGE RECEPTCLE, WTP). Do not miss any!
+        - VISITORS: Locate the visitors section and extract the exact text verbatim (e.g. "2 visitors on site").
+        - INTERNS: Extract the specific values and names.
         
         Return the data in perfect JSON matching this schema:
         {schema}
@@ -87,19 +88,26 @@ class ReportParser:
                 with open(p_cache, "r") as f:
                     res = json.load(f)
                     all_page_results.append(res)
-                    # Update state based on cached result
-                    if res.get("summary_of_works") and i > 2: scanning_mode = "SEARCHING_SIGNATURE"
+                    # Update state based on cached result (no longer skipping based on summary)
                     i += 1
                     continue
 
+            text = doc[i].get_text().upper()
+            
             # Always scan Page 1 (Cover)
             if i == 0: pass 
             elif scanning_mode == "SEARCHING_SITE_REPORT":
-                text = doc[i].get_text().upper()
                 if "SITE REPORT" not in text: 
                     i += 1
                     continue
                 scanning_mode = "EXTRACTING"
+                
+            trigger_skip = False
+            if scanning_mode == "EXTRACTING":
+                # We do not want to trigger on the Table of Contents page (Page 1 or 2)
+                if i > 1 and ("PROGRESS PHOTOS" in text or "MATERIALS ON SITE" in text):
+                    logger.info("🏁 End of extractable sections detected on this page. Will skip after scanning it.")
+                    trigger_skip = True
 
             print(f"   - Vision Scanning Page {i+1} of {len(doc)}...")
             page = doc.load_page(i)
@@ -117,9 +125,7 @@ class ReportParser:
                     # SAVE PER-PAGE CACHE
                     with open(p_cache, "w") as f: json.dump(result, f)
                     
-                    if result.get("summary_of_works") and i > 2:
-                        logger.info("🏁 Summary detected. Skipping to signature...")
-                        scanning_mode = "SEARCHING_SIGNATURE"
+                    pass # We now rely on text search to skip to signature
                 
                 await asyncio.sleep(4) 
             except Exception as e:
@@ -127,6 +133,9 @@ class ReportParser:
                 raise # Re-raise to let the user know we stopped
             finally:
                 if os.path.exists(tmp_path): os.remove(tmp_path)
+
+            if trigger_skip:
+                scanning_mode = "SEARCHING_SIGNATURE"
 
             if scanning_mode == "SEARCHING_SIGNATURE":
                 found_signature = False
@@ -182,7 +191,10 @@ class ReportParser:
                     merged[field] = res[field]
             
             # 2. Dictionary fields (Update/Combine)
-            if res.get("weather"): merged["weather"].update(res["weather"])
+            if res.get("weather"): 
+                for k, v in res["weather"].items():
+                    if v and v != "-":
+                        merged["weather"][k] = v
             if res.get("labour"): merged["labour"].update(res["labour"])
             if res.get("building_works"): merged["building_works"].update(res["building_works"])
             if res.get("summary_of_works"): merged["summary_of_works"].update(res["summary_of_works"])

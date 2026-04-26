@@ -77,9 +77,9 @@ class Aggregator:
         for r in reports_by_day:
             if not r: continue
             for item in r.get("materials_delivered", []):
-                name = item.get("description", "Unknown").strip().upper()
-                raw_qty = item.get("quantity", "0")
-                unit = item.get("units", "")
+                name = item.get("description", item.get("Description", "Unknown")).strip().upper()
+                raw_qty = item.get("quantity", item.get("Quantity", "0"))
+                unit = item.get("units", item.get("Units", ""))
                 try:
                     qty = float(str(raw_qty).split()[0])
                     if name not in materials_summary:
@@ -115,6 +115,28 @@ class Aggregator:
                 day_text.extend(r.get("general_works", []))
             works_by_day.append("\n".join(day_text))
 
+        # Calculate total visitors and map by day
+        total_visitors = 0
+        weekly_visitors = []
+        for i, r in enumerate(reports_by_day):
+            if not r: continue
+            day_name = days_map[i].capitalize()
+            for v in r.get("visitors", []):
+                v_str = str(v).strip()
+                if not v_str: continue
+                weekly_visitors.append({day_name: v_str})
+                
+                # Extract the first consecutive sequence of digits
+                import re
+                match = re.search(r'\d+', v_str)
+                if match:
+                    total_visitors += int(match.group())
+                else:
+                    total_visitors += 1
+        
+        if weekly_visitors:
+            weekly_visitors.append({"total_visitors": str(total_visitors)})
+        
         result = {
             "labour": labour_matrix,
             "weather": weather_grid,
@@ -125,9 +147,9 @@ class Aggregator:
             "interns": [r.get("interns", {}) if r else {} for r in reports_by_day],
             "security": [r.get("security_status", "") for r in reports_by_day if r and r.get("security_status")],
             "health_safety": [r.get("health_safety_status", "") for r in reports_by_day if r and r.get("health_safety_status")],
-            "visitors": [v for r in reports_by_day if r for v in r.get("visitors", [])],
+            "visitors": weekly_visitors,
             "challenges": [c for r in reports_by_day if r for c in r.get("challenges", [])],
-            "summary_to_date": reports_by_day[-1].get("summary_of_works", {}) if reports_by_day[-1] else {},
+            "summary_to_date": next((r.get("summary_of_works", {}) for r in reversed(reports_by_day) if r), {}),
             "report_date": daily_reports[0].get("report_date", "6th – 12th April 2026")
         }
         self._save_to_history(result, "WEEKLY")
