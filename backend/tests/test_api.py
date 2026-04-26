@@ -1,6 +1,11 @@
 import asyncio
 import json
 import os
+import sys
+
+# Add the backend directory to sys.path so we can import our modules
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from ai_client import generate_structured_data, get_access_token
 
 async def test_vertex_connection():

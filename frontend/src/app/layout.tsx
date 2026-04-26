@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/lexend";
+import "@fontsource/lora";
+import "@fontsource/merriweather";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AHP Report Aggregator",
-  description: "Automated Construction Reporting",
+  title: "Construction Report Aggregator",
+  description: "Professional aggregation system",
 };
 
 export default function RootLayout({
@@ -13,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="antialiased">
+        {children}
+      </body>
     </html>
   );
 }

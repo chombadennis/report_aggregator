@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 
 export default function Home() {
@@ -57,10 +58,10 @@ export default function Home() {
 
     setLoading(true);
     setError('');
-    
+
     // Phase 1: Uploading
     setStatus('[1/3] Uploading reports to server...');
-    
+
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
     formData.append('title', title);
@@ -72,7 +73,7 @@ export default function Home() {
     try {
       // Phase 2: AI Vision Scan
       setStatus('[2/3] Deep Scanning PDFs (This takes ~60-90 seconds)...');
-      
+
       const endpoint = mode === 'weekly' ? '/api/generate-weekly' : '/api/generate-monthly';
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
@@ -104,74 +105,74 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white p-8 font-sans">
+    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-950 p-8 font-sans">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-2 py-2 bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif">
           Construction Report Aggregator
         </h1>
-        <p className="text-slate-400 mb-8 text-lg">Turn daily logs into professional summaries instantly.</p>
+        <p className="text-vivid-tangerine-800 mb-8 text-lg font-medium">Industrial AI reporting for professional site managers.</p>
 
         {/* Mode Selector */}
         <div className="flex gap-4 mb-8">
           <button
             onClick={() => { setMode('weekly'); setFiles([]); }}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${mode === 'weekly' ? 'bg-blue-600 shadow-lg shadow-blue-900' : 'bg-slate-800 hover:bg-slate-700'}`}
+            className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md ${mode === 'weekly' ? 'bg-vivid-tangerine-600 text-white' : 'bg-white text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
           >
-            Weekly Report (7 Dailies)
+            Weekly Report
           </button>
           <button
             onClick={() => { setMode('monthly'); setFiles([]); }}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${mode === 'monthly' ? 'bg-emerald-600 shadow-lg shadow-emerald-900' : 'bg-slate-800 hover:bg-slate-700'}`}
+            className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md ${mode === 'monthly' ? 'bg-sunflower-gold-600 text-white' : 'bg-white text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
           >
-            Monthly Report (4 Weeklies)
+            Monthly Report
           </button>
         </div>
 
         {/* Manual Input Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-slate-800/50 p-6 rounded-3xl border border-slate-700/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-400 mb-2">Report Title (e.g. WEEK 20 PROGRESS REPORT)</label>
+            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
             <input
               value={title} onChange={(e) => setTitle(e.target.value)}
-              className={`w-full bg-slate-900 border ${isDuplicate ? 'border-yellow-500' : 'border-slate-700'} rounded-xl px-4 py-3 focus:border-blue-500 outline-none`}
-              placeholder="Enter title..."
+              className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
+              placeholder="e.g. WEEK 20 PROGRESS REPORT"
             />
             {isDuplicate && (
-              <div className="mt-2 text-yellow-500 text-sm flex items-center gap-2 bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20">
-                <span>⚠️</span>
-                <span>A report for "<strong>{title}</strong>" already exists. Generating this will create a new version.</span>
+              <div className="mt-2 text-vivid-tangerine-700 text-sm flex items-center gap-2 bg-vivid-tangerine-50 p-3 rounded-lg border border-vivid-tangerine-200">
+                <span>⚡</span>
+                <span>A report for "<strong>{title}</strong>" already exists. This will create an update.</span>
               </div>
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Dates / Reporting Period</label>
+            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Reporting Period</label>
             <input
               value={dates} onChange={(e) => setDates(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none"
+              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
               placeholder="e.g. 6TH – 12TH APRIL 2026"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Time Lapsed in Weeks</label>
+            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Time Lapsed (Weeks)</label>
             <input
               value={timeLapsed} onChange={(e) => setTimeLapsed(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none"
+              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
               placeholder="e.g. 20 Weeks"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">% Contract Period Elapsed</label>
+            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Period Elapsed</label>
             <input
               value={pctPeriod} onChange={(e) => setPctPeriod(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none"
+              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
               placeholder="e.g. 19.43%"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">% Work Done</label>
+            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Work Done</label>
             <input
               value={pctWork} onChange={(e) => setPctWork(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none"
+              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
               placeholder="e.g. 7.29%"
             />
           </div>
@@ -179,28 +180,28 @@ export default function Home() {
 
         {/* Upload Zone */}
         <div className="space-y-4">
-          <div className="bg-slate-800 border-2 border-dashed border-slate-700 rounded-3xl p-10 text-center transition-all hover:border-blue-500 group">
+          <div className="bg-white border-2 border-dashed border-vanilla-custard-200 rounded-3xl p-10 text-center transition-all hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group shadow-lg">
             <input
               type="file" multiple
               onChange={(e) => handleFileChange(e.target.files)}
               className="hidden" id="file-upload"
             />
             <label htmlFor="file-upload" className="cursor-pointer">
-              <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">📄</div>
-              <div className="text-lg font-medium mb-1">Click to add reports</div>
-              <div className="text-slate-500">
-                {isReady ? `All ${targetCount} files selected ✅` : `Selected: ${files.length} / ${targetCount}`}
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📁</div>
+              <div className="text-lg font-bold text-vivid-tangerine-900 mb-1">Upload Site Logs</div>
+              <div className="text-vivid-tangerine-400 font-medium text-sm">
+                {isReady ? `All ${targetCount} documents verified ✅` : `${files.length} of ${targetCount} files ready`}
               </div>
             </label>
           </div>
 
           {/* File List */}
           {files.length > 0 && (
-            <div className="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/50 space-y-2">
+            <div className="bg-white rounded-2xl p-4 shadow-md border border-vanilla-custard-100 space-y-2">
               {files.map((file, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm bg-slate-900/50 p-2 rounded-lg">
-                  <span className="truncate max-w-[80%]">📄 {file.name}</span>
-                  <button onClick={() => removeFile(idx)} className="text-red-400 hover:text-red-300 px-2">✕</button>
+                <div key={idx} className="flex justify-between items-center text-sm bg-vanilla-custard-50 p-3 rounded-xl border border-vanilla-custard-100">
+                  <span className="truncate max-w-[80%] font-medium text-vivid-tangerine-800">📄 {file.name}</span>
+                  <button onClick={() => removeFile(idx)} className="bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 p-1.5 rounded-lg transition-colors">✕</button>
                 </div>
               ))}
             </div>
@@ -210,16 +211,16 @@ export default function Home() {
         {/* Status and Errors */}
         <div className="mt-8 space-y-4">
           {status && (
-            <div className="bg-blue-900/20 border border-blue-500/30 text-blue-300 p-4 rounded-2xl animate-pulse">
+            <div className="bg-sunflower-gold-50 border border-sunflower-gold-200 text-vivid-tangerine-900 p-4 rounded-2xl animate-pulse font-semibold text-center shadow-sm text-sm">
               {status}
             </div>
           )}
           {error && (
-            <div className="bg-red-900/20 border border-red-500/50 text-red-400 p-4 rounded-2xl flex items-start gap-3">
-              <span className="text-xl">⚠️</span>
+            <div className="bg-vivid-tangerine-50 border border-vivid-tangerine-200 text-vivid-tangerine-900 p-4 rounded-2xl flex items-start gap-4 shadow-md text-sm">
+              <span className="text-xl">🛠️</span>
               <div>
-                <p className="font-bold">Error</p>
-                <p className="text-sm opacity-90">{error}</p>
+                <p className="font-bold">System Notification</p>
+                <p className="opacity-90">{error}</p>
               </div>
             </div>
           )}
@@ -228,25 +229,25 @@ export default function Home() {
         {/* Action Area */}
         <div className="mt-8 flex flex-col items-center gap-4">
           {!isReady && !loading && (
-            <div className="text-slate-500 font-medium">
-              Waiting for {targetCount - files.length} more {mode === 'weekly' ? 'daily' : 'weekly'} reports...
+            <div className="text-vivid-tangerine-400 font-bold bg-vanilla-custard-100/50 px-4 py-2 rounded-full text-xs uppercase tracking-wider">
+              Missing {targetCount - files.length} more reports...
             </div>
           )}
           
           <button
             onClick={handleUpload}
             disabled={loading || !isReady}
-            className={`w-full py-5 rounded-2xl font-bold text-xl transition-all shadow-xl ${
+            className={`w-full max-w-md py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${
               isReady && !loading 
-                ? 'bg-gradient-to-r from-blue-600 to-emerald-600 hover:scale-[1.02] active:scale-95' 
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95' 
+                : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
             }`}
           >
-            {loading ? 'Executing Vision Scan...' : isReady ? '🚀 Execute & Generate' : 'Waiting for files...'}
+            {loading ? 'Processing Vision Data...' : isReady ? '🚀 Execute & Generate' : 'Waiting for Files'}
           </button>
           
           {isReady && !loading && (
-            <p className="text-slate-400 text-sm">All files accounted for. Click above to begin aggregation.</p>
+            <p className="text-vivid-tangerine-400 text-xs font-semibold uppercase tracking-widest">Document Integrity Verified</p>
           )}
         </div>
       </div>

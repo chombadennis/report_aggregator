@@ -34,52 +34,102 @@ class Aggregator:
         return history_path
 
     def compile_weekly_data(self, daily_reports):
-        """Takes 7 daily reports and builds a Weekly summary."""
-        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        """Builds a high-fidelity Weekly summary from daily reports."""
+        days_map = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
         
-        # 1. Labour Matrix
+        # 0. Chronological Sorting by Detected Day
+        reports_by_day = [None] * 7
+        for r in daily_reports:
+            date_str = r.get("date", "").upper()
+            day_field = r.get("day_of_week", "").upper()
+            for idx, day_name in enumerate(days_map):
+                if day_name in date_str or day_name in day_field:
+                    reports_by_day[idx] = r
+                    break
+
+        # 1. Adaptive Labour Matrix
         all_categories = set()
-        for r in daily_reports: 
-            if "labour" in r: all_categories.update(r["labour"].keys())
+        for r in reports_by_day: 
+            if r and "labour" in r: all_categories.update(r["labour"].keys())
         
         labour_matrix = {}
         for cat in sorted(all_categories):
-            counts = []
-            for r in daily_reports:
-                counts.append(r.get("labour", {}).get(cat, "0"))
-            labour_matrix[cat] = counts
+            day_values = []
+            for r in reports_by_day:
+                val = r.get("labour", {}).get(cat, "0") if r else "0"
+                day_values.append(val)
+            labour_matrix[cat] = day_values
 
         # 2. Weather Grid
         weather_grid = []
-        for i, r in enumerate(daily_reports):
-            w = r.get("weather", {})
+        for i, r in enumerate(reports_by_day):
+            w = r.get("weather", {}) if r else {}
             weather_grid.append({
-                "day": days[i] if i < len(days) else f"Day {i+1}",
-                "morning": w.get("morning", "Sunny"),
-                "afternoon": w.get("afternoon", "Sunny")
+                "day": days_map[i].capitalize(),
+                "morning": w.get("morning", "-"),
+                "afternoon": w.get("afternoon", "-"),
+                "evening": w.get("evening", "-"),
+                "condition": w.get("condition", "-")
             })
 
-        # 3. Building Works
-        compiled_blocks = {}
-        for r in daily_reports:
-            for block, tasks in r.get("building_works", {}).items():
-                if block not in compiled_blocks: compiled_blocks[block] = []
-                compiled_blocks[block].extend(tasks)
-        for block in compiled_blocks:
-            compiled_blocks[block] = list(dict.fromkeys(compiled_blocks[block]))
+        # 3. Materials Summation
+        materials_summary = {}
+        for r in reports_by_day:
+            if not r: continue
+            for item in r.get("materials_delivered", []):
+                name = item.get("description", "Unknown").strip().upper()
+                raw_qty = item.get("quantity", "0")
+                unit = item.get("units", "")
+                try:
+                    qty = float(str(raw_qty).split()[0])
+                    if name not in materials_summary:
+                        materials_summary[name] = {"qty": 0.0, "unit": unit}
+                    materials_summary[name]["qty"] += qty
+                except: continue
+
+        # 4. Machinery Status
+        machinery_final = {}
+        for r in reports_by_day:
+            if not r: continue
+            for m in r.get("machinery", []):
+                name = m.name.upper() if hasattr(m, "name") else m.get("name", "").upper()
+                qty = m.qty if hasattr(m, "qty") else m.get("qty", "0")
+                status = m.status if hasattr(m, "status") else m.get("status", "Idle")
+                if name not in machinery_final:
+                    machinery_final[name] = {"qty": qty, "status": "Idle"}
+                if status.upper() == "WORKING":
+                    machinery_final[name]["status"] = "Working"
+
+        # 5. Instructions
+        compiled_instructions = []
+        for r in reports_by_day:
+            if r: compiled_instructions.extend(r.get("instructions", []))
+
+        # 6. Building Works
+        works_by_day = []
+        for r in reports_by_day:
+            day_text = []
+            if r:
+                for block, tasks in r.get("building_works", {}).items():
+                    day_text.append(f"{block}: {', '.join(tasks)}")
+                day_text.extend(r.get("general_works", []))
+            works_by_day.append("\n".join(day_text))
 
         result = {
             "labour": labour_matrix,
             "weather": weather_grid,
-            "building_works": compiled_blocks,
-            "general_works": list(dict.fromkeys([t for r in daily_reports for t in r.get("general_works", [])])),
-            "material_tests": [test for r in daily_reports for test in r.get("material_tests", [])],
-            "instructions": [inst for r in daily_reports for inst in r.get("instructions", [])],
-            "security": daily_reports[-1].get("security", "Secure"),
-            "health_safety": daily_reports[-1].get("health_safety", "No accidents")
+            "works_by_day": works_by_day,
+            "materials_sum": materials_summary,
+            "machinery": machinery_final,
+            "instructions": compiled_instructions,
+            "interns": [r.get("interns", {}) if r else {} for r in reports_by_day],
+            "security": [r.get("security_status", "") for r in reports_by_day if r and r.get("security_status")],
+            "health_safety": [r.get("health_safety_status", "") for r in reports_by_day if r and r.get("health_safety_status")],
+            "visitors": [v for r in reports_by_day if r for v in r.get("visitors", [])],
+            "challenges": [c for r in reports_by_day if r for c in r.get("challenges", [])],
+            "summary_to_date": reports_by_day[-1].get("summary_of_works", {}) if reports_by_day[-1] else {},
+            "report_date": daily_reports[0].get("report_date", "6th – 12th April 2026")
         }
-
-        # 4. Persistence: Save to history folder
         self._save_to_history(result, "WEEKLY")
         return result
 
