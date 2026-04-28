@@ -28,23 +28,43 @@ class ReportParser:
         
         CRITICAL EXTRACTION RULES:
         - WEATHER: Locate the 'WEATHER:' section in the SITE REPORT table. Extract the conditions for 'Morning', 'Afternoon', and 'Night' (map Night to 'evening' in the JSON schema).
-        - LABOUR: Capture ALL labour categories listed in the table (e.g., Site Agent/PM, Ass. Site Agent, Office Attendant, Office Assistant, Foreman, Operator, Mason, Electrician, Painters, Carpenters, Steel fixers, Drivers, Surveyors, Intern, Unskilled, Safety officer, Store keeper, Security, etc). 
-        
-        === SECTION F vs SECTION Q — THESE ARE COMPLETELY DIFFERENT AND MUST NEVER BE MIXED ===
-        - BUILDING WORKS → maps to JSON field: "building_works"
-          Source: ONLY from Section "F. WORKS CARRIED OUT ON SITE"
-          This section lists TODAY'S specific construction activities (e.g. "Steel fixing", "Casting of blinding").
-          STRICT RULE: If the page header or title says "SUMMARY OF WORKS" or "Q.", DO NOT put any of that content into "building_works". Leave "building_works" empty for that page.
-          
-        - SUMMARY OF WORKS → maps to JSON field: "summary_of_works"
-          Source: ONLY from Section "Q. SUMMARY OF WORKS DONE TO DATE"
-          This section lists cumulative works to date per block (e.g. BLOCK B1, BLOCK B2, GENERAL WORKS, etc.)
-          STRICT RULE: If the page header or title says "WORKS CARRIED OUT" or "F.", DO NOT put any of that content into "summary_of_works". Leave "summary_of_works" empty for that page.
-        ==================================================================================
+        - LABOUR: Capture ALL labour categories listed in the table (e.g., Site Agent/PM, Ass. Site Agent, Office Attendant, Office Assistant, Foreman, Operator, Mason, Electrician, Painters, Carpenters, Steel fixers, Drivers, Surveyors, Intern, Unskilled, Safety officer, Store keeper, Security, etc).
+          CRITICAL RULE: For every category visible in the table, return its value exactly as written (e.g. "4(m)", "13(12m,1f)", "41(7f,34m)"). 
+          If a category row exists but has no value or shows a dash, return "0". NEVER return an empty string "" for any labour field.
+          The TOTAL row at the bottom of the labour table MUST also be extracted and stored under the key "TOTAL".
+
+        ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+        ║   !!! CRITICAL WARNING: SECTION F and SECTION Q ARE COMPLETELY INDEPENDENT ENTITIES !!!         ║
+        ║                                                                                                  ║
+        ║   Their content must NEVER be placed in the other's JSON field — however similar they appear.   ║
+        ║   Content of each section MUST remain in its own section and must NOT be copied to the other,   ║
+        ║   regardless of what semantic similarity suggests. Treat them as two entirely separate documents.║
+        ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+        SECTION F — "F. WORKS CARRIED OUT ON SITE"
+          → Writes to JSON field: "building_works"
+          → This page title starts with the letter "F." and describes ONLY what was physically done TODAY on site.
+          → Example content: "Steel fixing to raft foundation", "Casting of blinding", "Fixing of formwork"
+          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {{}} for that page. Do NOT read from it.
+
+        SECTION Q — "Q. SUMMARY OF WORKS DONE TO DATE"  
+          → Writes to JSON field: "summary_of_works"
+          → This page title starts with the letter "Q." and lists CUMULATIVE work done since the start of the project, per block.
+          → Example content: "BLOCK B1: Site clearance, Setting out, Mass excavation...", "SWIMMING POOL: None"
+          → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {{}} for that page. Do NOT read from it.
+
+        FINAL VERIFICATION: Before returning your JSON, ask yourself:
+          - Does "building_works" contain ONLY today's activities from Section F? (No block-by-block cumulative lists)
+          - Does "summary_of_works" contain ONLY the cumulative history from Section Q? (No today's tasks)
+          If either answer is NO, correct your output before returning.
+        ════════════════════════════════════════════════════════════════════════
 
         - SITE INSTRUCTIONS: Capture "REF. NO", "INSTRUCTION ISSUED", "DATE", and "INSTRUCTIONS GIVEN BY".
         - MACHINERY: Note the Quantity and Status (Working/Idle).
         - MATERIALS DELIVERED: Focus ONLY on Section 'G. MATERIALS DELIVERED TO SITE'. It has columns S/N, DESCRIPTION, QTY. Use lowercase keys: 'description', 'quantity', 'units'.
+          CRITICAL RULE: Always extract 'quantity' as the numeric value ONLY (e.g. "689", "56.4", "913"). 
+          Always extract 'units' as the unit of measure ONLY (e.g. "ft", "tons", "pcs", "bags", "tippers"). NEVER leave 'units' empty if a unit is visible in the table.
+
         - VISITORS: Locate the visitors section and extract the exact text verbatim (e.g. "2 visitors on site").
         - INTERNS: Extract the specific values and names.
         
@@ -60,26 +80,31 @@ class ReportParser:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    async def parse_report(self, pdf_path, session_dir, report_type="DAILY"):
-        # 1. Check for 'Resume' using Fingerprinting
+    def _check_cache(self, pdf_path):
+        """
+        Quick cache-only check using SHA256 fingerprinting.
+        Returns cached data immediately if available, otherwise returns None.
+        Use this for a fast pre-flight check before committing to a full scan.
+        """
         file_hash = self._get_file_hash(pdf_path)
         cache_path = os.path.join(self.cache_dir, f"{file_hash}.json")
-        
         if os.path.exists(cache_path):
             logger.info(f"🟢 RESUME: Found cached results for {os.path.basename(pdf_path)} (Hash: {file_hash[:8]})")
             with open(cache_path, "r") as f:
                 return json.load(f)
+        return None
 
     async def parse_report(self, pdf_path, session_dir, report_type="DAILY"):
         """Intelligently scans pages with per-page caching for resumption."""
+        # Fast path: return from cache if this file was already fully processed
+        cached = self._check_cache(pdf_path)
+        if cached is not None:
+            return cached
+
         file_hash = self._get_file_hash(pdf_path)
         cache_path = os.path.join(self.cache_dir, f"{file_hash}.json")
         page_cache_dir = os.path.join(self.cache_dir, f"pages_{file_hash[:8]}")
         os.makedirs(page_cache_dir, exist_ok=True)
-        
-        if os.path.exists(cache_path):
-            logger.info(f"🟢 CACHE HIT: {os.path.basename(pdf_path)}")
-            with open(cache_path, "r") as f: return json.load(f)
 
         doc = fitz.open(pdf_path)
         screenshot_dir = os.path.join(session_dir, "screenshots")

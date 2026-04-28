@@ -66,16 +66,6 @@
       "name": "Roller",
       "qty": "1",
       "status": "Working"
-    },
-    {
-      "name": "Concrete mixer PHF900",
-      "qty": "1",
-      "status": "Working"
-    },
-    {
-      "name": "Concrete mixer PHF500",
-      "qty": "1",
-      "status": "Working"
     }
   ],
   "materials_delivered": [
@@ -105,11 +95,11 @@
     "GENERAL WORKS": "Hoarding\nConstruction of site office\nConstruction of Cement store\nConstruction of general store\nConstruction of Operation room for the batching plant\nConstruction of 7No. Ablution blocks\nConstruction of changing rooms (male and female)\nElectrical power connection\nBorehole drilling\n3-phase power connection",
     "BLOCK B1": "Site clearance\nSetting out\nMass excavation\nCompaction of excavated section\nFDD Test\nBlinding works\nReinforcement to the raft foundation\nCasting of raft foundation\nCasting of foundation columns and lift walling",
     "BLOCK B2": "Site clearance\nSetting out\nExcavation for raft foundation to a depth of 3m.\nLevelling and compaction.\nFDD Test\nBlinding works\nReinforcement to the raft foundation\nCasting of raft foundation- done\nFormwork to foundation lift wall \u2013 done",
-    "BLOCK B3": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works- done; Reinforcement to the raft foundation- done; Casting of raft foundation- done; Formwork to foundation lift wall \u2013 done",
+    "BLOCK B3": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m; Levelling and compaction; FDD Test; Blinding works- done; Reinforcement to the raft foundation- done; Casting of raft foundation- done; Formwork to foundation lift wall \u2013 done",
     "BLOCK B4": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m; Blinding works; Reinforcement to the raft foundation - ongoing; Formwork to raft foundation - ongoing",
     "BLOCK C5": "Site clearance; Setting Out; Excavation of raft foundation to a depth of 3m; Blinding works to the raft foundation - done",
     "UNDERGROUND TANK": "Site clearance; Setting out; Excavation - ongoing",
-    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing.; Levelling and compaction.; Concrete blinding.; Casting of strip and pad footings.; Casting of substructure columns.; Foundation walling; Hardcore backfilling; Murram backfilling",
+    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing; Levelling and compaction; Concrete blinding; Casting of strip and pad footings; Casting of substructure columns; Foundation walling; Hardcore backfilling; Murram backfilling",
     "SWIMMING POOL": "None",
     "CLUB HOUSE": "None",
     "SEPTIC TANK": "None",

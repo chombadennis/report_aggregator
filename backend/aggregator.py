@@ -35,8 +35,10 @@ class Aggregator:
 
     async def compile_weekly_data(self, daily_reports):
         """Builds a high-fidelity Weekly summary from daily reports."""
+        import re
+        from datetime import datetime, timedelta
         days_map = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-        
+
         # 0. Chronological Sorting by Detected Day
         reports_by_day = [None] * 7
         for r in daily_reports:
@@ -47,18 +49,117 @@ class Aggregator:
                     reports_by_day[idx] = r
                     break
 
-        # 1. Adaptive Labour Matrix
-        all_categories = set()
-        for r in reports_by_day: 
-            if r and "labour" in r: all_categories.update(r["labour"].keys())
-        
+        # 0b. Date Continuity Validation
+        # Parse calendar dates from reports and verify they form a consecutive sequence.
+        def _parse_report_date(r):
+            """Extracts a date object from report date string, e.g. '16th April 2026'."""
+            if not r: return None
+            raw = r.get("date", "")
+            # Strip ordinal suffixes: 16th -> 16, 1st -> 1, etc.
+            cleaned = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", raw, flags=re.IGNORECASE)
+            for fmt in ["%A %d %B %Y", "%d %B %Y", "%A, %d %B %Y"]:
+                try: return datetime.strptime(cleaned.strip(), fmt).date()
+                except: continue
+            return None
+
+        present_reports = [(idx, r) for idx, r in enumerate(reports_by_day) if r is not None]
+        if len(present_reports) > 1:
+            prev_idx, prev_r = present_reports[0]
+            prev_date = _parse_report_date(prev_r)
+            for curr_idx, curr_r in present_reports[1:]:
+                curr_date = _parse_report_date(curr_r)
+                if prev_date and curr_date:
+                    expected_date = prev_date + timedelta(days=(curr_idx - prev_idx))
+                    if curr_date != expected_date:
+                        day_name = days_map[curr_idx].capitalize()
+                        raise ValueError(
+                            f"❌ DATE CONTINUITY ERROR: The {day_name} report shows date "
+                            f"'{curr_r.get('date', 'unknown')}' but based on the previous report "
+                            f"it should be '{expected_date.strftime('%A %d %B %Y')}'. "
+                            f"Please ensure all 7 daily reports are in order with correct dates before re-uploading."
+                        )
+                prev_idx, prev_r, prev_date = curr_idx, curr_r, curr_date
+
+        # 1. Labour Matrix — Canonical order, always present, Total always last
+        # These categories MUST appear in this EXACT order, even if all values are 0.
+        LABOUR_CANONICAL_ORDER = [
+            "Site Agent/PM",
+            "Ass. Site Agent",
+            "Office Attendant",
+            "Office Assistant",
+            "Foreman",
+            "Operator",
+            "Mason",
+            "Electrician",
+            "Painters",
+            "Carpenters",
+            "Steel fixers",
+            "Drivers",
+            "Surveyors",
+            "Intern",
+            "Unskilled",
+            "Safety officer",
+            "Store keeper",
+            "Security (day&night)",
+        ]
+
+        def _find_labour_value(labour_dict, canonical_name):
+            """Case-insensitive fuzzy match against parsed keys. Always returns a string, never empty."""
+            key_lower = canonical_name.lower().replace(" ", "").replace("&", "and")
+            for k, v in labour_dict.items():
+                k_norm = k.lower().replace(" ", "").replace("&", "and")
+                if k_norm == key_lower or k_norm.startswith(key_lower[:6]):
+                    # Normalise: empty string or None → "0"
+                    return str(v).strip() if str(v).strip() else "0"
+            return "0"
+
+        def _extract_numeric(val):
+            """Pulls first integer from strings like '4(m)', '13(12m,1f)', '0'."""
+            import re
+            m = re.match(r"(\d+)", str(val).strip())
+            return int(m.group(1)) if m else 0
+
         labour_matrix = {}
-        for cat in sorted(all_categories):
+        for cat in LABOUR_CANONICAL_ORDER:
             day_values = []
             for r in reports_by_day:
-                val = r.get("labour", {}).get(cat, "0") if r else "0"
-                day_values.append(str(val))
+                val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
+                day_values.append(val)
             labour_matrix[cat] = day_values
+
+        # Dynamic expansion: detect any extra categories in the PDFs not in the canonical list.
+        # Explicitly skip "TOTAL" and similar aggregate rows — these are computed, not categories.
+        EXCLUDED_KEYS = {"total", "sub-total", "subtotal", "grand total"}
+        canonical_lower = {c.lower().replace(" ", "").replace("&", "and") for c in LABOUR_CANONICAL_ORDER}
+        extra_categories = []
+        for r in reports_by_day:
+            if not r: continue
+            for k in r.get("labour", {}).keys():
+                if k.strip().lower() in EXCLUDED_KEYS:
+                    continue  # Skip aggregate rows — never treat TOTAL as a category
+                k_norm = k.lower().replace(" ", "").replace("&", "and")
+                # Only add if it doesn't match any canonical category
+                if not any(k_norm == c or k_norm.startswith(c[:6]) for c in canonical_lower):
+                    if k not in extra_categories:
+                        extra_categories.append(k)
+
+        for cat in extra_categories:
+            day_values = []
+            for r in reports_by_day:
+                val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
+                day_values.append(val)
+            labour_matrix[cat] = day_values
+
+        # TOTAL row: sum of ALL categories (canonical + extras) per day — ALWAYS LAST
+        all_cats_for_total = LABOUR_CANONICAL_ORDER + extra_categories
+        total_per_day = []
+        for day_idx in range(7):
+            day_total = sum(
+                _extract_numeric(labour_matrix[cat][day_idx])
+                for cat in all_cats_for_total
+            )
+            total_per_day.append(str(day_total) if day_total > 0 else "0")
+        labour_matrix["TOTAL"] = total_per_day
 
         # 2. Weather Grid
         weather_grid = []
@@ -72,19 +173,26 @@ class Aggregator:
                 "condition": w.get("condition", "-")
             })
 
-        # 3. Materials Summation
+        # 3. Materials Summation — robust unit extraction with fallback from quantity string
         materials_summary = {}
         for r in reports_by_day:
             if not r: continue
             for item in r.get("materials_delivered", []):
                 name = item.get("description", item.get("Description", "Unknown")).strip().upper()
-                raw_qty = item.get("quantity", item.get("Quantity", "0"))
-                unit = item.get("units", item.get("Units", ""))
+                raw_qty = str(item.get("quantity", item.get("Quantity", "0")) or "0").strip()
+                unit = str(item.get("units", item.get("Units", "")) or "").strip()
                 try:
-                    qty = float(str(raw_qty).split()[0])
+                    qty_parts = raw_qty.split()
+                    qty = float(qty_parts[0].replace(",", ""))
+                    # Fallback: pull unit from quantity string if parser left unit field empty
+                    if not unit and len(qty_parts) > 1:
+                        unit = qty_parts[1]
                     if name not in materials_summary:
                         materials_summary[name] = {"qty": 0.0, "unit": unit}
                     materials_summary[name]["qty"] += qty
+                    # Keep the first non-empty unit seen for this material across all days
+                    if not materials_summary[name]["unit"] and unit:
+                        materials_summary[name]["unit"] = unit
                 except: continue
 
         # 4. Machinery Status

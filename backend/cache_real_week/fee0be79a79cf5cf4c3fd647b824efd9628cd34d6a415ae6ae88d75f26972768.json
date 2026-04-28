@@ -1,0 +1,127 @@
+{
+  "date": "19th April, 2026",
+  "day_of_week": "Sunday",
+  "weather": {
+    "morning": "Cloudy-Favorable for work",
+    "afternoon": "Cloudy -Favorable for work",
+    "evening": "Rainy/ cloudy"
+  },
+  "labour": {
+    "Site Agent/PM": "1(m)",
+    "Ass. Site Agent": "1(m)",
+    "Office Attendant": "1(f)",
+    "Office Assistant": "2(m)",
+    "Foreman": "4(m)",
+    "Operator": "6(m)",
+    "Mason": "13(m)",
+    "Plumbers": "1",
+    "Painters": "2 (m)",
+    "Carpenters": "0",
+    "Steel fixers": "7(m)",
+    "Drivers": "0",
+    "Surveyors": "2(1f, 1m)",
+    "Intern": "0",
+    "Unskilled": "31(6f, 25m)",
+    "Safety officer": "1(m)",
+    "Store keeper": "1(m)",
+    "Security (day&night)": "8(7m, 1f)",
+    "TOTAL": "81"
+  },
+  "building_works": {
+    "Block Type B": [
+      "Block B1: Construction of foundation walling",
+      "Block B1: Removal of columns formwork",
+      "Block B3: Fixing of foundation columns formwork"
+    ],
+    "Block Type C": [
+      "Steel cutting, tying and bending"
+    ],
+    "Kindergarten": [
+      "Fixing of reinforcement to superstructure columns",
+      "Anti \u2013 termite treatment",
+      "DPM fixing",
+      "BRC to ground slab",
+      "1st fix plumbing conduits to ground slab",
+      "Casting of ground slab"
+    ],
+    "General works": [
+      "Branding of site hoarding"
+    ]
+  },
+  "general_works": [],
+  "machinery": [
+    {
+      "name": "Concrete Mixer",
+      "qty": "2",
+      "status": "Idle"
+    },
+    {
+      "name": "Batching Plant",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Excavator",
+      "qty": "1",
+      "status": "Idle"
+    },
+    {
+      "name": "Backhoe excavator",
+      "qty": "1",
+      "status": "Working"
+    }
+  ],
+  "materials_delivered": [
+    {
+      "description": "Foundation stones",
+      "quantity": "1710",
+      "units": "ft"
+    },
+    {
+      "description": "Hardcore",
+      "quantity": "3",
+      "units": "tippers"
+    }
+  ],
+  "material_tests": [
+    {
+      "test_type": "Cube test",
+      "details": "3 cubes taken",
+      "location": "Kindergarten ground slab",
+      "sn": null
+    }
+  ],
+  "instructions": [
+    {
+      "REF. NO": "",
+      "instruction_issued": "None",
+      "date": "",
+      "INSTRUCTIONS GIVEN BY": ""
+    }
+  ],
+  "interns": {},
+  "security_status": "The site was secure.",
+  "health_safety_status": "No accident nor incident reported.",
+  "visitors": [
+    "There were no visitors on site"
+  ],
+  "challenges": [
+    "Work behind schedule"
+  ],
+  "summary_of_works": {
+    "GENERAL WORKS": "Hoarding, Construction of site office, Construction of Cement store, Construction of general store, Construction of Operation room for the batching plant, Construction of 7No. Ablution blocks, Construction of changing rooms (male and female), Electrical power connection, Borehole drilling, 3-phase power connection",
+    "BLOCK B1": "Site clearance, Setting out, Mass excavation, Compaction of excavated section, FDD Test, Blinding works, Reinforcement to the raft foundation, Casting of raft foundation, Casting of foundation columns and lift walling, Construction of foundation walling - ongoing",
+    "BLOCK B2": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m., Levelling and compaction., FDD Test, Blinding works, Reinforcement to the raft foundation, Casting of raft foundation- done, Formwork to foundation lift wall - done, Formwork to foundation columns",
+    "BLOCK B3": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m., Levelling and compaction., FDD Test, Blinding works- done, Reinforcement to the raft foundation- done, Casting of raft foundation- done, Formwork to foundation lift wall \u2013 done",
+    "BLOCK B4": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m, Blinding works, Reinforcement to the raft foundation - ongoing, Formwork to raft foundation - ongoing",
+    "BLOCK C5": "Site clearance, Setting Out, Excavation of raft foundation to a depth of 3m, Blinding works to the raft foundation - done",
+    "UNDERGROUND TANK": "Site clearance, Setting out, Excavation - ongoing",
+    "KINDERGARTEN": "Site clearance, Excavation for pad footings and trenches for strip footing., Levelling and compaction., Concrete blinding., Casting of strip and pad footings., Casting of substructure columns., Foundation walling, Hardcore backfilling, Murram backfilling, Anti-termite treatment, BRC, DPM, Casting of ground slab",
+    "SWIMMING POOL": "None",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "GARBAGE RECEPTACLE": "None",
+    "WTP": "None"
+  },
+  "fingerprint": "fee0be79a79cf5cf4c3fd647b824efd9628cd34d6a415ae6ae88d75f26972768"
+}

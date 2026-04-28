@@ -1,0 +1,109 @@
+{
+  "date": "17th April, 2026",
+  "day_of_week": "Friday",
+  "weather": {
+    "morning": "Sunny-Favorable for work",
+    "afternoon": "Sunny -Favorable for work",
+    "evening": "Rainy"
+  },
+  "labour": {
+    "Site Agent/PM": "1",
+    "Ass. Site Agent": "1",
+    "Office Attendant": "1(f)",
+    "Office Assistant": "1(m)",
+    "Foreman": "4(m)",
+    "Operator": "7(m)",
+    "Mason": "2(m)",
+    "Electrician": "0",
+    "Plumbers": "0",
+    "Carpenters": "12(m)",
+    "Steel fixers": "13(12m, 1f)",
+    "Drivers": "0",
+    "Surveyors": "2(1f, 1m)",
+    "Unskilled": "45(11f, 34m)",
+    "Safety officer": "1(m)",
+    "Store keeper": "1(m)",
+    "Security (day&night)": "8(7m, 1f)",
+    "TOTAL": "99"
+  },
+  "building_works": {
+    "General Works": [
+      "Casting of spacer blocks"
+    ],
+    "Block Type B": [
+      "Block B4: Steel fixing to the raft foundation",
+      "Setting of starter columns",
+      "Block B1: Removal of foundation columns formwork"
+    ],
+    "Block Type C": [
+      "Block C5: Blinding works to the raft foundation"
+    ],
+    "Kindergarten": [
+      "Hardcore filling"
+    ]
+  },
+  "general_works": [
+    "There were 3 cubes taken - Block C5 blinding"
+  ],
+  "machinery": [
+    {
+      "name": "Concrete Mixer",
+      "qty": "2",
+      "status": "Idle"
+    },
+    {
+      "name": "Batching Plant",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Excavator",
+      "qty": "1",
+      "status": "Idle"
+    },
+    {
+      "name": "Backhoe excavator",
+      "qty": "1",
+      "status": "Working"
+    }
+  ],
+  "materials_delivered": [
+    {
+      "description": "Ballast",
+      "quantity": "56.4",
+      "units": "tons"
+    },
+    {
+      "description": "Hardcore",
+      "quantity": "3",
+      "units": "tippers"
+    }
+  ],
+  "material_tests": [],
+  "instructions": [],
+  "interns": {
+    "details": "There were 8 no. interns on Site"
+  },
+  "security_status": "The site was secure.",
+  "health_safety_status": "One incident reported",
+  "visitors": [],
+  "challenges": [
+    "Work behind schedule"
+  ],
+  "summary_of_works": {
+    "GENERAL WORKS": "Hoarding; Construction of site office; Construction of Cement store; Construction of general store; Construction of Operation room for the batching plant; Construction of 7No. Ablution blocks; Construction of changing rooms (male and female); Electrical power connection; Borehole drilling; 3-phase power connection",
+    "BLOCK B1": "Site clearance; Setting out; Mass excavation; Compaction of excavated section; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation; Casting of foundation columns and lift walling",
+    "BLOCK B2": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Formwork to foundation lift wall - done",
+    "BLOCK B3": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m., Levelling and compaction., FDD Test, Blinding works- done, Reinforcement to the raft foundation- done, Casting of raft foundation- done, Formwork to foundation lift wall \u2013 done",
+    "BLOCK B4": "Site clearance, Setting out, Excavation for raft foundation to a depth of 3m, Blinding works, Reinforcement to the raft foundation - ongoing, Formwork to raft foundation - ongoing",
+    "BLOCK C5": "Site clearance, Setting Out, Excavation of raft foundation to a depth of 3m, Blinding works to the raft foundation - done",
+    "UNDERGROUND TANK": "Site clearance, Setting out, Excavation - ongoing",
+    "KINDERGATEN": "Site clearance, Excavation for pad footings and trenches for strip footing., Levelling and compaction., Concrete blinding., Casting of strip and pad footings., Casting of substructure columns., Foundation walling, Backfilling - ongoing",
+    "SWIMMING POOL": "None",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "GARBAGE RECEPTCLE": "None",
+    "WTP": "None"
+  },
+  "fingerprint": "ded57bcd685b43c7d4f7b983c7c5ea599ef1a76a01abd014031ff7050875f04d"
+}
