@@ -213,37 +213,45 @@ class Aggregator:
         for r in reports_by_day:
             if r: compiled_instructions.extend(r.get("instructions", []))
 
-        # 6. Works by Day (AI Professional Semantic Summary)
-        raw_weekly_blocks = {}
-        for r in reports_by_day:
-            if not r: continue
-            for block, tasks in r.get("building_works", {}).items():
-                if block not in raw_weekly_blocks:
-                    raw_weekly_blocks[block] = []
-                raw_weekly_blocks[block].extend(tasks)
+        # 6. Works by Day — per-day, per-component (strictly from building_works only)
+        # Structure: {"Monday": {"Component A": "• task1\n• task2", ...}, "Tuesday": {...}, ...}
+        FULL_DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+        def _tasks_to_bullets(tasks):
+            """Convert a list of task strings to a '• item\n• item' bullet string."""
+            if not tasks:
+                return "• None"
+            seen = set()
+            bullets = []
+            for t in tasks:
+                t = str(t).strip()
+                if t and t.lower() not in seen:
+                    seen.add(t.lower())
+                    bullets.append(f"• {t}" if not t.startswith("•") else t)
+            return "\n".join(bullets) if bullets else "• None"
 
         works_by_day_summary = {}
-        if raw_weekly_blocks:
-            prompt = f"""
-            Act as a highly experienced construction engineer. I am providing you with a list of tasks accomplished across a 7-day week for various building components on my site.
-            
-            Your job is to provide a professional-level summary of the work done during the week for EACH component.
-            - Consolidate identical or semantically similar tasks so you DO NOT repeat yourself.
-            - MUST write the summary as a bulleted list where each bullet point starts with the black dot character '• '.
-            - If no activities were reported for a component, just output a single bullet: '• None'
-            - Do NOT include dates or days of the week in the summary.
-            
-            Return the output as a perfect JSON object where the keys are the block names and the values are the professional summary string (with newlines separating bullets).
-            Example: {{"BLOCK B4": "• Steel fixing to the raft foundation.\\n• Installation of starter columns.", "SWIMMING POOL": "• None"}}
-            
-            Raw Data:
-            {json.dumps(raw_weekly_blocks)}
-            """
-            from ai_client import generate_summary_json
-            try:
-                works_by_day_summary = await generate_summary_json(prompt)
-            except Exception as e:
-                works_by_day_summary = {"Error": f"Could not generate AI summary: {e}"}
+        for day_idx, r in enumerate(reports_by_day):
+            day_name = FULL_DAY_NAMES[day_idx]
+            if not r:
+                continue
+            # ONLY use building_works — never touch summary_of_works here
+            day_building_works = r.get("building_works", {})
+            if not day_building_works:
+                continue
+            day_entry = {}
+            for component, tasks in day_building_works.items():
+                # tasks can be a list or already a bullet string from the parser
+                if isinstance(tasks, list):
+                    bullet_str = _tasks_to_bullets(tasks)
+                elif isinstance(tasks, str):
+                    # Already formatted as bullets — keep as-is
+                    bullet_str = tasks.strip() if tasks.strip() else "• None"
+                else:
+                    bullet_str = "• None"
+                day_entry[component] = bullet_str
+            if day_entry:
+                works_by_day_summary[day_name] = day_entry
 
         # Calculate total visitors 
         total_visitors = 0

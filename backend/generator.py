@@ -1,40 +1,64 @@
+"""
+generator.py
+------------
+Injects AI-extracted weekly JSON data into the Word (.docx) template.
+No AI calls — pure JSON → Word mapping.
+"""
+
 from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 import os
 import re
 from datetime import datetime, timedelta
+import copy
 
 
 class ReportGenerator:
-    """
-    Injects AI-extracted weekly JSON data into a Microsoft Word (.docx) template.
-    Finds sections by scanning table headers — robust to template reordering.
-    """
 
     def __init__(self, template_path):
         self.template_path = template_path
 
-    # ─────────────────────────────────────────────────────────────
-    # HELPERS
-    # ─────────────────────────────────────────────────────────────
+    # ─── HELPERS ──────────────────────────────────────────────────────────────
 
-    def _find_table_by_header(self, doc, header_text):
-        """Find the first table whose first cell contains header_text."""
+    def _find_table_by_any_header_cell(self, doc, header_text):
+        """Find the first table where ANY cell in the first row contains header_text."""
         for table in doc.tables:
             if table.rows:
-                first = table.rows[0].cells[0].text.upper().strip()
-                if header_text.upper() in first:
-                    return table
+                for cell in table.rows[0].cells:
+                    if header_text.upper() in cell.text.upper():
+                        return table
         return None
 
+    def _find_interns_table(self, doc):
+        """
+        Find the Interns table specifically: a 7-column table whose header row
+        contains Mon/Tue/Wed day names but does NOT have a 'CATEGORY' column.
+        This distinguishes it from the Labour table which also has day headers.
+        """
+        for table in doc.tables:
+            if not table.rows:
+                continue
+            header_texts = [c.text.strip().upper() for c in table.rows[0].cells]
+            has_day_headers = any(d in header_texts for d in ["MON", "TUE", "WED"])
+            has_category    = any("CATEGORY" in h for h in header_texts)
+            # Interns table: 7 cols (Mon-Sun only), no CATEGORY column, exactly 2 rows
+            if has_day_headers and not has_category and len(table.columns) == 7:
+                return table
+        return None
+
+    def _find_para_by_text(self, doc, search_text):
+        """Find the first paragraph containing search_text (case-insensitive)."""
+        for i, para in enumerate(doc.paragraphs):
+            if search_text.upper() in para.text.upper():
+                return i, para
+        return None, None
+
     def _calculate_week_dates(self, period_str):
-        """
-        Parse '13th – 19th April 2026' → list of 7 date strings like '13/04/2026'.
-        Also returns week number string if present (e.g. 'WEEK 21').
-        """
+        """'13th – 19th April 2026' → ['13/04/2026', '14/04/2026', ...]"""
         try:
-            # Remove ordinal suffixes: 13th → 13
             cleaned = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", period_str, flags=re.IGNORECASE)
-            # Match: start_day – end_day Month Year
             m = re.search(r"(\d+)\s*[–\-]\s*(\d+)\s+(\w+)\s+(\d{4})", cleaned)
             if m:
                 start_day = int(m.group(1))
@@ -42,182 +66,221 @@ class ReportGenerator:
                 year = int(m.group(4))
                 month_num = datetime.strptime(month_str, "%B").month
                 base = datetime(year, month_num, start_day)
-                return [( base + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(7)]
+                return [(base + timedelta(days=i)).strftime("%d/%m/%Y") for i in range(7)]
         except Exception:
             pass
         return ["-"] * 7
 
-    def _extract_week_number(self, period_str):
-        """Try to extract week number from the JSON or fall back to a placeholder."""
-        # e.g. "6th – 12th April 2026" — week number is not in the JSON directly.
-        # Return empty so user can fill it, or derive from date vs commencement.
-        return ""
+    def _insert_row_before_last(self, table):
+        """Insert a new empty row before the last row (TOTAL) using lxml."""
+        last_tr = table.rows[-1]._tr
+        new_tr = copy.deepcopy(table.rows[-2]._tr)
+        # Clear all cell text in the new row
+        for tc in new_tr.findall(qn('w:tc')):
+            for t_elem in tc.findall('.//' + qn('w:t')):
+                t_elem.text = ''
+        # Insert immediately before the TOTAL row using lxml's addprevious
+        last_tr.addprevious(new_tr)
+        return table.rows[-2]  # The newly inserted row
 
-    # ─────────────────────────────────────────────────────────────
-    # MAIN ENTRY POINT
-    # ─────────────────────────────────────────────────────────────
+    # ─── MAIN ENTRY ───────────────────────────────────────────────────────────
 
     def generate_report(self, output_path, data, report_type="WEEKLY"):
-        """High-fidelity generation mapping AI JSON data to Word template sections."""
         doc = Document(self.template_path)
 
         report_period = data.get("report_date", "")
         week_dates = self._calculate_week_dates(report_period)
 
-        # 1. Cover page — WEEK _ / DATE: paragraphs
+        # 1. Cover date paragraphs
         self._fill_cover_dates(doc, report_period)
 
-        # 2. Table 3 — Section E header row (DATE: across 3 cols)
+        # 2. Section E date row in Table 3
         self._fill_section_e_date(doc, report_period)
 
-        # 3. Table 4 — Section F: Works Carried Out (DAY | WORK DONE)
-        works_table = self._find_table_by_header(doc, "DAY")
+        # 3. Section F — Works Carried Out (Table 4: DAY | WORK DONE)
+        works_table = self._find_table_by_any_header_cell(doc, "WORK DONE")
         if works_table:
             self._fill_work_progress_table(works_table, data.get("works_by_day", {}), week_dates)
 
-        # 4. Table 5 — Section G: Materials Delivered
-        mat_table = self._find_table_by_header(doc, "Description")
+        # 4. Section G — Materials Delivered (Table 5: S/NO | Description | Quantity)
+        mat_table = self._find_table_by_any_header_cell(doc, "Description")
         if mat_table:
             self._fill_materials_table(mat_table, data.get("materials_sum", {}))
 
-        # 5. Table 6 — Section H: Plant & Machinery
-        plant_table = self._find_table_by_header(doc, "QTY")
+        # 5. Section H — Machinery (Table 6: S/N | Description | QTY | Status)
+        plant_table = self._find_table_by_any_header_cell(doc, "Status")
         if plant_table:
             self._fill_machinery_table(plant_table, data.get("machinery", {}))
 
-        # 6. Table 7 — Labour Turnover (CATEGORY | Mon | Tue | ... | Sun)
-        lab_table = self._find_table_by_header(doc, "CATEGORY")
+        # 6. Labour Turnover (Table 7: CATEGORY | Mon..Sun)
+        lab_table = self._find_table_by_any_header_cell(doc, "CATEGORY")
         if lab_table:
             self._fill_labour_table(lab_table, data.get("labour", {}))
 
-        # 7. Table 8 — Site Instructions (REF. NO | INSTRUCTION | DATE | BY)
-        inst_table = self._find_table_by_header(doc, "REF. NO")
+        # 7. Site Instructions (Table 8: REF. NO | INSTRUCTION | DATE | BY)
+        inst_table = self._find_table_by_any_header_cell(doc, "REF. NO")
         if inst_table:
             self._fill_instructions_table(inst_table, data.get("instructions", []))
 
-        # 8. Table 9 — Interns (Mon | Tue | Wed | Thur | Fri | Sat | Sun)
-        intern_table = self._find_table_by_header(doc, "Mon")
+        # 8. Interns (Table 9: Mon | Tue | Wed | Thur | Fri | Sat | Sun)
+        intern_table = self._find_interns_table(doc)
         if intern_table:
             self._fill_interns_table(intern_table, data.get("interns", []))
 
-        # 9. Table 10 — Weather (DAY | MORNING | AFTERNOON | EVENING | CONDITION)
-        weather_table = self._find_table_by_header(doc, "CONDITION")
+        # 9. Weather (Table 10: DAY | MORNING | AFTERNOON | EVENING | CONDITION)
+        weather_table = self._find_table_by_any_header_cell(doc, "CONDITION")
         if weather_table:
             self._fill_weather_table(weather_table, data.get("weather", []))
 
-        # 10. Paragraph text sections: N(Health&Safety), M(Security), P(Challenges)
+        # 10. Text sections: Security, H&S, Visitors, Challenges
         self._fill_text_sections(doc, data)
 
-        # 11. Table 11 — Summary of Works Done to Date
-        summary_table = self._find_table_by_header(doc, "SUMMARY OF WORK")
+        # 11. Summary of Works Done to Date (Table 11)
+        summary_table = self._find_table_by_any_header_cell(doc, "SUMMARY OF WORK")
         if summary_table:
             self._fill_summary_works_table(summary_table, data.get("summary_to_date", {}))
 
+        # Delete old output and save fresh
+        if os.path.exists(output_path):
+            os.remove(output_path)
         doc.save(output_path)
         print(f"[OK] Report saved to: {output_path}")
         return output_path
 
-    # ─────────────────────────────────────────────────────────────
-    # SECTION FILLERS
-    # ─────────────────────────────────────────────────────────────
+    # ─── SECTION FILLERS ──────────────────────────────────────────────────────
 
     def _fill_cover_dates(self, doc, report_period):
-        """Fill 'WEEK _ PROGRESS REPORT' and 'DATE:' paragraphs on the cover page."""
+        """Fill WEEK _ / DATE: on cover page."""
         for para in doc.paragraphs:
-            text_upper = para.text.upper().strip()
-            # Cover title — "WEEK _ PROGRESS REPORT"
-            if "WEEK" in text_upper and "PROGRESS REPORT" in text_upper:
-                # Preserve formatting by replacing run text
-                for run in para.runs:
-                    if "_" in run.text:
-                        run.text = run.text.replace("_", "")  # blank for user to fill week no.
-            # Cover date line — "DATE:"
-            elif text_upper == "DATE:":
+            if para.text.strip().upper() == "DATE:":
                 for run in para.runs:
                     if "DATE:" in run.text.upper():
                         run.text = f"DATE: {report_period}"
                         break
 
     def _fill_section_e_date(self, doc, report_period):
-        """Fill Table 3 Row 1: DATE: cells (appears before the works table)."""
+        """Fill Table 3 DATE: row (3 cells)."""
         for table in doc.tables:
-            if table.rows and "DATE:" in table.rows[0].cells[0].text.upper():
-                for cell in table.rows[0].cells:
-                    if "DATE:" in cell.text.upper():
-                        cell.text = f"DATE: {report_period}"
-                break
-            # Also check row 1 in Table 3 (header has PROJECT:)
-            if table.rows and "PROJECT:" in table.rows[0].cells[0].text.upper():
-                for row in table.rows:
-                    if "DATE:" in row.cells[0].text.upper():
-                        for cell in row.cells:
+            if not table.rows:
+                continue
+            for row in table.rows:
+                if row.cells and "DATE:" in row.cells[0].text.upper():
+                    for cell in row.cells:
+                        if "DATE:" in cell.text.upper():
                             cell.text = f"DATE: {report_period}"
-                        break
 
     def _fill_work_progress_table(self, table, works_by_day, week_dates):
         """
-        Table 4: DAY | WORK DONE
-        works_by_day is a dict: {"Block Type B": "• ...", "Kindergarten": "• ..."}
-        The template has one row per day (Mon–Sun). We concatenate all blocks per row.
+        Table 4 — DAY | WORK DONE.
+        works_by_day is now keyed by day name: {"Monday": {"Component": "• task\n• task", ...}, ...}
+        Each day row gets its own unique per-component content with bullet lines split per paragraph.
         """
         day_labels = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+        day_keys   = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-        # Merge all block summaries into one text block (each block on a new line)
-        all_works_text = "\n".join(
-            f"{block}:\n{summary}" for block, summary in works_by_day.items()
-        ) if works_by_day else ""
-
-        for i, row in enumerate(table.rows[1:8]):  # rows 1–7 = Mon–Sun
+        for i, row in enumerate(table.rows[1:8]):
             day_label = day_labels[i] if i < len(day_labels) else f"DAY {i+1}"
-            date_str = week_dates[i] if i < len(week_dates) else "-"
-            # Fill day cell
+            date_str  = week_dates[i] if i < len(week_dates) else "-"
             row.cells[0].text = f"{day_label}\n({date_str})"
-            # Fill works cell — same aggregated text for all days
-            # (works_by_day is a weekly summary, not per-day; put full summary in each row)
-            row.cells[1].text = all_works_text
+
+            # Fetch this day's component dict from the new per-day structure
+            day_key = day_keys[i] if i < len(day_keys) else ""
+            day_components = works_by_day.get(day_key, {})
+
+            # Build rich content in the WORK DONE cell
+            cell = row.cells[1]
+            for p in cell.paragraphs:
+                p.clear()
+
+            if not day_components:
+                cell.paragraphs[0].add_run("No works recorded.")
+                continue
+
+            first_block = True
+            for block_name, summary_text in day_components.items():
+                # Spacing between blocks
+                if not first_block:
+                    sp = cell.add_paragraph("")
+                    sp.paragraph_format.space_before = Pt(6)
+                    sp.paragraph_format.space_after = Pt(0)
+
+                # Bold component/subsection heading — NEVER bulleted.
+                # Strip any accidental leading bullet character from the key name.
+                heading_text = block_name.lstrip("•").strip()
+                key_para = cell.paragraphs[0] if first_block else cell.add_paragraph()
+                key_para.paragraph_format.space_before = Pt(0)
+                key_para.paragraph_format.space_after = Pt(2)
+                key_run = key_para.add_run(heading_text + ":")
+                key_run.bold = True
+
+                # Split bullet lines — each '\n'-separated bullet gets its own paragraph.
+                # Preserve the '•' prefix already in the data; do not add an extra one.
+                bullet_lines = str(summary_text).split("\n")
+                for line in bullet_lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    bullet_para = cell.add_paragraph(line)
+                    bullet_para.paragraph_format.space_before = Pt(0)
+                    bullet_para.paragraph_format.space_after = Pt(0)
+
+                first_block = False
 
     def _fill_labour_table(self, table, labour_data):
         """
-        Table 7: CATEGORY | Mon | Tue | Wed | Thur | Fri | Sat | Sun
-        labour_data: {"Site Agent/PM": ["1(m)","1(m)",...], ...}
-        Matches by comparing template row label to canonical key (case-insensitive).
+        Table 7 — CATEGORY | Mon | Tue | Wed | Thur | Fri | Sat | Sun.
+        Matches by category name. Extra categories inserted BEFORE TOTAL row.
+        TOTAL is always last.
         """
-        DAY_COLS = {"mon": 1, "tue": 2, "wed": 3, "thur": 4, "fri": 5, "sat": 6, "sun": 7}
-
         # Clear all data cells first
         for row in table.rows[1:]:
             for col_idx in range(1, 8):
                 if col_idx < len(row.cells):
                     row.cells[col_idx].text = "0"
 
-        for row in table.rows[1:]:
-            cat_label = row.cells[0].text.strip().upper().replace(" ", "").replace("&", "AND")
-            for ai_cat, values in labour_data.items():
-                ai_norm = ai_cat.strip().upper().replace(" ", "").replace("&", "AND")
-                if cat_label == ai_norm or cat_label in ai_norm or ai_norm in cat_label:
-                    for i, val in enumerate(values):
-                        col_idx = i + 1  # Mon=1, Tue=2 ... Sun=7
-                        if col_idx < len(row.cells):
-                            row.cells[col_idx].text = str(val)
-                    break
-
-        # Append any extra categories (dynamic) not in the template
-        canonical_in_template = {
-            row.cells[0].text.strip().upper().replace(" ", "")
+        # Build set of category labels already in the template
+        template_cats = {
+            row.cells[0].text.strip().upper().replace(" ", "").replace("&", "AND"): row
             for row in table.rows[1:]
         }
+
+        # Fill matching rows
+        unmatched = {}
         for ai_cat, values in labour_data.items():
+            if ai_cat.strip().upper() == "TOTAL":
+                continue  # Handle separately at the end
             ai_norm = ai_cat.strip().upper().replace(" ", "").replace("&", "AND")
-            if not any(ai_norm in t or t in ai_norm for t in canonical_in_template):
-                new_row = table.add_row()
-                new_row.cells[0].text = ai_cat
-                for i, val in enumerate(values):
-                    col_idx = i + 1
-                    if col_idx < len(new_row.cells):
-                        new_row.cells[col_idx].text = str(val)
+            matched = False
+            for tmpl_norm, row in template_cats.items():
+                if ai_norm == tmpl_norm or ai_norm in tmpl_norm or tmpl_norm in ai_norm:
+                    for i, val in enumerate(values):
+                        col_idx = i + 1
+                        if col_idx < len(row.cells):
+                            row.cells[col_idx].text = str(val)
+                    matched = True
+                    break
+            if not matched:
+                unmatched[ai_cat] = values
+
+        # Insert unmatched (extra) categories BEFORE the TOTAL row
+        for ai_cat, values in unmatched.items():
+            new_row = self._insert_row_before_last(table)
+            new_row.cells[0].text = ai_cat
+            for i, val in enumerate(values):
+                col_idx = i + 1
+                if col_idx < len(new_row.cells):
+                    new_row.cells[col_idx].text = str(val)
+
+        # Now fill the TOTAL row (always the last row)
+        if "TOTAL" in labour_data:
+            total_row = table.rows[-1]
+            for i, val in enumerate(labour_data["TOTAL"]):
+                col_idx = i + 1
+                if col_idx < len(total_row.cells):
+                    total_row.cells[col_idx].text = str(val)
 
     def _fill_weather_table(self, table, weather_data):
-        """Table 10: DAY | MORNING | AFTERNOON | EVENING | CONDITION"""
+        """Table 10 — DAY | MORNING | AFTERNOON | EVENING | CONDITION"""
         for i, row in enumerate(table.rows[1:]):
             if i < len(weather_data):
                 w = weather_data[i]
@@ -228,19 +291,23 @@ class ReportGenerator:
                     row.cells[4].text = w.get("condition", "-")
 
     def _fill_materials_table(self, table, materials):
-        """Table 5: S/NO | Description | Quantity"""
+        """Table 5 — S/NO | Description | Quantity. Clears row 1 then fills/appends."""
+        # Remove template placeholder rows (keep header only)
+        while len(table.rows) > 1:
+            tbl = table._tbl
+            tbl.remove(table.rows[-1]._tr)
+
         for i, (name, m_data) in enumerate(materials.items()):
-            qty_text = f"{m_data['qty']} {m_data.get('unit', '')}".strip()
-            if i + 1 < len(table.rows):
-                row = table.rows[i + 1]
-            else:
-                row = table.add_row()
+            qty_val = m_data.get("qty", 0)
+            unit = m_data.get("unit", "")
+            qty_text = f"{qty_val} {unit}".strip()
+            row = table.add_row()
             row.cells[0].text = str(i + 1)
             row.cells[1].text = name.title()
             row.cells[2].text = qty_text
 
     def _fill_machinery_table(self, table, machinery):
-        """Table 6: S/N | Description | QTY | Status — match by description."""
+        """Table 6 — S/N | Description | QTY | Status."""
         for row in table.rows[1:]:
             name = row.cells[1].text.strip().upper()
             for m_name, m_data in machinery.items():
@@ -250,8 +317,11 @@ class ReportGenerator:
                     break
 
     def _fill_instructions_table(self, table, instructions):
-        """Table 8: REF. NO | INSTRUCTION ISSUED | DATE | INSTRUCTIONS GIVEN BY"""
-        valid = [inst for inst in instructions if isinstance(inst, dict) and inst.get("instruction_issued", "").strip() not in ("", "None")]
+        """Table 8 — REF. NO | INSTRUCTION ISSUED | DATE | INSTRUCTIONS GIVEN BY"""
+        valid = [
+            inst for inst in instructions
+            if isinstance(inst, dict) and inst.get("instruction_issued", "").strip() not in ("", "None")
+        ]
         for i, inst in enumerate(valid):
             if i + 1 < len(table.rows):
                 row = table.rows[i + 1]
@@ -263,49 +333,89 @@ class ReportGenerator:
             row.cells[3].text = str(inst.get("INSTRUCTIONS GIVEN BY", ""))
 
     def _fill_interns_table(self, table, intern_data):
-        """Table 9: Mon | Tue | Wed | Thur | Fri | Sat | Sun — one data row."""
-        if not table.rows or len(table.rows) < 2:
+        """
+        Table 9 — Mon | Tue | Wed | Thur | Fri | Sat | Sun.
+        intern_data is a list of 7 dicts (one per day). Each dict may use any key
+        (total, count, note, total_on_site, details, …). We scan every value for
+        the first integer and write it into the corresponding day column.
+        Empty dicts (no interns recorded that day) are written as '0'.
+        """
+        if len(table.rows) < 2:
             return
         data_row = table.rows[1]
+
+        # Initialise all 7 day columns to '0'
         for col_idx in range(len(data_row.cells)):
             data_row.cells[col_idx].text = "0"
 
         for day_idx, daily in enumerate(intern_data[:7]):
-            if not isinstance(daily, dict):
+            if day_idx >= len(data_row.cells):
+                break
+            if not isinstance(daily, dict) or not daily:
+                # Empty dict means no interns recorded — leave as '0'
                 continue
-            # Try every key to find a count value
-            for key, val in daily.items():
+            # Scan every value in the dict for the first integer
+            for val in daily.values():
                 num_match = re.search(r"\d+", str(val))
-                if num_match and day_idx < len(data_row.cells):
+                if num_match:
                     data_row.cells[day_idx].text = num_match.group()
                     break
 
     def _fill_text_sections(self, doc, data):
         """
-        Fill free-text paragraph sections: M(Security), N(H&S), P(Challenges).
-        Values are now plain strings (not lists), so insert them directly after the header.
+        Fill paragraphs: SECURITY, HEALTH AND SAFETY, VISITORS, CHALLENGES.
+        Inserts text immediately after the section header paragraph using lxml.
+        Multi-line bullet content (\\n-separated) is written as separate paragraphs.
         """
-        sections = {
-            "M.\tSECURITY":          data.get("security", ""),
-            "N.\tHEALTH AND SAFETY": data.get("health_safety", ""),
-            "P.\tCHALLENGES":        data.get("challenges", ""),
-            "O.\tVISITORS":          f"Total visitors this week: {data.get('total_visitors_count', 0)}",
-        }
-        for header, content in sections.items():
+        from docx.oxml import OxmlElement
+
+        def _make_para_xml(text):
+            """Create a bare w:p element containing a single w:r / w:t with the given text."""
+            new_p = OxmlElement('w:p')
+            new_r = OxmlElement('w:r')
+            new_t = OxmlElement('w:t')
+            new_t.text = text
+            new_t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            new_r.append(new_t)
+            new_p.append(new_r)
+            return new_p
+
+        def _insert_content_after(ref_para, content):
+            """
+            Insert one paragraph per line of content immediately after ref_para.
+            Lines are inserted in reverse order so the first line ends up first.
+            """
+            lines = [l.strip() for l in str(content).split("\n") if l.strip()]
+            if not lines:
+                lines = [str(content)]
+            # Insert in reverse so the reading order comes out correctly
+            for line in reversed(lines):
+                ref_para._p.addnext(_make_para_xml(line))
+
+        # Section header → data key mapping.
+        # IMPORTANT: Use 'HEALTH AND SAFETY.' (with the period) to distinguish the section
+        # header at Para 66 from the phrase 'health and safety outcomes' in Para 32
+        # (SOCIO-ECONOMIC IMPACT body text). Without the period the wrong paragraph is matched.
+        section_map = [
+            ("HEALTH AND SAFETY.",  data.get("health_safety", "")),
+            ("SECURITY",            data.get("security", "")),
+            ("VISITORS",            f"Total visitors this week: {data.get('total_visitors_count', 0)}"),
+            ("CHALLENGES",          data.get("challenges", "")),
+        ]
+
+        for search_key, content in section_map:
             if not content:
                 continue
-            for i, para in enumerate(doc.paragraphs):
-                if header.upper().replace("\t", " ") in para.text.upper().replace("\t", " "):
-                    # Insert text after this paragraph
-                    new_para = para.insert_paragraph_after(str(content))
-                    break
+            _, para = self._find_para_by_text(doc, search_key)
+            if para:
+                _insert_content_after(para, content)
 
     def _fill_summary_works_table(self, table, summary_data):
         """
-        Table 11: SUMMARY OF WORK DONE TO DATE (2 cols: Block | Description)
-        Matches existing rows by block name, appends new rows for new blocks.
+        Table 11 — SUMMARY OF WORK DONE TO DATE (2 cols: Block | Description).
+        Update existing rows where block matches. Append only truly NEW blocks.
         """
-        # Build lookup of existing template rows
+        # Build lookup of existing template rows by block name
         existing = {}
         for row in table.rows[1:]:
             key = row.cells[0].text.strip().upper()
@@ -315,8 +425,10 @@ class ReportGenerator:
         for component, description in summary_data.items():
             key = component.strip().upper()
             if key in existing:
+                # Update existing row
                 existing[key].cells[1].text = str(description)
             else:
+                # Append a new row for blocks not in the template
                 new_row = table.add_row()
                 new_row.cells[0].text = component
                 new_row.cells[1].text = str(description)
