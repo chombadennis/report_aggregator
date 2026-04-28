@@ -92,9 +92,12 @@ class ReportGenerator:
         week_dates = self._calculate_week_dates(report_period)
 
         # 1. Cover date paragraphs
-        self._fill_cover_dates(doc, report_period)
+        self._fill_cover_dates(doc, report_period, data.get("title", ""))
 
-        # 2. Section E date row in Table 3
+        # 2. Section A — Contract Details (Table 0)
+        self._fill_contract_details(doc, data)
+
+        # 3. Section E date row in Table 3
         self._fill_section_e_date(doc, report_period)
 
         # 3. Section F — Works Carried Out (Table 4: DAY | WORK DONE)
@@ -149,9 +152,50 @@ class ReportGenerator:
 
     # ─── SECTION FILLERS ──────────────────────────────────────────────────────
 
-    def _fill_cover_dates(self, doc, report_period):
-        """Fill WEEK _ / DATE: on cover page."""
+    def _fill_contract_details(self, doc, data):
+        """
+        Fill Table 0 (A. CONTRACT DETAILS) based on user input.
+        Row 0: Project Title
+        Row 13: 14. Time Lapsed in Weeks
+        Row 14: 15. % contract period elapsed
+        Row 15: 16. % work done
+        Row 16: 17. Date of this Report
+        """
+        if not doc.tables:
+            return
+            
+        table = doc.tables[0] # Table 0 is Contract Details
+        
+        # Mapping frontend keys to row indices in Table 0
+        mapping = {
+            "time_elapsed": 13,
+            "pct_period": 14,
+            "pct_work": 15,
+            "report_date": 16
+        }
+        
+        for key, row_idx in mapping.items():
+            val = data.get(key, "").strip()
+            if val and row_idx < len(table.rows):
+                row = table.rows[row_idx]
+                if len(row.cells) >= 3:
+                    # Cell index 2 is where the values go
+                    row.cells[2].text = val
+                elif len(row.cells) == 2:
+                    # Fallback for tables with 2 columns
+                    row.cells[1].text = val
+
+    def _fill_cover_dates(self, doc, report_period, report_title):
+        """Fill WEEK _ PROGRESS REPORT / DATE: on cover page."""
         for para in doc.paragraphs:
+            # 1. Update the Main Title (Para 15 in template)
+            if "WEEK _ PROGRESS REPORT" in para.text.upper() or "PROGRESS REPORT" in para.text.upper():
+                # If we have a custom title from frontend, use it.
+                if report_title:
+                    # Clear and set new text
+                    para.text = report_title
+            
+            # 2. Update the DATE: field
             if para.text.strip().upper() == "DATE:":
                 for run in para.runs:
                     if "DATE:" in run.text.upper():

@@ -67,14 +67,12 @@ async def generate_weekly(
                 shutil.copyfileobj(file.file, f)
             pdf_paths.append(path)
 
-        # 2. AI Parsing Phase
-        daily_results = []
-        for i, path in enumerate(pdf_paths):
-            try:
-                data = await parser.parse_report(path, session_dir, "DAILY")
-                daily_results.append(data)
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"AI Scan Error: Failed to process report {i+1} ({os.path.basename(path)}). {str(e)}")
+        # 2. AI Parsing Phase (Parallel)
+        tasks = [parser.parse_report(path, session_dir, "DAILY") for path in pdf_paths]
+        try:
+            daily_results = await asyncio.gather(*tasks)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"AI Scan Error: One or more reports failed to process. {str(e)}")
 
         # 3. Aggregation Phase (await the async call)
         try:
@@ -139,14 +137,12 @@ async def generate_monthly(
                 shutil.copyfileobj(file.file, f)
             pdf_paths.append(path)
 
-        # 2. AI Parsing Phase
-        weekly_results = []
-        for i, path in enumerate(pdf_paths):
-            try:
-                data = await parser.parse_report(path, session_dir, "DAILY")
-                weekly_results.append(data)
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"AI Scan Error: Failed to process Weekly report {i+1} ({os.path.basename(path)}). {str(e)}")
+        # 2. AI Parsing Phase (Parallel)
+        tasks = [parser.parse_report(path, session_dir, "DAILY") for path in pdf_paths]
+        try:
+            weekly_results = await asyncio.gather(*tasks)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"AI Scan Error: One or more weekly reports failed to process. {str(e)}")
 
         # 3. Aggregation Phase
         try:
