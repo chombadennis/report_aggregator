@@ -46,13 +46,14 @@ class ReportParser:
           → Writes to JSON field: "building_works"
           → This page title starts with the letter "F." and describes ONLY what was physically done TODAY on site.
           → Example content: "Steel fixing to raft foundation", "Casting of blinding", "Fixing of formwork"
-          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {{}} for that page. Do NOT read from it.
+          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {} for that page. Do NOT read from it.
 
         SECTION Q — "Q. SUMMARY OF WORKS DONE TO DATE"  
           → Writes to JSON field: "summary_of_works"
           → This page title starts with the letter "Q." and lists CUMULATIVE work done since the start of the project, per block.
-          → Example content: "BLOCK B1: Site clearance, Setting out, Mass excavation...", "SWIMMING POOL: None"
-          → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {{}} for that page. Do NOT read from it.
+          → Example content: "BLOCK B1: Site clearance; Setting out; Mass excavation...", "SWIMMING POOL: None"
+          → CRITICAL: Separate multiple activities with a semicolon ( ; ).
+          → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {} for that page. Do NOT read from it.
 
         FINAL VERIFICATION: Before returning your JSON, ask yourself:
           - Does "building_works" contain ONLY today's activities from Section F? (No block-by-block cumulative lists)
@@ -104,7 +105,9 @@ class ReportParser:
            - SITE INSTRUCTIONS: Ref No, Instruction, Date, Issued By.
            - SECURITY / HEALTH AND SAFETY: Verbatim prose and incident counts.
            - CHALLENGES / PENDING ISSUES: List of challenges.
-           - SUMMARY OF WORKS DONE TO DATE: Cumulative progress per block.
+           - Q. SUMMARY OF WORKS DONE TO DATE: List the cumulative history per block.
+             * IMPORTANT: Separate each activity with a semicolon ( ; ).
+             * Example: "Setting out; Casting of foundation; Columns to 1st floor"
         
         Return the data in perfect JSON matching this schema:
         {schema}

@@ -47,12 +47,12 @@ export default function Home() {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const targetCount = mode === 'weekly' ? 7 : 4;
-  const isReady = files.length === targetCount;
+  const isReady = mode === 'weekly' ? files.length === 7 : (files.length >= 4 && files.length <= 6);
 
   const handleUpload = async () => {
     if (!isReady) {
-      setError(`Wait! You need exactly ${targetCount} reports. You have ${files.length}.`);
+      const msg = mode === 'weekly' ? "exactly 7 daily reports" : "between 4 and 6 weekly reports";
+      setError(`Wait! You need ${msg}. You have ${files.length}.`);
       return;
     }
 
@@ -60,7 +60,7 @@ export default function Home() {
     setError('');
 
     // Phase 1: Uploading
-    setStatus('[1/3] Uploading reports to server...');
+    setStatus('📦 Uploading reports to server...');
 
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
@@ -71,33 +71,59 @@ export default function Home() {
     formData.append('pct_work', pctWork);
 
     try {
-      // Phase 2: AI Vision Scan
-      setStatus('[2/3] Deep Scanning PDFs (This takes ~60-90 seconds)...');
-
-      const endpoint = mode === 'weekly' ? '/api/generate-weekly' : '/api/generate-monthly';
+      const endpoint = mode === 'weekly' ? '/api/generate-weekly-stream' : '/api/generate-monthly-stream';
+      setStatus('📡 Connecting to AI Vision Engine...');
+      
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         body: formData,
       });
 
-      if (response.ok) {
-        // Phase 3: Finalizing
-        setStatus('[3/3] Compiling Word Document...');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${mode}_report.docx`;
-        document.body.appendChild(a);
-        a.click();
-        setStatus('✨ Success! Your report is ready.');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Failed to generate report.');
-        setStatus('');
+      if (!response.ok) {
+         const errorData = await response.json();
+         throw new Error(errorData.detail || "Server Error");
       }
-    } catch (err) {
-      setError('Connection failed. Please ensure the backend server is running on port 8000.');
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let session_id = "";
+
+      while (true) {
+        const { value, done } = await reader!.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              setStatus(data.msg);
+              if (data.status === 'done') {
+                session_id = data.session_id;
+              }
+              if (data.status === 'error') {
+                throw new Error(data.msg);
+              }
+            } catch (e) {
+              console.error("JSON parse error on line", line);
+            }
+          }
+        }
+      }
+
+      if (session_id) {
+        setStatus('📥 Downloading final document...');
+        window.location.href = `http://localhost:8000/api/download-session/${session_id}`;
+        setTimeout(() => setStatus(`✨ Success! ${mode === 'weekly' ? 'Weekly' : 'Monthly'} Report Ready.`), 2000);
+      }
+    } catch (err: any) {
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('🌐 Network Error: The connection was lost. Please ensure you have a stable internet connection and try again.');
+      } else {
+        setError(err.message || 'An unexpected error occurred during processing.');
+      }
       setStatus('');
     } finally {
       setLoading(false);
@@ -135,7 +161,7 @@ export default function Home() {
             <input
               value={title} onChange={(e) => setTitle(e.target.value)}
               className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
-              placeholder="e.g. WEEK 20 PROGRESS REPORT"
+              placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "e.g. MONTHLY REPORT (APRIL 2026)"}
             />
             {isDuplicate && (
               <div className="mt-2 text-vivid-tangerine-700 text-sm flex items-center gap-2 bg-vivid-tangerine-50 p-3 rounded-lg border border-vivid-tangerine-200">
@@ -149,7 +175,7 @@ export default function Home() {
             <input
               value={dates} onChange={(e) => setDates(e.target.value)}
               className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
-              placeholder="e.g. 6TH – 12TH APRIL 2026"
+              placeholder={mode === 'weekly' ? "e.g. 6TH – 12TH APRIL 2026" : "e.g. APRIL 2026"}
             />
           </div>
           <div>
@@ -189,8 +215,11 @@ export default function Home() {
             <label htmlFor="file-upload" className="cursor-pointer">
               <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📁</div>
               <div className="text-lg font-bold text-vivid-tangerine-900 mb-1">Upload Site Logs</div>
-              <div className="text-vivid-tangerine-400 font-medium text-sm">
-                {isReady ? `All ${targetCount} documents verified ✅` : `${files.length} of ${targetCount} files ready`}
+              <div className="text-vivid-tangerine-400 font-medium text-sm mb-2">
+                {isReady ? `Documents verified ✅` : mode === 'weekly' ? `${files.length} of 7 files ready` : `${files.length} of 4-6 files ready`}
+              </div>
+              <div className="text-[10px] text-vivid-tangerine-400 uppercase tracking-widest font-bold bg-vanilla-custard-100 py-1 px-3 rounded-full inline-block">
+                ⚡ Stable Internet Connection Required
               </div>
             </label>
           </div>
@@ -230,7 +259,7 @@ export default function Home() {
         <div className="mt-8 flex flex-col items-center gap-4">
           {!isReady && !loading && (
             <div className="text-vivid-tangerine-400 font-bold bg-vanilla-custard-100/50 px-4 py-2 rounded-full text-xs uppercase tracking-wider">
-              Missing {targetCount - files.length} more reports...
+              {mode === 'weekly' ? `Missing ${7 - files.length} more reports...` : `Upload 4-6 weekly reports`}
             </div>
           )}
           

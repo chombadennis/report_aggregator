@@ -24,3 +24,5 @@ Thumbs.db
 *.pdf
 extracted_images/
 screenshots/
+backend/cache_monthly/
+backend/history_monthly/

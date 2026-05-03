@@ -64,25 +64,36 @@ class MonthlyReportGenerator:
         section.top_margin = Inches(1.0)
         section.bottom_margin = Inches(1.0)
 
-        # 1. Title
+        # 1. Title (Cover Page)
         for para in doc.paragraphs:
             if "TITLE:" in para.text.upper() or "MONTHLY REPORT" in para.text.upper():
-                para.text = data.get("title", para.text)
+                val = data.get("title", "")
+                if val:
+                    para.text = ""
+                    run = para.add_run(val)
+                    run.bold = True
+                    # If it's a cover page, maybe it should be larger
+                    run.font.size = Pt(16)
+                break
 
         # 2. Section A: Contract Details (Table 0)
         if doc.tables:
             table0 = doc.tables[0]
             mapping = {
-                "time_elapsed": 13,
-                "pct_period": 14,
-                "pct_work": 15,
-                "reporting_period": 16
+                "time_elapsed": 13,     # Item 14
+                "pct_period": 14,       # Item 15
+                "pct_work": 15,         # Item 16
+                "reporting_period": 16  # Item 17
             }
             for key, idx in mapping.items():
                 if idx < len(table0.rows):
                     row = table0.rows[idx]
                     if len(row.cells) >= 3:
-                        row.cells[2].text = data.get(key, "")
+                        cell = row.cells[2]
+                        val = str(data.get(key, ""))
+                        cell.text = ""
+                        run = cell.paragraphs[0].add_run(val)
+                        run.bold = True
 
         # 3. Section D: Work Done Upto Date (Table 2)
         summary_table = self._find_table_by_header(doc, "SUMMARY OF WORK DONE TO DATE")
@@ -95,8 +106,8 @@ class MonthlyReportGenerator:
                     cell = row.cells[1]
                     cell.text = ""
                     raw_text = summary_data[block]
-                    # Split by newline or semicolon
-                    points = [p.strip() for p in re.split(r'[\n;]', raw_text) if p.strip()]
+                    # Split by newline, semicolon, OR comma (since AI sometimes uses commas for lists)
+                    points = [p.strip() for p in re.split(r'[\n;,]', raw_text) if p.strip()]
                     for p in points:
                         para = cell.add_paragraph()
                         para.text = f"• {p}"
