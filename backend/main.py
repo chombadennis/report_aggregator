@@ -10,6 +10,8 @@ from typing import List
 from parser import ReportParser
 from aggregator import Aggregator
 from generator import ReportGenerator
+from monthly_aggregator import MonthlyAggregator
+from monthly_generator import MonthlyReportGenerator
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -26,6 +28,8 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 parser = ReportParser()
 aggregator = Aggregator()
+monthly_parser = ReportParser(cache_dir="cache_monthly")
+monthly_aggregator = MonthlyAggregator(history_dir="history_monthly")
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -117,15 +121,15 @@ async def generate_monthly(
     pct_period: str = Form(""),
     pct_work: str = Form("")
 ):
-    if len(files) != 4:
-        raise HTTPException(status_code=400, detail=f"Validation Error: Exactly 4 weekly reports are required. You uploaded {len(files)}.")
+    if not (4 <= len(files) <= 6):
+        raise HTTPException(status_code=400, detail=f"Validation Error: Exactly 4 to 6 weekly reports are required. You uploaded {len(files)}.")
 
     non_pdfs = [f.filename for f in files if not f.filename.lower().endswith('.pdf')]
     if non_pdfs:
         raise HTTPException(status_code=400, detail=f"Validation Error: All uploads must be PDF files. Non-PDF detected: {', '.join(non_pdfs)}")
 
     session_id = str(uuid.uuid4())
-    session_dir = os.path.join(TEMP_DIR, session_id)
+    session_dir = os.path.join(TEMP_DIR, f"monthly_{session_id}")
     os.makedirs(session_dir, exist_ok=True)
 
     try:
@@ -137,8 +141,13 @@ async def generate_monthly(
                 shutil.copyfileobj(file.file, f)
             pdf_paths.append(path)
 
-        # 2. AI Parsing Phase (Parallel)
-        tasks = [parser.parse_report(path, session_dir, "DAILY") for path in pdf_paths]
+        # 2. AI Parsing Phase (Parallel - Limited to 2 at a time)
+        semaphore = asyncio.Semaphore(2)
+        async def parse_task(p):
+            async with semaphore:
+                return await monthly_parser.parse_report(p, session_dir, "WEEKLY")
+        
+        tasks = [parse_task(path) for path in pdf_paths]
         try:
             weekly_results = await asyncio.gather(*tasks)
         except Exception as e:
@@ -146,32 +155,38 @@ async def generate_monthly(
 
         # 3. Aggregation Phase
         try:
-            # compile_monthly_data is currently sync, but we should verify if it should be async.
-            # Looking at aggregator.py, it is sync. So no await needed here.
-            monthly_summary = aggregator.compile_monthly_data(weekly_results)
-            monthly_summary.update({
-                "title": title, "report_date": report_date,
-                "time_elapsed": time_elapsed, "pct_period": pct_period, "pct_work": pct_work
-            })
+            metadata = {
+                "title": title,
+                "report_date": report_date,
+                "time_elapsed": time_elapsed,
+                "pct_period": pct_period,
+                "pct_work": pct_work
+            }
+            monthly_summary = monthly_aggregator.compile_monthly_data(weekly_results, metadata)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail=f"Data Error: Failed to compile the monthly summary. {str(e)}")
 
         # 4. Document Generation Phase
-        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_template.docx")
+        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "monthly_report_template.docx")
         if not os.path.exists(template_path):
-             raise HTTPException(status_code=500, detail="System Error: 'monthly_template.docx' missing from backend folder.")
+             raise HTTPException(status_code=500, detail="System Error: 'monthly_report_template.docx' missing from backend folder.")
 
         output_path = os.path.join(session_dir, "Generated_Monthly_Report.docx")
         try:
-            generator = ReportGenerator(template_path)
-            generator.generate_report(output_path, monthly_summary, "MONTHLY")
+            generator = MonthlyReportGenerator(template_path)
+            generator.generate_report(output_path, monthly_summary)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail=f"Template Error: Failed to write to the Monthly Word document. {str(e)}")
 
         # 5. Return File and Cleanup
         bg = BackgroundTasks()
         bg.add_task(shutil.rmtree, session_dir, ignore_errors=True)
-        return FileResponse(output_path, filename=f"Monthly_Report_{report_date.replace(' ', '_')}.docx", background=bg)
+        filename_clean = title.replace(" ", "_").replace("(", "").replace(")", "")
+        return FileResponse(output_path, filename=f"{filename_clean}.docx", background=bg)
 
     except HTTPException as he:
         raise he

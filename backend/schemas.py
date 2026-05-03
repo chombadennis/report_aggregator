@@ -50,3 +50,53 @@ class DailyReportSchema(BaseModel):
     
     summary_of_works: Dict[str, str] = Field(default_factory=dict) # {Component: Description}
     confidence_score: float = Field(default=1.0)
+
+class WeeklyReportSchema(BaseModel):
+    reporting_period: str
+    
+    # Daily breakdowns (7 days)
+    labour_daily: Dict[str, Dict[str, str]] = Field(default_factory=dict) # "YYYY-MM-DD": {"Category": "Value"}
+    weather_daily: Dict[str, Dict[str, str]] = Field(default_factory=dict) # "YYYY-MM-DD": {"morning": "...", "afternoon": "...", "evening": "...", "condition": "...", "comments": "..."}
+    
+    # Aggregated/Snapshot sections
+    insurances: List[Dict[str, str]] = Field(default_factory=list)
+    materials_delivered: List[Dict[str, str]] = Field(default_factory=list)
+    machinery: List[MachineryStatus] = Field(default_factory=list)
+    instructions: List[SiteInstruction] = Field(default_factory=list)
+    security_prose: str = ""
+    security_issues: Dict[str, int] = Field(default_factory=dict) # e.g. {"theft": 1, "fight": 0}
+    health_safety_prose: str = ""
+    health_safety_issues: Dict[str, int] = Field(default_factory=dict) # e.g. {"incident": 2, "accident": 0}
+    visitors_prose: str = ""
+    challenges_prose: str = ""
+    summary_to_date: Dict[str, str] = Field(default_factory=dict) # Section Q: {Block: Description}
+    
+    fingerprint: Optional[str] = None
+
+class MonthlyReportSchema(BaseModel):
+    title: str # e.g. "MONTHLY REPORT (MARCH 2026)"
+    reporting_period: str
+    time_elapsed: str
+    pct_period: str
+    pct_work: str
+    
+    # Weekly data for multi-table sections
+    weekly_periods: List[str] = Field(default_factory=list)
+    weekly_labour: List[Dict[str, Dict[str, str]]] = Field(default_factory=list) # List of 4-6 weekly matrices
+    weekly_weather: List[List[Dict[str, str]]] = Field(default_factory=list) # List of 4-6 weekly grids
+    weather_comments: List[str] = Field(default_factory=list)
+    
+    # Aggregated sections
+    summary_to_date: Dict[str, str] = Field(default_factory=dict) # From the latest week
+    materials_sum: Dict[str, Dict[str, Any]] = Field(default_factory=dict) # {Name: {qty: 0, unit: ""}}
+    machinery: List[Dict[str, str]] = Field(default_factory=list) # {Name, Qty, Condition, Status}
+    instructions: List[SiteInstruction] = Field(default_factory=list)
+    
+    # Aggregated prose
+    health_safety: str = ""
+    health_safety_issues: Dict[str, int] = Field(default_factory=dict)
+    security: str = ""
+    security_issues: Dict[str, int] = Field(default_factory=dict)
+    challenges: str = ""
+    
+    visitors_prose: List[str] = Field(default_factory=list) # Not compiled into template, but kept in JSON

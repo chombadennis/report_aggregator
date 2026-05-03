@@ -1,0 +1,1225 @@
+{
+  "title": "MONTHLY REPORT (APRIL 2026)",
+  "reporting_period": "1ST \u2013 30TH APRIL 2026",
+  "time_elapsed": "21 Weeks",
+  "pct_period": "20.25%",
+  "pct_work": "7.29%",
+  "weekly_periods": [
+    "30TH MARCH \u2013 5TH APRIL 2026",
+    "6TH APRIL \u2013 12TH APRIL 2026",
+    "13TH APRIL \u2013 19TH APRIL 2026",
+    "20TH APRIL \u2013 26TH APRIL 2026",
+    "27TH APRIL \u2013 3RD MAY 2026"
+  ],
+  "weekly_labour": [
+    {
+      "Site Agent/PM": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "Ass. Site Agent": [
+        "0",
+        "0",
+        "2",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "Office Attendant": [
+        "0",
+        "0",
+        "0",
+        "1(f)",
+        "2(m)",
+        "2(m)",
+        "2(m)"
+      ],
+      "Office Assistant": [
+        "0",
+        "0",
+        "0",
+        "2(m)",
+        "1(f)",
+        "1(f)",
+        "1(f)"
+      ],
+      "Foreman": [
+        "0",
+        "0",
+        "3",
+        "3",
+        "3(m)",
+        "3(m)",
+        "0"
+      ],
+      "Operator": [
+        "0",
+        "0",
+        "5",
+        "4(m)",
+        "4(m)",
+        "6(m)",
+        "0"
+      ],
+      "Mason": [
+        "0",
+        "0",
+        "3",
+        "2(m)",
+        "2(m)",
+        "2(m)",
+        "0"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Carpenters": [
+        "0",
+        "0",
+        "4",
+        "1(m)",
+        "4(m)",
+        "1(m)",
+        "0"
+      ],
+      "Steel fixers": [
+        "0",
+        "0",
+        "16",
+        "8(1f, 7m)",
+        "1(m)",
+        "1(m)",
+        "0"
+      ],
+      "Drivers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "1(m)",
+        "0"
+      ],
+      "Surveyors": [
+        "0",
+        "0",
+        "2",
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "2(1m, 1f)"
+      ],
+      "Unskilled": [
+        "0",
+        "0",
+        "16",
+        "6(1f, 5m)",
+        "6(1f, 5m)",
+        "13(3f, 10m)",
+        "1(m)"
+      ],
+      "Safety officer": [
+        "0",
+        "0",
+        "1",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "0"
+      ],
+      "Store keeper": [
+        "0",
+        "0",
+        "1",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)"
+      ],
+      "Security": [
+        "0",
+        "0",
+        "8",
+        "2(1m,",
+        "2(1m,",
+        "2(1m,",
+        "2(1m,"
+      ],
+      "Painters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Intern": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Steel Unskilled": [
+        "0",
+        "0",
+        "0",
+        "7(m)",
+        "1(m)",
+        "0",
+        "0"
+      ],
+      "Interns": [
+        "0",
+        "0",
+        "8",
+        "8",
+        "8",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "0",
+        "0",
+        "62",
+        "42",
+        "32",
+        "38",
+        "11"
+      ]
+    },
+    {
+      "Site Agent/PM": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "Ass. Site Agent": [
+        "1",
+        "2",
+        "2",
+        "2",
+        "1",
+        "1",
+        "1"
+      ],
+      "Office Attendant": [
+        "1",
+        "0",
+        "0",
+        "0",
+        "3",
+        "1",
+        "1"
+      ],
+      "Office Assistant": [
+        "3",
+        "0",
+        "0",
+        "0",
+        "0",
+        "3",
+        "3"
+      ],
+      "Foreman": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "3",
+        "2",
+        "1"
+      ],
+      "Operator": [
+        "5",
+        "5",
+        "6",
+        "6",
+        "6",
+        "6",
+        "1"
+      ],
+      "Mason": [
+        "0",
+        "4",
+        "5",
+        "5",
+        "3",
+        "1",
+        "0"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Carpenters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Steel fixers": [
+        "0",
+        "0",
+        "0",
+        "7",
+        "8",
+        "9",
+        "0"
+      ],
+      "Drivers": [
+        "1",
+        "0",
+        "0",
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      "Surveyors": [
+        "2",
+        "2",
+        "2",
+        "2",
+        "2",
+        "2",
+        "2"
+      ],
+      "Unskilled": [
+        "5",
+        "9",
+        "9",
+        "10",
+        "14",
+        "11",
+        "9"
+      ],
+      "Safety officer": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "0"
+      ],
+      "Store keeper": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "Security": [
+        "2",
+        "8",
+        "8",
+        "8",
+        "2",
+        "2",
+        "2"
+      ],
+      "Painters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Intern": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Steel Unskilled": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "4",
+        "5",
+        "0"
+      ],
+      "Interns": [
+        "0",
+        "8",
+        "8",
+        "8",
+        "8",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "24",
+        "34",
+        "36",
+        "45",
+        "49",
+        "46",
+        "22"
+      ]
+    },
+    {
+      "Site Agent/PM": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1(m)"
+      ],
+      "Ass. Site Agent": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1(m)"
+      ],
+      "Office Attendant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1",
+        "1(f)"
+      ],
+      "Office Assistant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1",
+        "1(f)"
+      ],
+      "Foreman": [
+        "1(m)",
+        "1(m)",
+        "3(m)",
+        "3(m)",
+        "4(m)",
+        "4",
+        "4(m)"
+      ],
+      "Operator": [
+        "6(m)",
+        "3(m)",
+        "3(m)",
+        "7(m)",
+        "7(m)",
+        "7",
+        "6(m)"
+      ],
+      "Mason": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "2(m)",
+        "1",
+        "13(m)"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "1"
+      ],
+      "Carpenters": [
+        "0",
+        "0",
+        "5(m)",
+        "7(m)",
+        "12(m)",
+        "2",
+        "0"
+      ],
+      "Steel fixers": [
+        "0",
+        "0",
+        "13(m) 1(f)",
+        "15(14m, 1f)",
+        "13(12m, 1f)",
+        "13 (12m, 1f)",
+        "7(m)"
+      ],
+      "Drivers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Surveyors": [
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2",
+        "2(1f, 1m)"
+      ],
+      "Unskilled": [
+        "9(1f, 8m)",
+        "10(2f, 8m)",
+        "35(2f, 33m)",
+        "47(9f, 36m)",
+        "45(11f, 34m)",
+        "41(7f, 34m)",
+        "31(6f, 25m)"
+      ],
+      "Safety officer": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1",
+        "1(m)"
+      ],
+      "Store keeper": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1",
+        "1(m)"
+      ],
+      "Security": [
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8",
+        "8(7m, 1f)"
+      ],
+      "Painters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "2",
+        "2 (m)"
+      ],
+      "Intern": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "1",
+        "0"
+      ],
+      "Steel Unskilled": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Total Labour": [
+        "7",
+        "8",
+        "8",
+        "8",
+        "8",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "27",
+        "25",
+        "76",
+        "96",
+        "99",
+        "87",
+        "80"
+      ]
+    },
+    {
+      "Site Agent/PM": [
+        "1(m)",
+        "1(m)",
+        "1",
+        "1",
+        "1",
+        "1",
+        "0"
+      ],
+      "Ass. Site Agent": [
+        "1(m)",
+        "1(m)",
+        "1",
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      "Office Attendant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)"
+      ],
+      "Office Assistant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)"
+      ],
+      "Foreman": [
+        "3(m)",
+        "3(m)",
+        "3(m)",
+        "3(m)",
+        "3(m)",
+        "3(m)",
+        "1(m)"
+      ],
+      "Operator": [
+        "7(m)",
+        "8(m)",
+        "7(m)",
+        "8(m)",
+        "7(m)",
+        "7(m)",
+        "1(m)"
+      ],
+      "Mason": [
+        "4(m)",
+        "11(m)",
+        "16(m)",
+        "16(m)",
+        "16(m)",
+        "6(m)",
+        "0"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Carpenters": [
+        "0",
+        "17 (m)",
+        "13(m)",
+        "16(m)",
+        "16(m)",
+        "2(m)",
+        "0"
+      ],
+      "Steel fixers": [
+        "2(m)",
+        "1 (m)",
+        "8(m)",
+        "10(1f, 9m)",
+        "5(m)",
+        "0",
+        "0"
+      ],
+      "Drivers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Surveyors": [
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "1m"
+      ],
+      "Unskilled": [
+        "41(10f, 31m)",
+        "51(12f, 39m)",
+        "60(12f, 48m)",
+        "57(9f, 48m)",
+        "47(10f, 37m)",
+        "12(3f, 9m)",
+        "3(1f, 2m)"
+      ],
+      "Safety officer": [
+        "1(m)",
+        "2(1f, 1m)",
+        "1(m)",
+        "1(m)",
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "0"
+      ],
+      "Store keeper": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)"
+      ],
+      "Security": [
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "2(1m, 1f)"
+      ],
+      "Painters": [
+        "2 (m)",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Intern": [
+        "1",
+        "1",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "78",
+        "111",
+        "125",
+        "117",
+        "89",
+        "43",
+        "13"
+      ]
+    },
+    {}
+  ],
+  "weekly_weather": [
+    [
+      {
+        "day": "Wednesday",
+        "date_str": "2026-04-01",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Workable"
+      },
+      {
+        "day": "Thursday",
+        "date_str": "2026-04-02",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Workable"
+      },
+      {
+        "day": "Friday",
+        "date_str": "2026-04-03",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Workable"
+      },
+      {
+        "day": "Saturday",
+        "date_str": "2026-04-04",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Workable"
+      },
+      {
+        "day": "Sunday",
+        "date_str": "2026-04-05",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Workable"
+      }
+    ],
+    [
+      {
+        "day": "Monday",
+        "date_str": "2026-04-06",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Tuesday",
+        "date_str": "2026-04-07",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Wednesday",
+        "date_str": "2026-04-08",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Thursday",
+        "date_str": "2026-04-09",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Friday",
+        "date_str": "2026-04-10",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Saturday",
+        "date_str": "2026-04-11",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      },
+      {
+        "day": "Sunday",
+        "date_str": "2026-04-12",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Workable"
+      }
+    ],
+    [
+      {
+        "day": "Monday",
+        "date_str": "2026-04-13",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Tuesday",
+        "date_str": "2026-04-14",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Wednesday",
+        "date_str": "2026-04-15",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Thursday",
+        "date_str": "2026-04-16",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Sunny",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Friday",
+        "date_str": "2026-04-17",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Rainy",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Saturday",
+        "date_str": "2026-04-18",
+        "morning": "Sunny",
+        "afternoon": "Sunny",
+        "evening": "Cloudy",
+        "condition": "Favorable for work"
+      },
+      {
+        "day": "Sunday",
+        "date_str": "2026-04-19",
+        "morning": "Cloudy",
+        "afternoon": "Cloudy",
+        "evening": "Rainy/Cloudy",
+        "condition": "Favorable for work"
+      }
+    ],
+    [
+      {
+        "day": "Monday",
+        "date_str": "2026-04-20",
+        "morning": "Cloudy-Favorable for work",
+        "afternoon": "Cloudy -Favorable for work",
+        "evening": "Cloudy",
+        "condition": "-"
+      },
+      {
+        "day": "Tuesday",
+        "date_str": "2026-04-21",
+        "morning": "Sunny -Favorable for work",
+        "afternoon": "Sunny -Favorable for work",
+        "evening": "Cloudy Favorable for work",
+        "condition": "-"
+      },
+      {
+        "day": "Wednesday",
+        "date_str": "2026-04-22",
+        "morning": "Cloudy -Favorable for work",
+        "afternoon": "Cloudy with light showers -Favorable for work",
+        "evening": "Cloudy-favorable for work",
+        "condition": "-"
+      },
+      {
+        "day": "Thursday",
+        "date_str": "2026-04-23",
+        "morning": "Cloudy -Favorable for work",
+        "afternoon": "Cloudy with light showers -Favorable for work",
+        "evening": "Cloudy-favorable for work",
+        "condition": "-"
+      },
+      {
+        "day": "Friday",
+        "date_str": "2026-04-24",
+        "morning": "Sunny-Favorable for work",
+        "afternoon": "Sunny -Favorable for work",
+        "evening": "Sunny-favorable for work",
+        "condition": "-"
+      },
+      {
+        "day": "Saturday",
+        "date_str": "2026-04-25",
+        "morning": "Sunny-Favorable for work",
+        "afternoon": "Sunny -Favorable for work",
+        "evening": "Sunny-favorable for work",
+        "condition": "-"
+      },
+      {
+        "day": "Sunday",
+        "date_str": "2026-04-26",
+        "morning": "Sunny-Favorable for work",
+        "afternoon": "Sunny -Favorable for work",
+        "evening": "Sunny-favorable for work",
+        "condition": "-"
+      }
+    ],
+    []
+  ],
+  "weather_comments": [
+    "None",
+    "None",
+    "None",
+    "None",
+    "No report available for this period."
+  ],
+  "summary_to_date": {
+    "GENERAL WORKS": "Hoarding\nConstruction of site office\nConstruction of Cement store\nConstruction of general store\nConstruction of Operation room for the batching plant\nConstruction of 7No. Ablution blocks\nConstruction of changing rooms (male and female)\nElectrical power connection\nBorehole drilling\n3-phase power connection - Ongoing\nConstruction of realtor's office - ongoing",
+    "BLOCK B1": "Site clearance\nSetting out\nMass excavation ongoing\nCompaction of excavated section\nFDD Test\nBlinding works\nReinforcement to the raft foundation\nCasting of raft foundation- done\nReinforcement and formwork of foundation columns and lift shear wall",
+    "BLOCK B2": "Site clearance\nSetting out\nExcavation for raft foundation to a depth of 3m.\nLevelling and compaction.\nFDD Test\nBlinding works\nReinforcement to the raft foundation\nCasting of raft foundation- done\nReinforcement of foundation columns and lift shear wall\nFormwork of the lift shear wall",
+    "BLOCK B3": "Site clearance\nSetting out\nExcavation for raft foundation to a depth of 3m.\nLevelling and compaction.\nFDD Test\nBlinding works\nReinforcement to the raft foundation",
+    "BLOCK B4": "Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK C5": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction in progress.",
+    "UNDERGROUND TANK": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m- ongoing",
+    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing.; Levelling and compaction.; Concrete blinding.; Casting of strip and pad footings.; Casting of substructure columns.; Foundation walling -ongoing",
+    "SWIMMING POOL": "Site clearance; Setting out.; Other works on hold",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "WASTE CUBICLE": "None",
+    "WTP": "None"
+  },
+  "materials_sum": {
+    "CEMENT": {
+      "qty": 2210.0,
+      "unit": "bags"
+    },
+    "D20": {
+      "qty": 475.0,
+      "unit": "pcs"
+    },
+    "D16": {
+      "qty": 913.0,
+      "unit": "pcs"
+    },
+    "BALLAST": {
+      "qty": 426.79999999999995,
+      "unit": "Tons"
+    },
+    "RIVER SAND": {
+      "qty": 86.6,
+      "unit": "tons"
+    },
+    "TIMBER POLES": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "REINFORCEMENT STEEL (D8, D10, D12)": {
+      "qty": 0.0,
+      "unit": "pcs"
+    },
+    "BUILDING BLOCKS": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "CYPRESS TIMBER": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "BRC": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "FOUNDATION STONES": {
+      "qty": 4230.04,
+      "unit": "ft."
+    },
+    "CEMENT 32.5N": {
+      "qty": 580.0,
+      "unit": "bags"
+    },
+    "CEMENT 42.5N": {
+      "qty": 580.0,
+      "unit": "bags"
+    },
+    "HARDCORE": {
+      "qty": 30.0,
+      "unit": "tippers"
+    },
+    "MARINE BOARDS": {
+      "qty": 100.0,
+      "unit": "pcs"
+    },
+    "REINFORCEMENT STEEL D20": {
+      "qty": 180.0,
+      "unit": "pcs"
+    },
+    "SAND": {
+      "qty": 231.3,
+      "unit": "tons"
+    }
+  },
+  "machinery": [
+    {
+      "name": "18- TON ROLLER",
+      "qty": "1",
+      "condition": "Good",
+      "status": "N/A"
+    },
+    {
+      "name": "ROAD ROLLER (ESGOR 18-TON)",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "BACK-HOE EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXER",
+      "qty": "2",
+      "condition": "Good",
+      "status": "Idle"
+    },
+    {
+      "name": "18-TON ROLLER",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "BACKHOE EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE PUMP",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "BATCHING PLANT",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "21T CHAIN EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXER PHF900",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "CONCRETE MIXER PHF500",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXERS",
+      "qty": "2",
+      "condition": "Good",
+      "status": "N/A"
+    },
+    {
+      "name": "CONCRETE MIXER (CUBE PHF500)",
+      "qty": "2",
+      "condition": "Good",
+      "status": "Operational"
+    }
+  ],
+  "instructions": [
+    {
+      "REF. NO": "020",
+      "instruction_issued": "Casting of Blind (B4) Contractor is given approval to proceed and cast blind for B4 foundation with class 15 of concrete",
+      "date": "02/04/2026",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Ajwang (Resident Engineer)"
+    },
+    {
+      "REF. NO": "022",
+      "instruction_issued": "Casting of Blind (C5)\nContractor is given approval to proceed and cast blind for (C5) foundation with class (15) of concrete.",
+      "date": "15th April, 2026",
+      "INSTRUCTIONS GIVEN BY": "George Ajwang\n(Resident engineer)"
+    },
+    {
+      "REF. NO": "023",
+      "instruction_issued": "CASTING OF RAFTS (B4) Contractor can proceed and cast B4 raft after inspection of reinforcement and formwork. Before casting he is advised to remove by cleaning all mud/dirt and pump any ponding water within the section",
+      "date": "",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Ajwong Residential Engineer"
+    }
+  ],
+  "health_safety": "\u2022 There was one incident on Friday.\n\u2022 There were no accidents or incidents reported throughout the week.\n\u2022 There were 2 health and safety incidents reported during the week\n\u2022 No accidents or incidents reported during the week.",
+  "security": "\u2022 The site was secure - No theft reported\n\u2022 The site was secure throughout the week \u2013 No theft reported.\n\u2022 There was 1 security issue reported during the week- One theft incident reported.\n\u2022 The site was secure throughout the week.",
+  "challenges": "\u2022 Certain activities were delayed or slowed due to insufficient material stock and tools on-site\n\u2022 Slow mobilization of materials leading to slow work progress\n\u2022 Certain activities were delayed or slowed due to insufficient material stock and tools on-site. Work behind schedule.\n\u2022 Work behind schedule",
+  "visitors_prose": [
+    "There were no visitors.",
+    "None",
+    "Total visitors this week: 2",
+    "Total visitors this week: 4"
+  ]
+}

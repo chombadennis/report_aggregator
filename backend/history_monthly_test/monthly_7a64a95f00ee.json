@@ -1,0 +1,602 @@
+{
+  "title": "MONTHLY REPORT (APRIL 2026)",
+  "reporting_period": "1ST \u2013 30TH APRIL 2026",
+  "time_elapsed": "21 Weeks",
+  "pct_period": "20.25%",
+  "pct_work": "7.29%",
+  "weekly_periods": [
+    "30TH MARCH \u2013 5TH APRIL 2026",
+    "6TH APRIL \u2013 12TH APRIL 2026",
+    "13TH APRIL \u2013 19TH APRIL 2026",
+    "20TH APRIL \u2013 26TH APRIL 2026",
+    "27TH APRIL \u2013 3RD MAY 2026"
+  ],
+  "weekly_labour": [
+    {},
+    {},
+    {
+      "Site Agent/PM": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1(m)"
+      ],
+      "Ass. Site Agent": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1(m)"
+      ],
+      "Office Attendant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1",
+        "1(f)"
+      ],
+      "Office Assistant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1",
+        "1(f)"
+      ],
+      "Foreman": [
+        "1(m)",
+        "1(m)",
+        "3(m)",
+        "3(m)",
+        "4(m)",
+        "4",
+        "4(m)"
+      ],
+      "Operator": [
+        "6(m)",
+        "3(m)",
+        "3(m)",
+        "7(m)",
+        "7(m)",
+        "7",
+        "6(m)"
+      ],
+      "Mason": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "2(m)",
+        "1",
+        "13(m)"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "1"
+      ],
+      "Carpenters": [
+        "0",
+        "0",
+        "5(m)",
+        "7(m)",
+        "12(m)",
+        "2",
+        "0"
+      ],
+      "Steel fixers": [
+        "0",
+        "0",
+        "13(m) 1(f)",
+        "15(14m, 1f)",
+        "13(12m, 1f)",
+        "13 (12m, 1f)",
+        "7(m)"
+      ],
+      "Drivers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Surveyors": [
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2(1f, 1m)",
+        "2",
+        "2(1f, 1m)"
+      ],
+      "Unskilled": [
+        "9(1f, 8m)",
+        "10(2f, 8m)",
+        "35(2f, 33m)",
+        "47(9f, 36m)",
+        "45(11f, 34m)",
+        "41(7f, 34m)",
+        "31(6f, 25m)"
+      ],
+      "Safety officer": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1",
+        "1(m)"
+      ],
+      "Store keeper": [
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1(m)",
+        "1",
+        "1(m)"
+      ],
+      "Security": [
+        "2(1m, 1f)",
+        "2(1m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8(7m, 1f)",
+        "8",
+        "8(7m, 1f)"
+      ],
+      "Painters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "2",
+        "2 (m)"
+      ],
+      "Intern": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "1",
+        "0"
+      ],
+      "Steel Unskilled": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "27",
+        "25",
+        "76",
+        "96",
+        "99",
+        "87",
+        "80"
+      ]
+    },
+    {
+      "Site Agent/PM": [
+        "1(m)",
+        "1(m)",
+        "1",
+        "1",
+        "1",
+        "1",
+        "0"
+      ],
+      "Ass. Site Agent": [
+        "1(m)",
+        "1(m)",
+        "1",
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      "Office Attendant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)"
+      ],
+      "Office Assistant": [
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)",
+        "1(f)"
+      ],
+      "Foreman": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Operator": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Mason": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Electrician": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Plumbers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Carpenters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Steel fixers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Drivers": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Surveyors": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Unskilled": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Safety officer": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Store keeper": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Security": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Painters": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "Intern": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "TOTAL": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {}
+  ],
+  "weekly_weather": [
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "weather_comments": [
+    "No report available for this period.",
+    "No report available for this period.",
+    "None",
+    "None",
+    "No report available for this period."
+  ],
+  "summary_to_date": {
+    "GENERAL WORKS": "Hoarding; Construction of site office; Construction of Cement store; Construction of general store; Construction of Operation room for the batching plant; Construction of 7No. Ablution blocks; Construction of changing rooms (male and female); Electrical power connection; Borehole drilling; 3-phase power connection \u2013 Ongoing; Construction of realtor's office \u2013 ongoing",
+    "BLOCK B1": "Site clearance; Setting out; Mass excavation ongoing; Compaction of excavated section; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement and formwork of foundation columns and lift shear wall",
+    "BLOCK B2": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK B3": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation",
+    "BLOCK B4": "Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK C5": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction in progress.",
+    "UNDERGROUND TANK": "Site clearance; Setting out; Excavations for the foundation pit.; Other works on hold",
+    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing.; Levelling and compaction.; Concrete blinding.; Casting of strip and pad footings.; Casting of substructure columns.; Foundation walling -ongoing",
+    "SWIMMING POOL": "Site clearance; Setting out.; Other works on hold",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "WASTE CUBICLE": "None",
+    "WTP": "None"
+  },
+  "materials_sum": {
+    "CEMENT": {
+      "qty": 2210.0,
+      "unit": ""
+    },
+    "D20": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "D16": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "BALLAST": {
+      "qty": 370.4,
+      "unit": ""
+    },
+    "RIVER SAND": {
+      "qty": 86.6,
+      "unit": ""
+    },
+    "TIMBER POLES": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "REINFORCEMENT STEEL (D8, D10, D12)": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "BUILDING BLOCKS": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "CYPRESS TIMBER": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "BRC": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "FOUNDATION STONES": {
+      "qty": 1831.04,
+      "unit": ""
+    },
+    "UNKNOWN": {
+      "qty": 0.0,
+      "unit": ""
+    },
+    "HARDCORE": {
+      "qty": 22.0,
+      "unit": ""
+    },
+    "MARINE BOARDS": {
+      "qty": 100.0,
+      "unit": ""
+    },
+    "REINFORCEMENT STEEL D20": {
+      "qty": 180.0,
+      "unit": ""
+    },
+    "SAND": {
+      "qty": 231.3,
+      "unit": ""
+    }
+  },
+  "machinery": [
+    {
+      "name": "21T CHAIN EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "18-TON ROLLER",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "CONCRETE MIXER (CUBE PHF500)",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "18- TON ROLLER",
+      "qty": "1",
+      "condition": "Good",
+      "status": "On-site"
+    },
+    {
+      "name": "CONCRETE MIXER (CUBE PHF900)",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE PUMP",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXER PHF500",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "BATCHING PLANT",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXER",
+      "qty": "2",
+      "condition": "Good",
+      "status": "Idle"
+    },
+    {
+      "name": "CONCRETE MIXER PHF900",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Operational"
+    },
+    {
+      "name": "BACKHOE EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "BACK-HOE EXCAVATOR",
+      "qty": "1",
+      "condition": "Good",
+      "status": "Working"
+    },
+    {
+      "name": "CONCRETE MIXERS",
+      "qty": "2",
+      "condition": "Good",
+      "status": "On-site"
+    }
+  ],
+  "instructions": [
+    {
+      "REF. NO": "020",
+      "instruction_issued": "Casting of Blind (B4) Contractor is given approval to proceed and cast blind for B4 foundation with class 15 of concrete",
+      "date": "02/04/2026",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Ajwang (Resident Engineer)"
+    },
+    {
+      "REF. NO": "022",
+      "instruction_issued": "Casting of Blind (C5) Contractor is given approval to proceed and cast blind for (C5) foundation with class (15) of concrete.",
+      "date": "15th April, 2026",
+      "INSTRUCTIONS GIVEN BY": "George Ajwang (Resident engineer)"
+    },
+    {
+      "REF. NO": "023",
+      "instruction_issued": "CASTING OF RAFTS (B4) Contractor can proceed and cast B4 raft after inspection of reinforcement and formwork. Before casting he is advised to remove by cleaning all mud/dirt and pump any ponding water within the section",
+      "date": "",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Ajwong Residential Engineer"
+    }
+  ],
+  "health_safety": "\u2022 There was one incident on Friday.\n\u2022 There were no accidents or incidents reported throughout the week.\n\u2022 There were 2 health and safety incidents reported during the week\n\u2022 No accidents or incidents reported during the week.",
+  "security": "\u2022 The site was secure \u2013 No theft reported\n\u2022 The site was secure throughout the week - No theft reported.\n\u2022 There was 1 security issue reported during the week- One theft incident reported.\n\u2022 The site was secure throughout the week.",
+  "challenges": "\u2022 Certain activities were delayed or slowed due to insufficient material stock and tools on-site\n\u2022 No cubes were cast during the week.\n\u2022 Certain activities were delayed or slowed due to insufficient material stock and tools on-site; Work behind schedule\n\u2022 Work behind schedule",
+  "visitors_prose": [
+    "There were no visitors.",
+    "None",
+    "Total visitors this week: 2",
+    "Total visitors this week: 4"
+  ]
+}

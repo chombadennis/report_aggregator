@@ -47,6 +47,10 @@ _clients = [
     },
 ]
 
+# Per-project semaphores to prevent hammering the same project from multiple parallel tasks
+_project_semaphores = [asyncio.Semaphore(1), asyncio.Semaphore(1)]
+_last_request_time = [0.0, 0.0] # Track timing to enforce a gap
+
 def _get_client_slot():
     """Returns the next client slot in round-robin order, skipping disabled slots."""
     global _request_counter
@@ -90,9 +94,19 @@ def get_access_token(slot: int = 0):
 async def _call_vertex_vision(prompt: str, model: str, file_path: str, mime_type: str, retries: int = 10):
     """Async call to Vertex AI via httpx with built-in retries and round-robin load balancing."""
     slot = _get_client_slot()
-    token, project_id = get_access_token(slot)
-    if not token: raise ValueError(f"Auth Token missing for slot {slot}. Check your credentials.")
-    logger.info(f"[Slot {slot}] Project: {project_id} | Model: {model}")
+    
+    async with _project_semaphores[slot]:
+        # Enforce a small gap between requests on the same project
+        now = time.time()
+        elapsed = now - _last_request_time[slot]
+        if elapsed < 2.0:
+            await asyncio.sleep(2.0 - elapsed)
+        
+        token, project_id = get_access_token(slot)
+        if not token: raise ValueError(f"Auth Token missing for slot {slot}. Check your credentials.")
+        logger.info(f"[Slot {slot}] Project: {project_id} | Model: {model}")
+
+        _last_request_time[slot] = time.time()
 
     url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{LOCATION}/publishers/google/models/{model}:generateContent"
     
@@ -127,10 +141,10 @@ async def _call_vertex_vision(prompt: str, model: str, file_path: str, mime_type
                         return data['candidates'][0]['content']['parts'][0]['text']
                     raise ValueError(f"AI returned an empty response: {data}")
                 
-                # Handle Rate Limiting (429) - Wait 90s as per fieldOps standard
+                # Handle Rate Limiting (429) - Wait 30s (Vertex RPM usually resets in 60s)
                 if resp.status_code == 429:
-                    logger.warning(f"Quota Exceeded (429). Waiting 90 seconds for reset (Attempt {attempt})...")
-                    await asyncio.sleep(90)
+                    logger.warning(f"Quota Exceeded (429) on {project_id}. Waiting 30 seconds for reset (Attempt {attempt})...")
+                    await asyncio.sleep(30)
                     continue
                 
                 # Handle Server Overload (500, 503) - Exponential Backoff
@@ -170,8 +184,18 @@ async def generate_structured_data(prompt: str, file_path: str, mime_type: str =
 async def _call_vertex_text(prompt: str, model: str, retries: int = 5):
     """Async call to Vertex AI for text-only generation (also uses round-robin)."""
     slot = _get_client_slot()
-    token, project_id = get_access_token(slot)
-    if not token: raise ValueError(f"Auth Token is missing for slot {slot}.")
+    
+    async with _project_semaphores[slot]:
+        # Enforce a small gap
+        now = time.time()
+        elapsed = now - _last_request_time[slot]
+        if elapsed < 2.0:
+            await asyncio.sleep(2.0 - elapsed)
+
+        token, project_id = get_access_token(slot)
+        if not token: raise ValueError(f"Auth Token is missing for slot {slot}.")
+        
+        _last_request_time[slot] = time.time()
 
     url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{LOCATION}/publishers/google/models/{model}:generateContent"
     

@@ -11,7 +11,7 @@ from generator import ReportGenerator
 
 async def main():
     # Paths
-    sample_pdf = r"d:\maks_ahp\MAKINDU AHP DAILY PROGRESS REPORT Saturday 18th April 2026.pdf"
+    sample_pdf = r"d:\maks_ahp\MAKINDU AHP DAILY PROGRESS REPORT Wednesday 15th April 2026.pdf"
     template_path = "weekly_template.docx"
     output_path = "TEST_WEEKLY_REPORT.docx"
     session_dir = "full_flow_session"
@@ -29,7 +29,7 @@ async def main():
 
     # 3. Aggregate (The system will now automatically map this to the correct day)
     print("Aggregating summary (Day-Aware mapping)...")
-    weekly_data = aggregator.compile_weekly_data([daily_data])
+    weekly_data = await aggregator.compile_weekly_data([daily_data])
     
     # Add dummy cover page data
     weekly_data.update({
@@ -44,7 +44,7 @@ async def main():
     print(f"Injecting data into {template_path}...")
     generator.generate_report(output_path, weekly_data, "WEEKLY")
 
-    print(f"\n🚀 SUCCESS! Open your report: {output_path}")
+    print(f"\n[OK] SUCCESS! Open your report: {output_path}")
 
 if __name__ == "__main__":
     asyncio.run(main())

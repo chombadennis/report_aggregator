@@ -4,9 +4,10 @@ import os
 import logging
 import fitz  # PyMuPDF
 from ai_client import generate_structured_data
-from schemas import DailyReportSchema
+from schemas import DailyReportSchema, WeeklyReportSchema
 import hashlib
 import uuid
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,43 @@ class ReportParser:
         {schema}
         """
 
+        self.weekly_prompt = """
+        Analyze this screenshot from a Weekly Progress Report.
+        
+        !!! CRITICAL DATE MAPPING RULE !!!
+        1. Read the COVER PAGE to identify the REPORTING PERIOD (e.g. 13th - 19th April 2026).
+        2. Calculate the 7 dates for the week: Monday is the first date, Sunday is the last.
+           - Example: "30th March - 5th April 2026" -> 
+             * Monday 2026-03-30
+             * Tuesday 2026-03-31
+             * Wednesday 2026-04-01
+             * ... etc.
+        3. YOU MUST USE THIS EXACT FORMAT "Day YYYY-MM-DD" AS KEYS in 'labour_daily' and 'weather_daily'.
+           - Example Key: "Monday 2026-03-30"
+           - NEVER use "Mon", "Monday", or just the date. 
+           - VERIFY THE YEAR: If the cover says 2026, all dates MUST be in 2026.
+        !!! END OF CRITICAL RULE !!!
+
+        1. SKIP sections A to D (Project Info, Scope of Works).
+        2. FOCUS ON the following sections: 
+           - SITE REPORT: Progress details.
+           - WORKS CARRIED OUT ON SITE: Day-by-day activities.
+           - MATERIALS DELIVERED TO SITE: Extract description, quantity, and units.
+           - LABOUR TURNOVER: Map Mon-Sun columns to the CORRECT "Day YYYY-MM-DD" dates.
+             * EXHAUSTIVE: Capture EVERY row in the table (Site Agent, Foreman, Mason, Electrician, Steel fixers, Unskilled, Security, Interns, TOTAL, etc).
+             * IMPORTANT: If the table spans multiple pages, extract every row visible on THIS page. Do not skip any rows.
+             * Values exactly as written (e.g. "4(m)", "13(12m,1f)"). "0" for dash.
+           - WEATHER: Map Mon-Sun to "Day YYYY-MM-DD" dates.
+           - MACHINES AND EQUIPMENT: Name, qty, condition, status.
+           - SITE INSTRUCTIONS: Ref No, Instruction, Date, Issued By.
+           - SECURITY / HEALTH AND SAFETY: Verbatim prose and incident counts.
+           - CHALLENGES / PENDING ISSUES: List of challenges.
+           - SUMMARY OF WORKS DONE TO DATE: Cumulative progress per block.
+        
+        Return the data in perfect JSON matching this schema:
+        {schema}
+        """
+
     def _get_file_hash(self, file_path):
         """Generates a SHA256 fingerprint of the file's content."""
         hasher = hashlib.sha256()
@@ -112,37 +150,59 @@ class ReportParser:
 
         print(f"Intelligent Scanning: {os.path.basename(pdf_path)}...")
         
-        # NAVIGATION STATE
-        scanning_mode = "SEARCHING_SITE_REPORT"
+        # SEARCHING_START for Weekly: Skip A-D and start at E regardless of title
+        # SEARCHING_SITE_REPORT for Daily: The existing 'perfect' logic
+        scanning_mode = "SEARCHING_START" if report_type == "WEEKLY" else "SEARCHING_SITE_REPORT"
         all_page_results = []
+        reporting_context = "" # Carry-forward context (e.g. reporting period)
 
         i = 0
         while i < len(doc):
-            # RESUMPTION CHECK: Check if this page is already in the page_cache
             p_cache = os.path.join(page_cache_dir, f"page_{i}.json")
             if os.path.exists(p_cache):
                 with open(p_cache, "r") as f:
                     res = json.load(f)
                     all_page_results.append(res)
-                    # Update state based on cached result (no longer skipping based on summary)
+                    # Sync context if this was the cover page
+                    if i == 0 and report_type == "WEEKLY" and res.get("reporting_period"):
+                        reporting_context = res["reporting_period"]
                     i += 1
                     continue
 
             text = doc[i].get_text().upper()
             
-            # Always scan Page 1 (Cover)
+            # Cover Page is always processed for reporting period
             if i == 0: pass 
-            elif scanning_mode == "SEARCHING_SITE_REPORT":
-                if "SITE REPORT" not in text: 
+            elif scanning_mode == "SEARCHING_START":
+                # Look for Section E (E. or E ) at the START of a line or clear title
+                # Regex looks for line start, optional whitespace, E or F, and a separator
+                has_start_header = any(
+                    re.search(rf'^\s*{letter}[\.\s\:]', text, re.MULTILINE) 
+                    for letter in ["E", "F", "G"]
+                )
+                is_start_title = "SITE REPORT" in text or "WORKS CARRIED OUT" in text
+                
+                if has_start_header or is_start_title: 
+                    scanning_mode = "EXTRACTING"
+                else:
                     i += 1
                     continue
-                scanning_mode = "EXTRACTING"
+            elif scanning_mode == "SEARCHING_SITE_REPORT":
+                # Daily report logic
+                is_site_report = "SITE REPORT" in text or "PROGRESS REPORT" in text
+                if is_site_report or i > 3: 
+                    scanning_mode = "EXTRACTING"
+                else:
+                    i += 1
+                    continue
                 
             trigger_skip = False
             if scanning_mode == "EXTRACTING":
-                # We do not want to trigger on the Table of Contents page (Page 1 or 2)
-                if i > 1 and "PROGRESS PHOTOS" in text:
-                    logger.info("🏁 End of extractable sections detected on this page. Will skip after scanning it.")
+                # End extraction at Sections like "R. PROGRESS PHOTOS" or "T. MATERIALS ON SITE"
+                # We look for any Letter + Title at the start of a line to handle variability
+                stop_pattern = r'^\s*[A-Z][\.\s\:]\s*(PROGRESS PHOTOS|MATERIALS ON SITE)'
+                if i > 5 and re.search(stop_pattern, text, re.MULTILINE):
+                    logger.info(f"🏁 End of extractable sections detected on Page {i+1}.")
                     trigger_skip = True
 
             print(f"   - Vision Scanning Page {i+1} of {len(doc)}...")
@@ -152,21 +212,30 @@ class ReportParser:
             pix.save(tmp_path)
             
             try:
-                schema_json = DailyReportSchema.model_json_schema()
-                prompt = self.daily_prompt.format(schema=json.dumps(schema_json, indent=2))
+                if report_type == "DAILY":
+                    schema_json = DailyReportSchema.model_json_schema()
+                    prompt = self.daily_prompt.format(schema=json.dumps(schema_json, indent=2))
+                else:
+                    schema_json = WeeklyReportSchema.model_json_schema()
+                    prompt = self.weekly_prompt.format(schema=json.dumps(schema_json, indent=2))
+                
+                # Inject context if available to prevent hallucination on subsequent pages
+                if reporting_context:
+                    prompt = f"CONTEXT: The reporting period for this entire document is '{reporting_context}'. Use this period to strictly calculate ALL dates for 'Day YYYY-MM-DD' keys.\n\n" + prompt
+
                 result = await generate_structured_data(prompt, tmp_path, mime_type="image/png")
+                
+                # Capture reporting period from page 1 to use as context for others
+                if i == 0 and isinstance(result, dict) and result.get("reporting_period"):
+                    reporting_context = result["reporting_period"]
                 
                 if isinstance(result, dict):
                     all_page_results.append(result)
-                    # SAVE PER-PAGE CACHE
                     with open(p_cache, "w") as f: json.dump(result, f)
-                    
-                    pass # We now rely on text search to skip to signature
                 
-                await asyncio.sleep(4) 
             except Exception as e:
                 logger.error(f"❌ Failed on Page {i+1}: {e}")
-                raise # Re-raise to let the user know we stopped
+                raise 
             finally:
                 if os.path.exists(tmp_path): os.remove(tmp_path)
 
@@ -181,12 +250,16 @@ class ReportParser:
                         found_signature = True
                         break
                 if not found_signature:
-                    break # Reached the end or didn't find it, so exit the while loop
+                    break 
 
             i += 1
 
         # Final Merge
-        final_data = self._merge_results(all_page_results)
+        if report_type == "DAILY":
+            final_data = self._merge_results(all_page_results)
+        else:
+            final_data = self._merge_weekly_results(all_page_results)
+            
         final_data["fingerprint"] = file_hash
         with open(cache_path, "w") as f: json.dump(final_data, f, indent=2)
         return final_data
@@ -217,16 +290,11 @@ class ReportParser:
             "health_safety_status": "", "visitors": [], "challenges": [],
             "summary_of_works": {}
         }
-        
         for res in page_results:
             if not isinstance(res, dict): continue
-            
-            # 1. Direct fields (Take the first non-empty value)
             for field in ["date", "day_of_week", "security_status", "health_safety_status"]:
                 if res.get(field) and not merged[field]:
                     merged[field] = res[field]
-            
-            # 2. Dictionary fields (Update/Combine)
             if res.get("weather"): 
                 for k, v in res["weather"].items():
                     if v and v != "-":
@@ -235,8 +303,6 @@ class ReportParser:
             if res.get("building_works"): merged["building_works"].update(res["building_works"])
             if res.get("summary_of_works"): merged["summary_of_works"].update(res["summary_of_works"])
             if res.get("interns"): merged["interns"].update(res["interns"])
-            
-            # 3. List fields (Extend/Append)
             if res.get("general_works"): merged["general_works"].extend(res["general_works"])
             if res.get("machinery"): merged["machinery"].extend(res["machinery"])
             if res.get("materials_delivered"): merged["materials_delivered"].extend(res["materials_delivered"])
@@ -244,5 +310,69 @@ class ReportParser:
             if res.get("instructions"): merged["instructions"].extend(res["instructions"])
             if res.get("visitors"): merged["visitors"].extend(res["visitors"])
             if res.get("challenges"): merged["challenges"].extend(res["challenges"])
+        return merged
 
+    def _merge_weekly_results(self, page_results):
+        """Intelligently merges data from multiple pages into one WeeklyReport."""
+        merged = {
+            "reporting_period": "",
+            "labour_daily": {}, "weather_daily": {},
+            "insurances": [], "materials_delivered": [], "machinery": [],
+            "instructions": [], "security_prose": "", "health_safety_prose": "",
+            "visitors_prose": "", "challenges_prose": "", "summary_to_date": {}
+        }
+        for res in page_results:
+            if not isinstance(res, dict): continue
+            
+            # 1. Period
+            if res.get("reporting_period") and not merged["reporting_period"]:
+                merged["reporting_period"] = res["reporting_period"]
+            
+            # 2. Prose Sections (Concatenate if they span pages)
+            for field in ["security_prose", "health_safety_prose", "visitors_prose", "challenges_prose"]:
+                if res.get(field):
+                    val = res[field].strip()
+                    if not val: continue
+                    if merged[field]:
+                        if val not in merged[field]:
+                            merged[field] = merged[field].rstrip(".") + ". " + val
+                    else:
+                        merged[field] = val
+
+            # 3. Labour
+            if res.get("labour_daily"): 
+                for d, cats in res["labour_daily"].items():
+                    if d not in merged["labour_daily"]: 
+                        merged["labour_daily"][d] = {}
+                    for cat, val in cats.items():
+                        # Only update if current value is empty or "0"
+                        curr = merged["labour_daily"][d].get(cat, "0")
+                        if val and val != "0" and val != "":
+                            merged["labour_daily"][d][cat] = val
+                        elif curr == "0" or curr == "":
+                            merged["labour_daily"][d][cat] = val
+
+            if res.get("weather_daily"):
+                for d, winfo in res["weather_daily"].items():
+                    if d not in merged["weather_daily"]: 
+                        merged["weather_daily"][d] = {}
+                    for field, val in winfo.items():
+                        if val and val != "-" and val != "":
+                            merged["weather_daily"][d][field] = val
+            
+            # 4. Summary to Date (Section Q - Concatenate block descriptions if split)
+            if res.get("summary_to_date"):
+                for block, desc in res["summary_to_date"].items():
+                    if not desc: continue
+                    if block in merged["summary_to_date"]:
+                        existing = merged["summary_to_date"][block]
+                        if desc not in existing:
+                            merged["summary_to_date"][block] = existing.rstrip(".") + "; " + desc
+                    else:
+                        merged["summary_to_date"][block] = desc
+
+            if res.get("insurances"): merged["insurances"].extend(res["insurances"])
+            if res.get("materials_delivered"): merged["materials_delivered"].extend(res["materials_delivered"])
+            if res.get("machinery"): merged["machinery"].extend(res["machinery"])
+            if res.get("instructions"): merged["instructions"].extend(res["instructions"])
         return merged
