@@ -46,14 +46,14 @@ class ReportParser:
           → Writes to JSON field: "building_works"
           → This page title starts with the letter "F." and describes ONLY what was physically done TODAY on site.
           → Example content: "Steel fixing to raft foundation", "Casting of blinding", "Fixing of formwork"
-          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {} for that page. Do NOT read from it.
+          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {{}} for that page. Do NOT read from it.
 
         SECTION Q — "Q. SUMMARY OF WORKS DONE TO DATE"  
           → Writes to JSON field: "summary_of_works"
           → This page title starts with the letter "Q." and lists CUMULATIVE work done since the start of the project, per block.
           → Example content: "BLOCK B1: Site clearance; Setting out; Mass excavation...", "SWIMMING POOL: None"
           → CRITICAL: Separate multiple activities with a semicolon ( ; ).
-          → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {} for that page. Do NOT read from it.
+          → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {{}} for that page. Do NOT read from it.
 
         FINAL VERIFICATION: Before returning your JSON, ask yourself:
           - Does "building_works" contain ONLY today's activities from Section F? (No block-by-block cumulative lists)
@@ -71,6 +71,9 @@ class ReportParser:
         - INTERNS: Extract the specific values and names.
         
         Return the data in perfect JSON matching this schema:
+        - If the page DOES NOT contain ANY of the target sections (e.g. it's just a cover page or photos), return an empty object {} or null for all fields. 
+        - Your response must be strictly valid JSON.
+        - IGNORE any data that does not belong to the target month or year.
         {schema}
         """
 
@@ -79,6 +82,7 @@ class ReportParser:
         
         !!! CRITICAL DATE MAPPING RULE !!!
         1. Read the COVER PAGE to identify the REPORTING PERIOD (e.g. 13th - 19th April 2026).
+           CRITICAL: IGNORE any dates found in 'Site Instructions' or 'Materials' tables when determining the year. ONLY use the Cover Page.
         2. Calculate the 7 dates for the week: Monday is the first date, Sunday is the last.
            - Example: "30th March - 5th April 2026" -> 
              * Monday 2026-03-30
@@ -147,20 +151,30 @@ class ReportParser:
         page_cache_dir = os.path.join(self.cache_dir, f"pages_{file_hash[:8]}")
         os.makedirs(page_cache_dir, exist_ok=True)
 
-        doc = fitz.open(pdf_path)
+        # Unconditionally repair/clean PDF to fix zlib stream errors and improve OCR accuracy
+        try:
+            doc = fitz.open(pdf_path)
+            temp_repair = os.path.join(session_dir, f"repaired_{uuid.uuid4().hex[:6]}.pdf")
+            doc.save(temp_repair, clean=True, deflate=True)
+            doc.close()
+            doc = fitz.open(temp_repair)
+        except Exception as repair_err:
+            logger.warning(f"⚠️ PDF Repair failed, attempting normal open: {repair_err}")
+            doc = fitz.open(pdf_path)
+        
         screenshot_dir = os.path.join(session_dir, "screenshots")
         os.makedirs(screenshot_dir, exist_ok=True)
 
         print(f"Intelligent Scanning: {os.path.basename(pdf_path)}...")
         
         # SEARCHING_START for Weekly: Skip A-D and start at E regardless of title
-        # SEARCHING_SITE_REPORT for Daily: The existing 'perfect' logic
         scanning_mode = "SEARCHING_START" if report_type == "WEEKLY" else "SEARCHING_SITE_REPORT"
         all_page_results = []
-        reporting_context = "" # Carry-forward context (e.g. reporting period)
+        reporting_context = "" 
 
         i = 0
         while i < len(doc):
+
             p_cache = os.path.join(page_cache_dir, f"page_{i}.json")
             if os.path.exists(p_cache):
                 with open(p_cache, "r") as f:
@@ -177,27 +191,33 @@ class ReportParser:
             # Cover Page is always processed for reporting period
             if i == 0: pass 
             elif scanning_mode == "SEARCHING_START":
-                # Look for Section E (E. or E ) at the START of a line or clear title
-                # Regex looks for line start, optional whitespace, E or F, and a separator
-                has_start_header = any(
-                    re.search(rf'^\s*{letter}[\.\s\:]', text, re.MULTILINE) 
-                    for letter in ["E", "F", "G"]
-                )
-                is_start_title = "SITE REPORT" in text or "WORKS CARRIED OUT" in text
-                
-                if has_start_header or is_start_title: 
-                    scanning_mode = "EXTRACTING"
+                # Fallback: If text is missing (corrupted/scanned), use Vision to check for start
+                if not text.strip():
+                    logger.warning(f"⚠️ Page {i+1} has no extractable text. Using Vision Fallback.")
+                    # We'll let it fall through to the screenshot logic below
                 else:
-                    i += 1
-                    continue
+                    has_start_header = any(
+                        re.search(rf'^\s*{letter}[\.\s\:]', text, re.MULTILINE) 
+                        for letter in ["E", "F", "G"]
+                    )
+                    is_start_title = "SITE REPORT" in text or "WORKS CARRIED OUT" in text
+                    
+                    if has_start_header or is_start_title: 
+                        scanning_mode = "EXTRACTING"
+                    else:
+                        i += 1
+                        continue
             elif scanning_mode == "SEARCHING_SITE_REPORT":
-                # Daily report logic
-                is_site_report = "SITE REPORT" in text or "PROGRESS REPORT" in text
-                if is_site_report or i > 3: 
-                    scanning_mode = "EXTRACTING"
+                # Daily report logic fallback
+                if not text.strip() and i < 5:
+                    logger.warning(f"⚠️ Page {i+1} has no extractable text. Using Vision Fallback.")
                 else:
-                    i += 1
-                    continue
+                    is_site_report = "SITE REPORT" in text or "PROGRESS REPORT" in text
+                    if is_site_report or i > 3: 
+                        scanning_mode = "EXTRACTING"
+                    else:
+                        i += 1
+                        continue
                 
             trigger_skip = False
             if scanning_mode == "EXTRACTING":

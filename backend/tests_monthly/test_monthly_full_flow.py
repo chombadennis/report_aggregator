@@ -17,7 +17,8 @@ async def main():
         os.path.join(root_dir, "MAKINDU AHP WEEKLY REPORT TEMPLATE FINAL 19TH WEEK MARCH AND APRIL.pdf"),
         os.path.join(root_dir, "MAKINDU AHP WEEK 20 PROGRESS REPORT.pdf"),
         os.path.join(root_dir, "MAKINDU AHP WEEK 21 PROGRESS REPORT.pdf"),
-        os.path.join(root_dir, "MAKINDU AHP WEEK 22 PROGRESS REPORT.pdf")
+        os.path.join(root_dir, "MAKINDU AHP WEEK 22 PROGRESS REPORT.pdf"),
+        os.path.join(root_dir, "MAKINDU AHP WEEK 23 PROGRESS REPORT.pdf")
     ]
     
     template_path = "monthly_report_template.docx"

@@ -75,11 +75,28 @@ class MonthlyAggregator:
         return {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
 
     def _is_in_month(self, date_str: str, target_month: int, target_year: int):
-        """Checks if 'Day YYYY-MM-DD' or 'YYYY-MM-DD' is within the target month/year."""
+        """
+        Checks if 'Day YYYY-MM-DD' or 'YYYY-MM-DD' is within the target month/year.
+        Includes a fallback for AI year hallucinations (e.g. 2023 instead of 2026).
+        """
         try:
             if " " in date_str: date_str = date_str.split(" ")[-1]
             dt = datetime.strptime(date_str, "%Y-%m-%d")
-            return dt.month == target_month and dt.year == target_year
+            
+            # Strict Month/Year Check
+            if dt.month == target_month and dt.year == target_year:
+                return True
+                
+            # Recovery: If month matches but year is wrong, check if it's a common AI hallucination
+            # We trust the target_year provided in metadata more than the AI's OCR of a single digit.
+            if dt.month == target_month and (dt.year == 2023 or dt.year == 2024 or dt.year == 2025):
+                # Only recover if the day also exists in the target year
+                try:
+                    datetime(target_year, dt.month, dt.day)
+                    return True 
+                except: return False
+                
+            return False
         except:
             return False
 
@@ -90,6 +107,7 @@ class MonthlyAggregator:
         if not data: return default
         if key in data: return data[key]
         k_lower = key.lower()
+        if not isinstance(data, dict): return default
         for k, v in data.items():
             if k.lower() == k_lower:
                 return v
@@ -113,20 +131,33 @@ class MonthlyAggregator:
         # We'll use a simple approach: if any date in a report falls within the week, it's that week's data.
         weekly_data_map = {} # Week Index -> Weekly Data
         for report in weekly_reports:
-            # Check the first date in labour_daily or weather_daily
-            keys = list(report.get("labour_daily", {}).keys()) + list(report.get("weather_daily", {}).keys())
-            if not keys: continue
+            if not isinstance(report, dict): continue
             
-            # Use the first valid date to find which expected week it belongs to
-            try:
-                date_str = keys[0]
-                if " " in date_str: date_str = date_str.split(" ")[-1]
-                sample_dt = datetime.strptime(date_str, "%Y-%m-%d")
+            # Look deep into the nested dictionaries to find a date key
+            found_date = None
+            labour = report.get("labour_daily", {})
+            weather = report.get("weather_daily", {})
+            
+            # Try to find a date in any of the nested keys
+            sample_keys = []
+            if isinstance(labour, dict):
+                for sub in labour.values():
+                    if isinstance(sub, dict): sample_keys.extend(sub.keys())
+            
+            if isinstance(weather, dict):
+                sample_keys.extend(weather.keys())
+            
+            for key in sample_keys:
+                match = re.search(r"\d{4}-\d{2}-\d{2}", str(key))
+                if match:
+                    found_date = datetime.strptime(match.group(0), "%Y-%m-%d")
+                    break
+            
+            if found_date:
                 for idx, week in enumerate(expected_weeks):
-                    if week["start"] <= sample_dt <= week["end"]:
+                    if week["start"] <= found_date <= week["end"]:
                         weekly_data_map[idx] = report
                         break
-            except: pass
 
         # 2. Collect Labour/Weather week by week
         weekly_labour_matrices = []
@@ -164,31 +195,37 @@ class MonthlyAggregator:
             week_labour_matrix["TOTAL"] = ["0"] * 7
             
             daily_labour = report.get("labour_daily", {})
-            for date_key, categories in daily_labour.items():
-                if target_month and not self._is_in_month(date_key, target_month, target_year):
-                    continue
-                try:
-                    date_str = date_key.split(" ")[-1] if " " in date_key else date_key
-                    dt = datetime.strptime(date_str, "%Y-%m-%d")
-                    w_idx = days_of_week.index(dt.strftime("%A"))
-                    for cat, val in categories.items():
-                        cat_norm = cat.upper().replace(" ", "")
-                        if cat_norm in official_names:
-                            official_cat = official_names[cat_norm]
-                            week_labour_matrix[official_cat][w_idx] = str(val)
-                        elif cat_norm == "TOTAL":
-                            week_labour_matrix["TOTAL"][w_idx] = str(val)
-                        else:
-                            # If a brand new category is found, insert it before TOTAL
-                            if cat not in week_labour_matrix:
-                                new_matrix = {}
-                                for k, v in week_labour_matrix.items():
-                                    if k == "TOTAL":
-                                        new_matrix[cat] = ["0"] * 7
-                                    new_matrix[k] = v
-                                week_labour_matrix = new_matrix
-                            week_labour_matrix[cat][w_idx] = str(val)
-                except: pass
+            if isinstance(daily_labour, dict):
+                for date_key, categories in daily_labour.items():
+                    is_valid = self._is_in_month(date_key, target_month, target_year)
+                    if not is_valid:
+                        # Log the exclusion for transparency
+                        # print(f"   [Boundary] Skipping data for {date_key} (Outside {calendar.month_name[target_month]} {target_year})")
+                        continue
+                    
+                    try:
+                        date_str = date_key.split(" ")[-1] if " " in date_key else date_key
+                        dt = datetime.strptime(date_str, "%Y-%m-%d")
+                        w_idx = days_of_week.index(dt.strftime("%A"))
+                        if isinstance(categories, dict):
+                            for cat, val in categories.items():
+                                cat_norm = cat.upper().replace(" ", "")
+                                if cat_norm in official_names:
+                                    official_cat = official_names[cat_norm]
+                                    week_labour_matrix[official_cat][w_idx] = str(val)
+                                elif cat_norm == "TOTAL":
+                                    week_labour_matrix["TOTAL"][w_idx] = str(val)
+                                else:
+                                    # If a brand new category is found, insert it before TOTAL
+                                    if cat not in week_labour_matrix:
+                                        new_matrix = {}
+                                        for k, v in week_labour_matrix.items():
+                                            if k == "TOTAL":
+                                                new_matrix[cat] = ["0"] * 7
+                                            new_matrix[k] = v
+                                        week_labour_matrix = new_matrix
+                                    week_labour_matrix[cat][w_idx] = str(val)
+                    except: pass
             
             weekly_labour_matrices.append(week_labour_matrix)
 
@@ -197,14 +234,15 @@ class MonthlyAggregator:
             daily_weather = report.get("weather_daily", {})
             # Extract date for sorting and filtering
             weather_data = []
-            for date_key, info in daily_weather.items():
-                if target_month and not self._is_in_month(date_key, target_month, target_year):
-                    continue
-                date_str = date_key.split(" ")[-1] if " " in date_key else date_key
-                try:
-                    dt = datetime.strptime(date_str, "%Y-%m-%d")
-                    weather_data.append((dt, date_str, info))
-                except: pass
+            if isinstance(daily_weather, dict):
+                for date_key, info in daily_weather.items():
+                    if target_month and not self._is_in_month(date_key, target_month, target_year):
+                        continue
+                    date_str = date_key.split(" ")[-1] if " " in date_key else date_key
+                    try:
+                        dt = datetime.strptime(date_str, "%Y-%m-%d")
+                        weather_data.append((dt, date_str, info))
+                    except: pass
             
             # Sort by date
             weather_data.sort(key=lambda x: x[0])
@@ -222,12 +260,14 @@ class MonthlyAggregator:
             weekly_weather_grids.append(week_weather_grid)
             # Capture comments from weather info
             week_comments = []
-            for date_str, info in daily_weather.items():
-                if target_month and not self._is_in_month(date_str, target_month, target_year):
-                    continue
-                c = info.get("comments", "").strip()
-                if c and c.lower() != "none":
-                    week_comments.append(c)
+            if isinstance(daily_weather, dict):
+                for date_str, info in daily_weather.items():
+                    if target_month and not self._is_in_month(date_str, target_month, target_year):
+                        continue
+                    if isinstance(info, dict):
+                        c = info.get("comments", "").strip()
+                        if c and c.lower() != "none":
+                            week_comments.append(c)
             weather_comments.append(" • " + "\n • ".join(week_comments) if week_comments else "None")
 
         # 2. Aggregated Sections
@@ -258,7 +298,9 @@ class MonthlyAggregator:
         }
 
         for w in weekly_reports:
+            if not isinstance(w, dict): continue
             for item in w.get("materials_delivered", []):
+                if not isinstance(item, dict): continue
                 # Try multiple case variations for description/quantity/unit
                 name = (item.get("description") or item.get("Description") or "Unknown").upper().strip()
                 qty_val = item.get("quantity") or item.get("Quantity") or "0"
@@ -293,7 +335,9 @@ class MonthlyAggregator:
         machinery_list = []
         all_machine_names = set()
         for w in weekly_reports:
+            if not isinstance(w, dict): continue
             for m in w.get("machinery", []):
+                if not isinstance(m, dict): continue
                 all_machine_names.add(m.get("name", "").upper())
         
         for name in all_machine_names:
@@ -313,7 +357,9 @@ class MonthlyAggregator:
         all_instructions = []
         seen_inst = set()
         for w in weekly_reports:
+            if not isinstance(w, dict): continue
             for inst in w.get("instructions", []):
+                if not isinstance(inst, dict): continue
                 key = (inst.get("REF. NO"), inst.get("date"))
                 if key not in seen_inst:
                     seen_inst.add(key)
@@ -334,8 +380,9 @@ class MonthlyAggregator:
             summary_parts = []
             totals = {}
             for issues in issues_list:
-                for cat, count in issues.items():
-                    totals[cat] = totals.get(cat, 0) + count
+                if isinstance(issues, dict):
+                    for cat, count in issues.items():
+                        totals[cat] = totals.get(cat, 0) + count
             
             if totals:
                 parts = [f"{count} {cat}" for cat, count in totals.items()]
