@@ -100,6 +100,61 @@ class MonthlyAggregator:
         except:
             return False
 
+    def validate_chronology(self, results: List[Dict[str, Any]], target_month: int, target_year: int):
+        """
+        Validates that the set of uploaded reports is chronological and matches the target month.
+        Returns a list of warning/error messages.
+        """
+        from parser import ReportParser
+        parser = ReportParser() # To reuse date parsing logic
+        
+        valid_reports = []
+        warnings = []
+
+        for res in results:
+            period = res.get("reporting_period", "")
+            if not period: continue
+            
+            start_dt = parser._parse_weekly_start_date(period)
+            if start_dt:
+                valid_reports.append((start_dt, res))
+            else:
+                warnings.append(f"⚠️ Could not verify period for: {res.get('title', 'Unknown')}")
+
+        # Sort by date
+        valid_reports.sort(key=lambda x: x[0])
+
+        if not valid_reports:
+            return ["❌ No valid dates found in uploaded reports."]
+
+        # Check for Month/Year mismatch
+        # Allow overlap: a report is valid if it has AT LEAST ONE day in the target month
+        for dt, res in valid_reports:
+            end_dt = dt + timedelta(days=6)
+            has_days_in_month = False
+            for i in range(7):
+                day = dt + timedelta(days=i)
+                if day.month == target_month and day.year == target_year:
+                    has_days_in_month = True
+                    break
+            
+            if not has_days_in_month:
+                warnings.append(f"🚩 Report '{res.get('title')}' ({dt.strftime('%d %b')} - {end_dt.strftime('%d %b')}) is outside target month {calendar.month_name[target_month]} {target_year}.")
+
+        # Check for Gaps
+        for i in range(len(valid_reports) - 1):
+            curr_start = valid_reports[i][0]
+            next_start = valid_reports[i+1][0]
+            gap = (next_start - curr_start).days
+            
+            if gap > 7:
+                missing_weeks = (gap // 7) - 1
+                warnings.append(f"⚠️ Gap detected! Missing {missing_weeks} week(s) between {valid_reports[i][1].get('title')} and {valid_reports[i+1][1].get('title')}.")
+            elif gap < 7:
+                warnings.append(f"🔄 Overlap/Duplicate detected between {valid_reports[i][1].get('title')} and {valid_reports[i+1][1].get('title')}.")
+
+        return warnings
+
         return default
 
     def _get_case_insensitive(self, data: Dict[str, Any], key: str, default: Any = "-"):

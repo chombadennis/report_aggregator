@@ -108,7 +108,7 @@ class Aggregator:
             key_lower = canonical_name.lower().replace(" ", "").replace("&", "and")
             for k, v in labour_dict.items():
                 k_norm = k.lower().replace(" ", "").replace("&", "and")
-                if k_norm == key_lower or k_norm.startswith(key_lower[:6]):
+                if k_norm == key_lower:
                     # Normalise: empty string or None → "0"
                     return str(v).strip() if str(v).strip() else "0"
             return "0"
@@ -139,7 +139,7 @@ class Aggregator:
                     continue  # Skip aggregate rows — never treat TOTAL as a category
                 k_norm = k.lower().replace(" ", "").replace("&", "and")
                 # Only add if it doesn't match any canonical category
-                if not any(k_norm == c or k_norm.startswith(c[:6]) for c in canonical_lower):
+                if not any(k_norm == c for c in canonical_lower):
                     if k not in extra_categories:
                         extra_categories.append(k)
 
@@ -150,15 +150,21 @@ class Aggregator:
                 day_values.append(val)
             labour_matrix[cat] = day_values
 
-        # TOTAL row: sum of ALL categories (canonical + extras) per day — ALWAYS LAST
-        all_cats_for_total = LABOUR_CANONICAL_ORDER + extra_categories
+        # TOTAL row: Use verbatim from daily reports if available, otherwise sum — ALWAYS LAST
         total_per_day = []
         for day_idx in range(7):
-            day_total = sum(
-                _extract_numeric(labour_matrix[cat][day_idx])
-                for cat in all_cats_for_total
-            )
-            total_per_day.append(str(day_total) if day_total > 0 else "0")
+            r = reports_by_day[day_idx]
+            # Check if we have a verbatim TOTAL from the daily report
+            verbatim_total = r.get("labour", {}).get("TOTAL") if r else None
+            if verbatim_total:
+                total_per_day.append(str(verbatim_total))
+            else:
+                # Fallback to sum of categories if TOTAL is missing
+                day_total = sum(
+                    _extract_numeric(labour_matrix[cat][day_idx])
+                    for cat in all_cats_for_total
+                )
+                total_per_day.append(str(day_total) if day_total > 0 else "0")
         labour_matrix["TOTAL"] = total_per_day
 
         # 2. Weather Grid

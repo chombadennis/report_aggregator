@@ -10,41 +10,52 @@ from aggregator import Aggregator
 from generator import ReportGenerator
 
 async def main():
-    # Paths
-    sample_pdf = r"d:\maks_ahp\MAKINDU AHP DAILY PROGRESS REPORT Wednesday 15th April 2026.pdf"
+    # ── Configuration ──
+    REPORTS_DIR = r"d:\maks_ahp\dailies"
+    DAILY_PDFS = [
+        "MAKINDU AHP DAILY PROGRESS REPORT Monday  13th April 2026-1.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Tuesday  14th April 2026-1.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Wednesday 15th April 2026.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Thursday 16th April 2026.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Friday 17th April 2026.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Saturday 18th April 2026.pdf",
+        "MAKINDU AHP DAILY PROGRESS REPORT Sunday 19th April 2026.pdf",
+    ]
     template_path = "weekly_template.docx"
-    output_path = "TEST_WEEKLY_REPORT.docx"
+    output_path = os.path.join("tests", "tests_output", "FULL_WEEK_TEST_REPORT.docx")
     session_dir = "full_flow_session"
-    os.makedirs(session_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     # 1. Initialize
-    parser = ReportParser()
+    parser = ReportParser(cache_dir="cache")
     aggregator = Aggregator()
     generator = ReportGenerator(template_path)
 
-    # 2. Deep Scan the Daily Report
-    print(f"Deep Scanning: {os.path.basename(sample_pdf)}...")
-    # We use the new 'parse_report' method with Vision support
-    daily_data = await parser.parse_report(sample_pdf, session_dir, "DAILY")
+    # 2. Parse all 7 days in parallel
+    pdfs = [os.path.join(REPORTS_DIR, f) for f in DAILY_PDFS]
+    print(f"--- STEP 1: PARSING {len(pdfs)} DAILY REPORTS ---")
+    tasks = [parser.parse_report(pdf, session_dir, "DAILY") for pdf in pdfs]
+    daily_results = await asyncio.gather(*tasks)
 
-    # 3. Aggregate (The system will now automatically map this to the correct day)
-    print("Aggregating summary (Day-Aware mapping)...")
-    weekly_data = await aggregator.compile_weekly_data([daily_data])
+    # 3. Aggregate into Weekly Summary
+    print("\n--- STEP 2: AGGREGATING INTO WEEKLY SUMMARY ---")
+    weekly_data = await aggregator.compile_weekly_data(daily_results)
     
-    # Add dummy cover page data
+    # Add project metadata for the cover page
     weekly_data.update({
-        "title": "MAKINDU AHP WEEK 20 PROGRESS REPORT",
+        "title": "MAKINDU AHP WEEKLY PROGRESS REPORT",
         "time_elapsed": "20 Weeks",
-        "pct_period": "19.43%",
-        "pct_work": "7.29%",
-        "report_date": "6th – 12th April 2026"
+        "pct_period": "20%",
+        "pct_work": "15%",
+        "report_date": "13th - 19th April 2026"
     })
 
     # 4. Generate the Word Document
+    print(f"\n--- STEP 3: GENERATING FINAL DOCX ---")
     print(f"Injecting data into {template_path}...")
     generator.generate_report(output_path, weekly_data, "WEEKLY")
 
-    print(f"\n[OK] SUCCESS! Open your report: {output_path}")
+    print(f"\n[OK] SUCCESS! Open your report: {os.path.abspath(output_path)}")
 
 if __name__ == "__main__":
     asyncio.run(main())

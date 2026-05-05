@@ -208,7 +208,7 @@ export default function Home() {
         <div className="space-y-4">
           <div className="bg-white border-2 border-dashed border-vanilla-custard-200 rounded-3xl p-10 text-center transition-all hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group shadow-lg">
             <input
-              type="file" multiple
+              type="file" multiple accept=".pdf"
               onChange={(e) => handleFileChange(e.target.files)}
               className="hidden" id="file-upload"
             />

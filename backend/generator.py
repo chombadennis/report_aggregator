@@ -242,29 +242,28 @@ class ReportGenerator:
 
             first_block = True
             for block_name, summary_text in day_components.items():
-                # Spacing between blocks
-                if not first_block:
-                    sp = cell.add_paragraph("")
-                    sp.paragraph_format.space_before = Pt(6)
-                    sp.paragraph_format.space_after = Pt(0)
-
-                # Bold component/subsection heading — NEVER bulleted.
-                # Strip any accidental leading bullet character from the key name.
-                heading_text = block_name.lstrip("•").strip()
+                # Clean the heading (remove any accidental bullets from the string)
+                heading_text = block_name.replace("•", "").strip()
+                
+                # Add a new paragraph for the heading
                 key_para = cell.paragraphs[0] if first_block else cell.add_paragraph()
-                key_para.paragraph_format.space_before = Pt(0)
-                key_para.paragraph_format.space_after = Pt(2)
+                
+                # Reduce space between categories: Pt(4) instead of Pt(6) or empty paragraphs
+                key_para.paragraph_format.space_before = Pt(0) if first_block else Pt(4)
+                key_para.paragraph_format.space_after = Pt(1)
+                
                 key_run = key_para.add_run(heading_text + ":")
                 key_run.bold = True
 
-                # Split bullet lines — each '\n'-separated bullet gets its own paragraph.
-                # Preserve the '•' prefix already in the data; do not add an extra one.
+                # Activities — each '\n'-separated line gets its own bullet paragraph
                 bullet_lines = str(summary_text).split("\n")
                 for line in bullet_lines:
                     line = line.strip()
                     if not line:
                         continue
-                    bullet_para = cell.add_paragraph(line)
+                    # Ensure it has exactly one bullet
+                    clean_line = line.lstrip("•").strip()
+                    bullet_para = cell.add_paragraph(f"• {clean_line}")
                     bullet_para.paragraph_format.space_before = Pt(0)
                     bullet_para.paragraph_format.space_after = Pt(0)
 
@@ -288,19 +287,51 @@ class ReportGenerator:
             for row in table.rows[1:]
         }
 
-        # Fill matching rows
+        # Fill matching rows using a two-pass approach to prevent partial match hijacking
+        # (e.g., preventing "Unskilled" from matching "Steel Unskilled" if an exact match exists)
         unmatched = {}
+        used_rows = set()
+
+        # Pass 1: Exact matches
         for ai_cat, values in labour_data.items():
             if ai_cat.strip().upper() == "TOTAL":
-                continue  # Handle separately at the end
+                continue
             ai_norm = ai_cat.strip().upper().replace(" ", "").replace("&", "AND")
-            matched = False
+            
             for tmpl_norm, row in template_cats.items():
-                if ai_norm == tmpl_norm or ai_norm in tmpl_norm or tmpl_norm in ai_norm:
+                if ai_norm == tmpl_norm:
                     for i, val in enumerate(values):
                         col_idx = i + 1
                         if col_idx < len(row.cells):
                             row.cells[col_idx].text = str(val)
+                    used_rows.add(tmpl_norm)
+                    break
+
+        # Pass 2: Fuzzy/Partial matches (only for rows not yet used)
+        for ai_cat, values in labour_data.items():
+            if ai_cat.strip().upper() == "TOTAL":
+                continue
+            ai_norm = ai_cat.strip().upper().replace(" ", "").replace("&", "AND")
+            
+            # Skip if we already matched this AI category in Pass 1
+            already_matched = False
+            for tmpl_norm in used_rows:
+                if ai_norm == tmpl_norm:
+                    already_matched = True
+                    break
+            if already_matched:
+                continue
+
+            matched = False
+            for tmpl_norm, row in template_cats.items():
+                if tmpl_norm in used_rows:
+                    continue
+                if ai_norm in tmpl_norm or tmpl_norm in ai_norm:
+                    for i, val in enumerate(values):
+                        col_idx = i + 1
+                        if col_idx < len(row.cells):
+                            row.cells[col_idx].text = str(val)
+                    used_rows.add(tmpl_norm)
                     matched = True
                     break
             if not matched:

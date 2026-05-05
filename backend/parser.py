@@ -3,6 +3,8 @@ import json
 import os
 import logging
 import fitz  # PyMuPDF
+from datetime import datetime, timedelta
+from typing import List, Dict, Any, Optional
 from ai_client import generate_structured_data
 from schemas import DailyReportSchema, WeeklyReportSchema
 import hashlib
@@ -71,7 +73,7 @@ class ReportParser:
         - INTERNS: Extract the specific values and names.
         
         Return the data in perfect JSON matching this schema:
-        - If the page DOES NOT contain ANY of the target sections (e.g. it's just a cover page or photos), return an empty object {} or null for all fields. 
+        - If the page DOES NOT contain ANY of the target sections (e.g. it's just a cover page or photos), return an empty object {{}} or null for all fields. 
         - Your response must be strictly valid JSON.
         - IGNORE any data that does not belong to the target month or year.
         {schema}
@@ -151,15 +153,21 @@ class ReportParser:
         page_cache_dir = os.path.join(self.cache_dir, f"pages_{file_hash[:8]}")
         os.makedirs(page_cache_dir, exist_ok=True)
 
-        # Unconditionally repair/clean PDF to fix zlib stream errors and improve OCR accuracy
+        # Step 1: Integrity Check
         try:
             doc = fitz.open(pdf_path)
+        except Exception as e:
+            logger.error(f"⚠️ Security/Integrity Error: {pdf_path} is not a valid PDF or is corrupted: {e}")
+            return {"error": "Invalid or corrupted PDF file.", "status": "error"}
+
+        # Step 2: Repair/Clean for better OCR
+        try:
             temp_repair = os.path.join(session_dir, f"repaired_{uuid.uuid4().hex[:6]}.pdf")
             doc.save(temp_repair, clean=True, deflate=True)
             doc.close()
             doc = fitz.open(temp_repair)
         except Exception as repair_err:
-            logger.warning(f"⚠️ PDF Repair failed, attempting normal open: {repair_err}")
+            logger.warning(f"⚠️ PDF Repair failed, proceeding with original: {repair_err}")
             doc = fitz.open(pdf_path)
         
         screenshot_dir = os.path.join(session_dir, "screenshots")
@@ -280,12 +288,133 @@ class ReportParser:
         # Final Merge
         if report_type == "DAILY":
             final_data = self._merge_results(all_page_results)
+            # --- MANUAL OVERRIDE FOR DAILY REPORTS ---
+            # AI frequently hallucinates numbers in tables; we override with precise PyMuPDF extraction
+            try:
+                m_labour, m_materials = self._manual_extract_daily_tables(doc)
+                if m_labour:
+                    logger.info(f"🛠️ Manual Labour Override: {len(m_labour)} categories found.")
+                    final_data["labour"] = m_labour
+                if m_materials:
+                    logger.info(f"🛠️ Manual Materials Override: {len(m_materials)} items found.")
+                    final_data["materials_delivered"] = m_materials
+            except Exception as me:
+                logger.warning(f"⚠️ Manual table extraction failed: {me}")
         else:
             final_data = self._merge_weekly_results(all_page_results)
+            # --- MANUAL OVERRIDE FOR WEEKLY REPORTS ---
+            try:
+                m_labour, m_materials = self._manual_extract_weekly_tables(doc)
+                
+                # 1. Map Labour Matrix to Dates
+                if m_labour and final_data.get("reporting_period"):
+                    period_str = final_data["reporting_period"]
+                    start_date = self._parse_weekly_start_date(period_str)
+                    if start_date:
+                        clean_labour_daily = {}
+                        for i in range(7):
+                            day_dt = start_date + timedelta(days=i)
+                            date_str = day_dt.strftime("%Y-%m-%d")
+                            clean_labour_daily[date_str] = {
+                                cat: vals[i] for cat, vals in m_labour.items()
+                            }
+                        logger.info(f"🛠️ Manual Weekly Labour Override: {len(m_labour)} categories mapped.")
+                        final_data["labour_daily"] = clean_labour_daily
+                
+                # 2. Materials Override
+                if m_materials:
+                    logger.info(f"🛠️ Manual Weekly Materials Override: {len(m_materials)} items found.")
+                    final_data["materials_delivered"] = m_materials
+            except Exception as me:
+                logger.warning(f"⚠️ Manual weekly table extraction failed: {me}")
             
         final_data["fingerprint"] = file_hash
         with open(cache_path, "w") as f: json.dump(final_data, f, indent=2)
         return final_data
+
+
+    def _manual_extract_daily_tables(self, doc):
+        """
+        Manually extracts Labour and Materials tables from the PDF to avoid AI hallucinations.
+        Uses fitz's find_tables() for high-fidelity structural extraction.
+        """
+        labour_data = {}
+        materials_data = []
+        
+        for page in doc:
+            tabs = page.find_tables()
+            if not tabs:
+                continue
+                
+            for tab in tabs:
+                data = tab.extract()
+                if not data or len(data) < 2:
+                    continue
+                    
+                # Normalize headers for identification
+                headers = [str(h).upper().strip() if h else "" for h in data[0]]
+                
+                # 1. LABOUR TURNOVER Identification
+                is_labour = any("LABOUR" in h or "CATEGORY" in h for h in headers)
+                if not is_labour and data:
+                    # Fallback: check the first row of actual data for the keyword
+                    is_labour = any("CATEGORY" in str(c).upper() for c in data[0])
+
+                if is_labour:
+                    for row in data[1:]:
+                        if not row or not row[0]: continue
+                        cat = str(row[0]).strip()
+                        if not cat: continue
+                        
+                        # Handle variable data columns (e.g., Day, Night)
+                        if len(row) == 2:
+                            # Standard 2-column format (Category, Value)
+                            val = str(row[1]).strip() if row[1] else "0"
+                        elif len(row) >= 3:
+                            # Multi-column format (e.g., Category, Day, Night)
+                            # Store as a sub-dict mapping header name to value
+                            val_dict = {}
+                            for i in range(1, len(row)):
+                                h_name = headers[i] if i < len(headers) else f"Col_{i}"
+                                # Clean up common variations like "No.-Day" or "No-Day" to "Day"
+                                h_norm = h_name.replace("NO.-", "").replace("NO-", "").capitalize()
+                                val_dict[h_norm] = str(row[i]).strip() if row[i] else "0"
+                            val = val_dict
+                        else:
+                            val = "0"
+                        
+                        if "TOTAL" in cat.upper():
+                            labour_data["TOTAL"] = val
+                            break
+                        labour_data[cat] = val
+
+                # 2. MATERIALS DELIVERED TO SITE Identification
+                if len(headers) == 3 and "DESCRIPTION" in headers and "QTY" in headers and "S/N" in headers:
+                    idx_desc = headers.index("DESCRIPTION")
+                    idx_qty = headers.index("QTY")
+                    
+                    for row in data[1:]:
+                        if not row or len(row) <= max(idx_desc, idx_qty): continue
+                        desc = str(row[idx_desc]).strip()
+                        qty_full = str(row[idx_qty]).strip() if row[idx_qty] else "0"
+                        if not desc or desc.upper() == "DESCRIPTION": continue
+                        
+                        # Split numeric quantity from units (e.g. "29.60 tons" -> "29.60", "tons")
+                        qty_match = re.match(r'^(\d+\.?\d*)\s*(.*)$', qty_full)
+                        if qty_match:
+                            materials_data.append({
+                                "description": desc,
+                                "quantity": qty_match.group(1),
+                                "units": qty_match.group(2).strip()
+                            })
+                        else:
+                            materials_data.append({
+                                "description": desc,
+                                "quantity": qty_full,
+                                "units": ""
+                            })
+        
+        return labour_data, materials_data
 
 
     def _extract_images(self, pdf_path, session_dir):
@@ -333,6 +462,13 @@ class ReportParser:
             if res.get("instructions"): merged["instructions"].extend(res["instructions"])
             if res.get("visitors"): merged["visitors"].extend(res["visitors"])
             if res.get("challenges"): merged["challenges"].extend(res["challenges"])
+        
+        # Default date fallback for instructions
+        report_date = merged.get("date", "Unknown Date")
+        for inst in merged.get("instructions", []):
+            if isinstance(inst, dict) and not inst.get("date"):
+                inst["date"] = report_date
+                
         return merged
 
     def _merge_weekly_results(self, page_results):
@@ -368,7 +504,6 @@ class ReportParser:
                     if d not in merged["labour_daily"]: 
                         merged["labour_daily"][d] = {}
                     for cat, val in cats.items():
-                        # Only update if current value is empty or "0"
                         curr = merged["labour_daily"][d].get(cat, "0")
                         if val and val != "0" and val != "":
                             merged["labour_daily"][d][cat] = val
@@ -379,9 +514,13 @@ class ReportParser:
                 for d, winfo in res["weather_daily"].items():
                     if d not in merged["weather_daily"]: 
                         merged["weather_daily"][d] = {}
-                    for field, val in winfo.items():
-                        if val and val != "-" and val != "":
-                            merged["weather_daily"][d][field] = val
+                    if isinstance(winfo, dict):
+                        for field, val in winfo.items():
+                            if val and val != "-" and val != "":
+                                merged["weather_daily"][d][field] = val
+                    elif isinstance(winfo, str) and winfo.strip() and winfo != "-":
+                        # If AI returned a single string for the whole day
+                        merged["weather_daily"][d]["condition"] = winfo
             
             # 4. Summary to Date (Section Q - Concatenate block descriptions if split)
             if res.get("summary_to_date"):
@@ -399,3 +538,119 @@ class ReportParser:
             if res.get("machinery"): merged["machinery"].extend(res["machinery"])
             if res.get("instructions"): merged["instructions"].extend(res["instructions"])
         return merged
+
+    def _manual_extract_weekly_tables(self, doc):
+        """
+        Targeted extraction of Labour and Materials from Weekly Reports.
+        Supports multi-page tables and split rows (where a cell spans two pages).
+        """
+        labour_data = {}
+        materials_data = []
+        days_of_week = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+        
+        last_labour_cat = None # Track for split-row merging
+
+        for page_idx, page in enumerate(doc):
+            tables = page.find_tables()
+            for table in tables:
+                raw_rows = table.extract()
+                if not raw_rows: continue
+                headers = [str(c).strip().upper() for c in raw_rows[0] if c]
+                
+                # --- 1. Labour Matrix Detection & Continuation ---
+                is_labour = any("CATEGORY" in h for h in headers) and any(d in "".join(headers) for d in days_of_week)
+                is_continuation = len(raw_rows[0]) == 8 and last_labour_cat is not None and not is_labour
+                
+                if is_labour or is_continuation:
+                    day_indices = {i: i for i in range(1, 8)} # Default for headerless
+                    if is_labour:
+                        day_indices = {}
+                        for i, h in enumerate(headers):
+                            for d_idx, d_name in enumerate(days_of_week):
+                                if d_name in h: day_indices[d_idx] = i
+                    
+                    start_row = 1 if is_labour else 0
+                    for row in raw_rows[start_row:]:
+                        if len(row) < 8: continue
+                        cat = str(row[0] or "").strip()
+                        
+                        # Handle Split Row: If first cell is empty, it's a continuation of the previous row
+                        if not cat and last_labour_cat:
+                            for d_idx in range(7):
+                                col_idx = day_indices.get(d_idx+1 if is_continuation else d_idx)
+                                if col_idx and col_idx < len(row):
+                                    val = str(row[col_idx] or "").strip()
+                                    if val:
+                                        # Merge strings: e.g., "2(1m," + "1f)" -> "2(1m, 1f)"
+                                        prev = labour_data[last_labour_cat][d_idx]
+                                        labour_data[last_labour_cat][d_idx] = (prev + " " + val).strip()
+                            continue
+
+                        if not cat or cat.upper() in ["CATEGORY"]: continue
+                        
+                        last_labour_cat = cat
+                        if cat not in labour_data:
+                            labour_data[cat] = ["0"] * 7
+                        
+                        for d_idx in range(7):
+                            col_idx = day_indices.get(d_idx+1 if is_continuation else d_idx)
+                            if col_idx is not None and col_idx < len(row):
+                                val = str(row[col_idx] or "").strip() or "0"
+                                labour_data[cat][d_idx] = val
+
+                # --- 2. Materials Table Detection ---
+                has_desc = any("DESCRIPTION" in h for h in headers)
+                has_qty = any("QUANTITY" in h for h in headers)
+                
+                if has_desc and has_qty:
+                    idx_desc = next((i for i, h in enumerate(headers) if "DESCRIPTION" in h), -1)
+                    idx_qty = next((i for i, h in enumerate(headers) if "QUANTITY" in h), -1)
+                    
+                    if idx_desc != -1 and idx_qty != -1:
+                        for row in raw_rows[1:]:
+                            if len(row) > max(idx_desc, idx_qty):
+                                desc = str(row[idx_desc]).strip()
+                                if not desc or desc.upper() in ["DESCRIPTION", "TOTAL QUANTITY", "QUANTITY", "S/NO", "S/N"]:
+                                    continue
+                                materials_data.append({
+                                    "description": desc,
+                                    "quantity": str(row[idx_qty]).strip()
+                                })
+
+        return labour_data, materials_data
+
+    def _parse_weekly_start_date(self, period_str):
+        """
+        Parses '13TH - 19TH APRIL 2026' into a datetime object for the Monday.
+        Handles variations like 'MARCH AND APRIL'.
+        """
+        import re
+        from datetime import datetime
+        
+        try:
+            year_match = re.search(r"(\d{4})", period_str)
+            year = int(year_match.group(1)) if year_match else datetime.now().year
+            months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", 
+                      "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+            found_months = [m for m in months if m in period_str.upper()]
+            if not found_months: return None
+            
+            month_name = found_months[-1]
+            month_idx = months.index(month_name) + 1
+            day_match = re.search(r"(\d{1,2})", period_str)
+            if not day_match: return None
+            day = int(day_match.group(1))
+            
+            if len(found_months) > 1 and day > 20:
+                month_idx = months.index(found_months[0]) + 1
+            
+            start_dt = datetime(year, month_idx, day)
+            if start_dt.weekday() != 0:
+                # 0 is Monday
+                import logging
+                logging.warning(f"🚩 Logical Date Conflict: '{period_str}' starts on a {start_dt.strftime('%A')}, not Monday.")
+            return start_dt
+        except Exception as e:
+            import logging
+            logging.error(f"❌ Failed to parse weekly start date from '{period_str}': {e}")
+            return None

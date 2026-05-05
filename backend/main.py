@@ -26,10 +26,10 @@ app.add_middleware(
 TEMP_DIR = "temp_uploads"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
-parser = ReportParser()
+parser = ReportParser(cache_dir="cache")
 aggregator = Aggregator()
-monthly_parser = ReportParser(cache_dir="cache_monthly")
-monthly_aggregator = MonthlyAggregator(history_dir="history_monthly")
+monthly_parser = ReportParser(cache_dir="cache")
+monthly_aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -127,12 +127,21 @@ async def generate_monthly_stream(
                 res = await monthly_parser.parse_report(path, session_dir, "WEEKLY")
                 results[idx] = res
 
-            yield f"data: {json.dumps({'status': 'aggregating', 'msg': '📊 Consolidating monthly data...'})}\n\n"
-            
             metadata = {
                 "title": title, "report_date": report_date,
                 "time_elapsed": time_elapsed, "pct_period": pct_period, "pct_work": pct_work
             }
+            
+            # --- CHRONOLOGY VALIDATION ---
+            month_num, target_year = monthly_aggregator._parse_month_year(title)
+            if month_num:
+                yield f"data: {json.dumps({'status': 'validating', 'msg': '🧐 Verifying chronology and month alignment...'})}\n\n"
+                val_warnings = monthly_aggregator.validate_chronology(results, month_num, target_year)
+                for warn in val_warnings:
+                    yield f"data: {json.dumps({'status': 'warning', 'msg': warn})}\n\n"
+                    # Small delay so user can see multiple warnings
+                    await asyncio.sleep(0.5)
+
             monthly_summary = monthly_aggregator.compile_monthly_data(results, metadata)
 
             yield f"data: {json.dumps({'status': 'generating', 'msg': '📝 Finalizing Word Document...'})}\n\n"

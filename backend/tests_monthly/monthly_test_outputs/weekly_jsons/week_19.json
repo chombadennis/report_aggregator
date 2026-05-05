@@ -1,0 +1,295 @@
+{
+  "reporting_period": "30th March 2026 - 5th April 2026",
+  "labour_daily": {
+    "2026-03-30": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "2",
+      "Office Attendant": "0",
+      "Office Assistant": "0",
+      "Foreman": "3",
+      "Operator": "5",
+      "Mason": "3",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "0",
+      "Steel fixers": "0",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "2",
+      "Unskilled": "15",
+      "Safety officer": "1",
+      "Store keeper": "1",
+      "Security": "8",
+      "TOTAL": "41"
+    },
+    "2026-03-31": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "2",
+      "Office Attendant": "0",
+      "Office Assistant": "0",
+      "Foreman": "3",
+      "Operator": "5",
+      "Mason": "3",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "4",
+      "Steel fixers": "16",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "2",
+      "Unskilled": "27",
+      "Safety officer": "1",
+      "Store keeper": "1",
+      "Security": "8",
+      "TOTAL": "41"
+    },
+    "2026-04-01": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "2",
+      "Office Attendant": "0",
+      "Office Assistant": "0",
+      "Foreman": "3",
+      "Operator": "5",
+      "Mason": "3",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "4",
+      "Steel fixers": "16",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "2",
+      "Unskilled": "16",
+      "Safety officer": "1",
+      "Store keeper": "1",
+      "Security": "8",
+      "TOTAL": "62"
+    },
+    "2026-04-02": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "1",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "2(m)",
+      "Foreman": "3",
+      "Operator": "4(m)",
+      "Mason": "2(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "1(m)",
+      "Steel fixers": "8(1f,\n7m)",
+      "Steel Unskilled": "7(m)",
+      "Drivers": "0",
+      "Surveyors": "2(1m,\n1f)",
+      "Unskilled": "6(1f,\n5m)",
+      "Safety officer": "1(m)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "TOTAL": "42"
+    },
+    "2026-04-03": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "1",
+      "Office Attendant": "2(m)",
+      "Office Assistant": "1(f)",
+      "Foreman": "3(m)",
+      "Operator": "4(m)",
+      "Mason": "2(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "4(m)",
+      "Steel fixers": "1(m)",
+      "Steel Unskilled": "1(m)",
+      "Drivers": "0",
+      "Surveyors": "2(1m,\n1f)",
+      "Unskilled": "6(1f,\n5m)",
+      "Safety officer": "1(m)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "TOTAL": "32"
+    },
+    "2026-04-04": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "1",
+      "Office Attendant": "2(m)",
+      "Office Assistant": "1(f)",
+      "Foreman": "3(m)",
+      "Operator": "6(m)",
+      "Mason": "2(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "1(m)",
+      "Steel fixers": "1(m)",
+      "Steel Unskilled": "0",
+      "Drivers": "1(m)",
+      "Surveyors": "2(1m,\n1f)",
+      "Unskilled": "13(3f,\n10m)",
+      "Safety officer": "1(m)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "TOTAL": "38"
+    },
+    "2026-04-05": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "1",
+      "Office Attendant": "2(m)",
+      "Office Assistant": "1(f)",
+      "Foreman": "0",
+      "Operator": "0",
+      "Mason": "0",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "0",
+      "Steel fixers": "0",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "2(1m,\n1f)",
+      "Unskilled": "1(m)",
+      "Safety officer": "0",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "TOTAL": "11"
+    }
+  },
+  "weather_daily": {
+    "Monday 2026-03-30": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Tuesday 2026-03-31": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Wednesday 2026-04-01": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Thursday 2026-04-02": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Friday 2026-04-03": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Saturday 2026-04-04": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    },
+    "Sunday 2026-04-05": {
+      "MORNING": "Sunny",
+      "AFTERNOON": "Sunny",
+      "EVENING": "Cloudy",
+      "CONDITION": "Workable"
+    }
+  },
+  "insurances": [],
+  "materials_delivered": [
+    {
+      "description": "Cement",
+      "quantity": "0"
+    },
+    {
+      "description": "D20",
+      "quantity": "0"
+    },
+    {
+      "description": "D16",
+      "quantity": "0"
+    },
+    {
+      "description": "Ballast",
+      "quantity": "284.02 Tons"
+    },
+    {
+      "description": "River Sand",
+      "quantity": "0"
+    },
+    {
+      "description": "Timber Poles",
+      "quantity": "0"
+    }
+  ],
+  "machinery": [
+    {
+      "name": "Back-hoe excavator",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "21T Chain Excavator",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Concrete Mixer",
+      "qty": "2",
+      "status": "Idle"
+    },
+    {
+      "name": "Concrete Pump",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Batching Plant",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Concrete mixers",
+      "qty": "2",
+      "status": "Good"
+    },
+    {
+      "name": "18-ton roller",
+      "qty": "1",
+      "status": "Good"
+    }
+  ],
+  "instructions": [
+    {
+      "REF. NO": "020",
+      "instruction_issued": "Casting of Blind (B4) Contractor is given approval to proceed and cast blind for B4 foundation with class 15 of concrete",
+      "date": "02/04/2026",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Ajwang (Resident Engineer)"
+    }
+  ],
+  "security_prose": "The site was secure \u2013 No theft reported",
+  "health_safety_prose": "There was one incident on Friday.",
+  "visitors_prose": "There were no visitors.",
+  "challenges_prose": "Certain activities were delayed or slowed due to insufficient material stock and tools on-site",
+  "summary_to_date": {
+    "Monday 2026-03-30": "Branding of site hoarding- General works; Block B3: Casting of column kickers.; Block B4: Excavation",
+    "Tuesday 2026-03-31": "Branding of site hoarding- General works; Block B3: Formwork to lift walling.; Excavation of the underground Tank",
+    "Wednesday 2026-04-01": "Block B4: Removal of rocks from the excavated foundation.; Excavation of the Underground Tank's pit",
+    "Thursday 2026-04-02": "Block B4: Rock excavation and removal of hard strata to achieve design founding levels; Block B4: Casting and molding of concrete cover blocks for B4 columns",
+    "Friday 2026-04-03": "Block B3: Erection and bracing of formwork for the lift shear wall; Block B4: Rock excavation and removal of hard strata to achieve design founding levels",
+    "Saturday 2026-04-04": "Block B4: Blinding works for the raft foundation; Concrete specimens prepared for compressive strength testing of the B4 raft blinding; Block C1: Excavation of the pit for the raft foundation",
+    "Sunday 2026-04-05": "Block C1: Excavation of the raft foundation pit",
+    "GENERAL WORKS": "Hoarding; Construction of site office; Construction of Cement store; Construction of general store; Construction of Operation room for the batching plant; Construction of 7No. Ablution blocks; Construction of changing rooms (male and female); Electrical power connection; Borehole drilling; 3-phase power connection - Ongoing; Construction of realtor's office - ongoing",
+    "BLOCK B1": "Site clearance; Setting out; Mass excavation ongoing; Compaction of excavated section; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement and formwork of foundation columns and lift shear wall",
+    "BLOCK B2": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK B3": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done",
+    "BLOCK B4": "Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK C5": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m- ongoing",
+    "UNDERGROUND TANK": "Site clearance; Setting out; Excavations for the foundation pit.; Other works on hold",
+    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing.; Levelling and compaction.; Concrete blinding.; Casting of strip and pad footings.; Casting of substructure columns.; Foundation walling -ongoing",
+    "SWIMMING POOL": "Site clearance; Setting out.; Other works on hold",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "WASTE CUBICLE": "None",
+    "WTP": "None"
+  },
+  "fingerprint": "1982b6ea87dda03898668991f3f28fc7b1c1a24c065885c9e66587537a025374"
+}

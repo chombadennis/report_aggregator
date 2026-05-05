@@ -1,0 +1,276 @@
+{
+  "reporting_period": "27th April - 3rd May, 2026",
+  "labour_daily": {
+    "2026-04-27": {
+      "Site Agent/PM": "1",
+      "Ass. Site Agent": "0",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "1(m)",
+      "Operator": "1(m)",
+      "Mason": "4(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "0",
+      "Steel fixers": "10(m)",
+      "Steel Unskilled": "4(1f, 3m)",
+      "Drivers": "0",
+      "Surveyors": "2(1f, 1m)",
+      "Unskilled": "8(3f, 5m)",
+      "Safety officer": "1(f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "0",
+      "TOTAL": "40"
+    },
+    "2026-04-28": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "0",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "2(m)",
+      "Operator": "6(m)",
+      "Mason": "5(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "4(m)",
+      "Steel fixers": "7(m)",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "16(6f,\n10m)",
+      "Safety officer": "2(1m, 1f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "5(1f, 4m)",
+      "TOTAL": "61"
+    },
+    "2026-04-29": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "0",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "2(m)",
+      "Operator": "7(m)",
+      "Mason": "3(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "8(m)",
+      "Steel fixers": "3(m)",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "20(6f,\n12m)",
+      "Safety officer": "2(1m, 1f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "8(2f, 6m)",
+      "TOTAL": "70"
+    },
+    "2026-04-30": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "0",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "2(m)",
+      "Operator": "7(m)",
+      "Mason": "5(m)",
+      "Electrician": "1(m)",
+      "Plumbers": "1(m)",
+      "Carpenters": "0",
+      "Steel fixers": "0",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "12(5f,\n7m)",
+      "Safety officer": "2(1m, 1f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "4(2f, 2m)",
+      "TOTAL": "47"
+    },
+    "2026-05-01": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "1(m)",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "2(m)",
+      "Operator": "2(m)",
+      "Mason": "4(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "6(m)",
+      "Steel fixers": "3(m)",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "17(7f,\n10m)",
+      "Safety officer": "2(1m, 1f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "0",
+      "TOTAL": "46"
+    },
+    "2026-05-02": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "1(m)",
+      "Office Attendant": "1(f)",
+      "Office Assistant": "1(f)",
+      "Foreman": "3(m)",
+      "Operator": "4(m)",
+      "Mason": "5(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "6(m)",
+      "Steel fixers": "1(m)",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "27(-)",
+      "Safety officer": "2(1m, 1f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "0",
+      "TOTAL": "58"
+    },
+    "2026-05-03": {
+      "Site Agent/PM": "1(m)",
+      "Ass. Site Agent": "0",
+      "Office Attendant": "0",
+      "Office Assistant": "0",
+      "Foreman": "3(m)",
+      "Operator": "4(m)",
+      "Mason": "1(m)",
+      "Electrician": "0",
+      "Plumbers": "0",
+      "Carpenters": "13(m)",
+      "Steel fixers": "7(1f, 6m)",
+      "Steel Unskilled": "0",
+      "Drivers": "0",
+      "Surveyors": "0",
+      "Unskilled": "19(6f,\n13m)",
+      "Safety officer": "1(f)",
+      "Store keeper": "1(m)",
+      "Security": "2(1m, 1f)",
+      "Painters": "0",
+      "Interns": "0",
+      "TOTAL": "55"
+    }
+  },
+  "weather_daily": {
+    "Monday 2026-04-27": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Sunny -Favorable for work",
+      "EVENING": "Sunny- favorable for work",
+      "CONDITION": "Favorable for work"
+    },
+    "Tuesday 2026-04-28": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Rainy -Favorable for work",
+      "EVENING": "Cloudy- favorable for work",
+      "CONDITION": "It rained for 2 hours between 12 pm and 2pm"
+    },
+    "Wednesday 2026-04-29": {
+      "MORNING": "Rainy- Semi-favorable for work",
+      "AFTERNOON": "Cloudy -Favorable for work",
+      "EVENING": "Cloudy- favorable for work",
+      "CONDITION": "It rained for 2 hours between 8am and 10am"
+    },
+    "Thursday 2026-04-30": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Rainy -Semi-favorable for work",
+      "EVENING": "Rainy- Semi-favorable for work",
+      "CONDITION": "It rained intermittently in the afternoon from 3pm to evening 6:30 pm"
+    },
+    "Friday 2026-05-01": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Sunny-Favorable for work",
+      "EVENING": "Sunny-Favorable for work",
+      "CONDITION": "Favorable for work"
+    },
+    "Saturday 2026-05-02": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Sunny-Favorable for work",
+      "EVENING": "Sunny-Favorable for work",
+      "CONDITION": "Favorable for work"
+    },
+    "Sunday 2026-05-03": {
+      "MORNING": "Sunny- Favorable for work",
+      "AFTERNOON": "Sunny-Favorable for work",
+      "EVENING": "Sunny-Favorable for work",
+      "CONDITION": "Favorable for work"
+    }
+  },
+  "insurances": [],
+  "materials_delivered": [
+    {
+      "description": "Sand",
+      "quantity": "361.6 Tons"
+    },
+    {
+      "description": "Cement- 32.5N",
+      "quantity": "580.0 bags"
+    }
+  ],
+  "machinery": [
+    {
+      "name": "Back-hoe excavator",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "21T Chain Excavator",
+      "qty": "1",
+      "status": "Idle"
+    },
+    {
+      "name": "Concrete Mixer",
+      "qty": "2",
+      "status": "Working"
+    },
+    {
+      "name": "Concrete Pump",
+      "qty": "1",
+      "status": "Working"
+    },
+    {
+      "name": "Batching Plant",
+      "qty": "1",
+      "status": "Working"
+    }
+  ],
+  "instructions": [
+    {
+      "REF. NO": "024",
+      "instruction_issued": "Use of None- Approved Material: Contractor is still advised to avoid the use of any none approved material e.g. Steel until testing is done for approval We recommend for the contactor to stop forthwith use of any none approved material until sampling is done and approved",
+      "date": "29/04/2026",
+      "INSTRUCTIONS GIVEN BY": "Eng. George Agwang'"
+    }
+  ],
+  "security_prose": "The site was secure throughout the week.",
+  "health_safety_prose": "No accidents or incidents reported during the week.",
+  "visitors_prose": "Total visitors this week: 0",
+  "challenges_prose": "Work behind schedule",
+  "summary_to_date": {
+    "GENERAL WORKS": "Hoarding; Construction of site office; Construction of Cement store; Construction of general store; Construction of Operation room for the batching plant; Construction of 7No. Ablution blocks; Construction of changing rooms (male and female); Electrical power connection; Borehole drilling; 3-phase power connection - Ongoing; Construction of realtor's office - ongoing",
+    "BLOCK B1": "Site clearance; Setting out; Mass excavation ongoing; Compaction of excavated section; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement and formwork of foundation columns and lift shear wall",
+    "BLOCK B2": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation; Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK B3": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction.; FDD Test; Blinding works; Reinforcement to the raft foundation",
+    "BLOCK B4": "Casting of raft foundation- done; Reinforcement of foundation columns and lift shear wall; Formwork of the lift shear wall",
+    "BLOCK C5": "Site clearance; Setting out; Excavation for raft foundation to a depth of 3m.; Levelling and compaction in progress.",
+    "UNDERGROUND TANK": "Site clearance; Setting out; Excavations for the foundation pit.; Other works on hold",
+    "KINDERGATEN": "Site clearance; Excavation for pad footings and trenches for strip footing.; Levelling and compaction.; Concrete blinding.; Casting of strip and pad footings.; Casting of substructure columns.; Foundation walling -ongoing",
+    "SWIMMING POOL": "Site clearance; Setting out.; Other works on hold",
+    "CLUB HOUSE": "None",
+    "SEPTIC TANK": "None",
+    "WASTE CUBICLE": "None",
+    "WTP": "None"
+  },
+  "fingerprint": "4f6b63188efb9442387091a4ca5a524958751fa6a7e6777a46e501ca4eb1d7e7"
+}

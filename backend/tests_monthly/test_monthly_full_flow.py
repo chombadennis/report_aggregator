@@ -12,7 +12,7 @@ from monthly_generator import MonthlyReportGenerator
 
 async def main():
     # 1. SETUP PATHS
-    root_dir = r"d:\maks_ahp"
+    root_dir = r"d:\maks_ahp\weeklies"
     weekly_pdfs = [
         os.path.join(root_dir, "MAKINDU AHP WEEKLY REPORT TEMPLATE FINAL 19TH WEEK MARCH AND APRIL.pdf"),
         os.path.join(root_dir, "MAKINDU AHP WEEK 20 PROGRESS REPORT.pdf"),
@@ -34,8 +34,8 @@ async def main():
     os.makedirs(session_dir, exist_ok=True)
 
     # 2. INITIALIZE
-    parser = ReportParser(cache_dir="cache_monthly_test")
-    aggregator = MonthlyAggregator(history_dir="history_monthly_test")
+    parser = ReportParser(cache_dir="cache")
+    aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
     generator = MonthlyReportGenerator(template_path)
 
     # 3. PARSE WEEKLY REPORTS (Parallel - Limited to 2 at a time)

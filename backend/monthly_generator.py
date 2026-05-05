@@ -57,12 +57,8 @@ class MonthlyReportGenerator:
     def generate_report(self, output_path, data):
         doc = Document(self.template_path)
 
-        # 0. Page Setup (Margins)
-        section = doc.sections[0]
-        section.left_margin = Inches(0.75)
-        section.right_margin = Inches(0.75)
-        section.top_margin = Inches(1.0)
-        section.bottom_margin = Inches(1.0)
+        # 0. Page Setup (Preserve Template Settings)
+        # We removed manual margin overrides to prevent footer repositioning
 
         # 1. Title (Cover Page)
         for para in doc.paragraphs:
@@ -235,6 +231,13 @@ class MonthlyReportGenerator:
                 vals = matrix.get(cat, ["0"] * 7)
                 for col_idx, day_idx in enumerate(valid_days):
                     row.cells[col_idx+1].text = str(vals[day_idx])
+                
+                # Bold the TOTAL row
+                if cat.upper() == "TOTAL":
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for run in p.runs:
+                                run.bold = True
             
             # 3. Position them in the document
             if last_element is not None:
