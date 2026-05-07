@@ -138,6 +138,26 @@ export default function Home() {
         </h1>
         <p className="text-vivid-tangerine-800 mb-8 text-lg font-medium">Industrial AI reporting for professional site managers.</p>
 
+        {/* Dashboard Navigation */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+          <a href="/contract" className="group bg-white p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-3xl">📝</span>
+              <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+            <h3 className="font-bold text-vivid-tangerine-950">Contract Summary</h3>
+            <p className="text-xs text-vivid-tangerine-600">Project details and scope of works</p>
+          </a>
+          <a href="/trends" className="group bg-white p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-3xl">📈</span>
+              <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+            <h3 className="font-bold text-vivid-tangerine-950">Trends & Risks</h3>
+            <p className="text-xs text-vivid-tangerine-600">Visual performance & risk analysis</p>
+          </a>
+        </div>
+
         {/* Mode Selector */}
         <div className="flex gap-4 mb-8">
           <button

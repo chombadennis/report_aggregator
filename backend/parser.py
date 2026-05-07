@@ -127,16 +127,15 @@ class ReportParser:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    def _check_cache(self, pdf_path):
+    def _check_cache(self, pdf_path, report_type="DAILY"):
         """
-        Quick cache-only check using SHA256 fingerprinting.
-        Returns cached data immediately if available, otherwise returns None.
-        Use this for a fast pre-flight check before committing to a full scan.
+        Quick cache-only check using SHA256 fingerprinting + report type.
         """
         file_hash = self._get_file_hash(pdf_path)
-        cache_path = os.path.join(self.cache_dir, f"{file_hash}.json")
+        # Use report_type in the cache name to prevent "Daily" scans from blocking "Weekly" scans of the same file
+        cache_path = os.path.join(self.cache_dir, f"{report_type}_{file_hash}.json")
         if os.path.exists(cache_path):
-            logger.info(f"🟢 RESUME: Found cached results for {os.path.basename(pdf_path)} (Hash: {file_hash[:8]})")
+            logger.info(f"🟢 RESUME: Found {report_type} cached results for {os.path.basename(pdf_path)}")
             with open(cache_path, "r") as f:
                 return json.load(f)
         return None
@@ -144,13 +143,13 @@ class ReportParser:
     async def parse_report(self, pdf_path, session_dir, report_type="DAILY"):
         """Intelligently scans pages with per-page caching for resumption."""
         # Fast path: return from cache if this file was already fully processed
-        cached = self._check_cache(pdf_path)
+        cached = self._check_cache(pdf_path, report_type)
         if cached is not None:
             return cached
 
         file_hash = self._get_file_hash(pdf_path)
-        cache_path = os.path.join(self.cache_dir, f"{file_hash}.json")
-        page_cache_dir = os.path.join(self.cache_dir, f"pages_{file_hash[:8]}")
+        cache_path = os.path.join(self.cache_dir, f"{report_type}_{file_hash}.json")
+        page_cache_dir = os.path.join(self.cache_dir, f"pages_{report_type}_{file_hash[:8]}")
         os.makedirs(page_cache_dir, exist_ok=True)
 
         # Step 1: Integrity Check

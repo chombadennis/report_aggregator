@@ -100,3 +100,21 @@ class MonthlyReportSchema(BaseModel):
     challenges: str = ""
     
     visitors_prose: List[str] = Field(default_factory=list) # Not compiled into template, but kept in JSON
+
+class ContractSummarySchema(BaseModel):
+    project_title: str = Field(default="")
+    contract_no: str = Field(default="")
+    employer: str = Field(default="")
+    contractor: str = Field(default="")
+    consultant: str = Field(default="")
+    contract_sum: str = Field(default="")
+    contract_period: str = Field(default="")
+    possession_date: str = Field(default="")
+    commencement_date: str = Field(default="")
+    completion_date: str = Field(default="")
+    scope_of_works: List[str] = Field(default_factory=list)
+    location: str = Field(default="")
+    socio_economic_impact: str = Field(default="")
+    insurances: List[Dict[str, str]] = Field(default_factory=list)
+    
+    fingerprint: Optional[str] = None

@@ -167,19 +167,41 @@ async def _call_vertex_vision(prompt: str, model: str, file_path: str, mime_type
 
         raise Exception(f"AI Service Error: {resp.status_code} - {resp.text}")
 
+def _clean_ai_json(raw_text: str) -> dict:
+    """Attempts to clean and parse AI-generated JSON, handling common errors."""
+    try:
+        # 1. Strip Markdown code blocks if present
+        clean_text = raw_text.strip()
+        if "```json" in clean_text:
+            clean_text = clean_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in clean_text:
+            clean_text = clean_text.split("```")[1].split("```")[0].strip()
+            
+        # 2. Basic cleanup for common AI mistakes
+        return json.loads(clean_text)
+    except Exception as e:
+        logger.error(f"Failed to parse AI JSON. Raw: {raw_text[:200]}... | Error: {e}")
+        # Final attempt: remove non-printable control characters
+        try:
+            import re
+            cleaner = re.sub(r'[\x00-\x1F\x7F]', '', clean_text)
+            return json.loads(cleaner)
+        except:
+            raise ValueError(f"AI returned invalid JSON: {e}")
+
 async def generate_structured_data(prompt: str, file_path: str, mime_type: str = "application/pdf", force_pro: bool = False):
     """Entry point with fallback logic and optional high-precision 'Pro' mode."""
     model = GEMINI_FALLBACK_MODEL if force_pro else GEMINI_PRIMARY_MODEL
     try:
         logger.info(f"Using model: {model}")
         result = await _call_vertex_vision(prompt, model, file_path, mime_type)
-        return json.loads(result)
+        return _clean_ai_json(result)
     except Exception as e:
         if force_pro: # If we already failed with Pro, give up
             raise e
         logger.warning(f"Primary failed: {e}. Trying fallback: {GEMINI_FALLBACK_MODEL}")
         result = await _call_vertex_vision(prompt, GEMINI_FALLBACK_MODEL, file_path, mime_type)
-        return json.loads(result)
+        return _clean_ai_json(result)
 
 async def _call_vertex_text(prompt: str, model: str, retries: int = 5):
     """Async call to Vertex AI for text-only generation (also uses round-robin)."""
@@ -236,4 +258,4 @@ async def _call_vertex_text(prompt: str, model: str, retries: int = 5):
 async def generate_summary_json(prompt: str):
     """Generates an intelligent JSON summary from text without an image."""
     result = await _call_vertex_text(prompt, GEMINI_PRIMARY_MODEL)
-    return json.loads(result)
+    return _clean_ai_json(result)

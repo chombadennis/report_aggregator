@@ -12,6 +12,8 @@ from aggregator import Aggregator
 from generator import ReportGenerator
 from monthly_aggregator import MonthlyAggregator
 from monthly_generator import MonthlyReportGenerator
+from contract_parser import ContractParser
+from analytics import AnalyticsEngine
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -30,6 +32,8 @@ parser = ReportParser(cache_dir="cache")
 aggregator = Aggregator()
 monthly_parser = ReportParser(cache_dir="cache")
 monthly_aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
+contract_parser = ContractParser(cache_dir="cache")
+analytics_engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -178,6 +182,72 @@ async def download_session(session_id: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(shutil.rmtree, target_dir, ignore_errors=True)
     prefix = "Monthly" if "monthly" in target_dir else "Weekly"
     return FileResponse(file_path, filename=f"{prefix}_Report_{session_id[:8]}.docx")
+
+@app.get("/api/contract-summary")
+async def get_contract_summary():
+    data = contract_parser.get_contract_summary()
+    if not data:
+        return {"msg": "No contract summary found. Please upload a report to extract details."}
+    return data
+
+@app.post("/api/extract-contract-summary")
+async def extract_contract_summary(file: UploadFile = File(...)):
+    unique_id = uuid.uuid4().hex[:8]
+    temp_filename = f"upload_{unique_id}_{file.filename}"
+    temp_path = os.path.join(TEMP_DIR, temp_filename)
+    
+    with open(temp_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+        
+    try:
+        result = await contract_parser.extract_contract_details(temp_path)
+        return result
+    finally:
+        shutil.rmtree(session_dir, ignore_errors=True)
+
+@app.get("/api/trends")
+async def get_trends():
+    """
+    Analyzes historical JSONs chronologically to provide trend data.
+    """
+    return analytics_engine.get_historical_trends()
+
+@app.get("/api/ai-insights")
+async def get_ai_insights():
+    """
+    Feeds the historical trend data to Gemini for a management-level executive summary.
+    """
+    trends = analytics_engine.get_historical_trends()
+    contract = contract_parser.get_contract_summary()
+    return await analytics_engine.generate_ai_insights(trends, contract)
+
+@app.get("/api/analytics/trends")
+async def get_trends():
+    """Returns the comprehensive historical trend data."""
+    trends = analytics_engine.get_historical_trends()
+    daily = analytics_engine.get_daily_trends()
+    return {
+        "weekly": trends,
+        "daily": daily
+    }
+
+@app.get("/api/analytics/correlations")
+async def get_correlations():
+    """Returns data for scatter plots and heatmaps."""
+    return analytics_engine.get_correlations()
+
+@app.get("/api/analytics/insights")
+async def get_insights():
+    """Triggers AI analysis of current trends."""
+    trends = analytics_engine.get_historical_trends()
+    context = {}
+    context_path = "cache/contract_summary.json"
+    if os.path.exists(context_path):
+        with open(context_path, "r") as f:
+            context = json.load(f)
+    
+    insights = await analytics_engine.generate_ai_insights(trends, context)
+    return insights
 
 if __name__ == "__main__":
     import uvicorn
