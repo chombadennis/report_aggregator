@@ -320,7 +320,7 @@ class Aggregator:
             "summary_to_date": next((r.get("summary_of_works", {}) for r in reversed(reports_by_day) if r), {}),
             "report_date": daily_reports[0].get("report_date", "6th – 12th April 2026")
         }
-        self._save_to_history(result, "WEEKLY")
+        # self._save_to_history(result, "WEEKLY")
         return result
 
     def compile_monthly_data(self, weekly_results):

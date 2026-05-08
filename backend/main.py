@@ -7,6 +7,7 @@ import uuid
 import asyncio
 import json
 from typing import List
+from datetime import datetime
 from parser import ReportParser
 from aggregator import Aggregator
 from generator import ReportGenerator
@@ -14,6 +15,7 @@ from monthly_aggregator import MonthlyAggregator
 from monthly_generator import MonthlyReportGenerator
 from contract_parser import ContractParser
 from analytics import AnalyticsEngine
+from audit_generator import AuditReportGenerator
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -34,6 +36,7 @@ monthly_parser = ReportParser(cache_dir="cache")
 monthly_aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
 contract_parser = ContractParser(cache_dir="cache")
 analytics_engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
+audit_generator = AuditReportGenerator()
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -81,6 +84,7 @@ async def generate_weekly_stream(
                 "title": title, "report_date": report_date,
                 "time_elapsed": time_elapsed, "pct_period": pct_period, "pct_work": pct_work
             })
+            aggregator._save_to_history(weekly_summary, "WEEKLY")
 
             yield f"data: {json.dumps({'status': 'generating', 'msg': '📝 Finalizing Word Document...'})}\n\n"
             
@@ -248,6 +252,40 @@ async def get_insights():
     
     insights = await analytics_engine.generate_ai_insights(trends, context)
     return insights
+
+@app.get("/api/generate-audit-report")
+async def generate_audit_report(background_tasks: BackgroundTasks):
+    """Generates a full audit report document based on current trends and AI insights."""
+    session_id = str(uuid.uuid4())
+    session_dir = os.path.join(TEMP_DIR, f"audit_{session_id}")
+    os.makedirs(session_dir, exist_ok=True)
+    
+    try:
+        # 1. Gather data
+        trends = analytics_engine.get_historical_trends()
+        context = {}
+        context_path = "cache/contract_summary.json"
+        if os.path.exists(context_path):
+            with open(context_path, "r") as f:
+                context = json.load(f)
+        
+        # 2. Get AI Insights
+        insights = await analytics_engine.generate_ai_insights(trends, context)
+        
+        # 3. Generate Document
+        output_docx = os.path.join(session_dir, "Audit_Report.docx")
+        audit_generator.generate_report(output_docx, trends, insights)
+        
+        # 4. Return file (don't delete immediately, let download-session handle it if we want, 
+        # or just return it now and delete later)
+        return FileResponse(
+            output_docx, 
+            filename=f"Audit_Report_{datetime.now().strftime('%Y%m%d')}.docx",
+            background=background_tasks.add_task(shutil.rmtree, session_dir, ignore_errors=True)
+        )
+    except Exception as e:
+        shutil.rmtree(session_dir, ignore_errors=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

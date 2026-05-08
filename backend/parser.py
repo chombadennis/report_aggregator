@@ -91,9 +91,9 @@ class ReportParser:
              * Tuesday 2026-03-31
              * Wednesday 2026-04-01
              * ... etc.
-        3. YOU MUST USE THIS EXACT FORMAT "Day YYYY-MM-DD" AS KEYS in 'labour_daily' and 'weather_daily'.
-           - Example Key: "Monday 2026-03-30"
-           - NEVER use "Mon", "Monday", or just the date. 
+        3. YOU MUST USE THIS EXACT FORMAT "YYYY-MM-DD" AS KEYS in 'labour_daily' and 'weather_daily'.
+           - Example Key: "2026-03-30"
+           - NEVER use "Mon", "Monday", or "Day YYYY-MM-DD". 
            - VERIFY THE YEAR: If the cover says 2026, all dates MUST be in 2026.
         !!! END OF CRITICAL RULE !!!
 
@@ -251,7 +251,7 @@ class ReportParser:
                 
                 # Inject context if available to prevent hallucination on subsequent pages
                 if reporting_context:
-                    prompt = f"CONTEXT: The reporting period for this entire document is '{reporting_context}'. Use this period to strictly calculate ALL dates for 'Day YYYY-MM-DD' keys.\n\n" + prompt
+                    prompt = f"CONTEXT: The reporting period for this entire document is '{reporting_context}'. Use this period to strictly calculate ALL dates for 'YYYY-MM-DD' keys.\n\n" + prompt
 
                 result = await generate_structured_data(prompt, tmp_path, mime_type="image/png")
                 

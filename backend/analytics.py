@@ -35,7 +35,8 @@ class AnalyticsEngine:
             
             # CASE A: Modern Schema
             if isinstance(labour_daily, dict) and labour_daily:
-                for date_key, labour_stats in labour_daily.items():
+                for k, labour_stats in labour_daily.items():
+                    date_key = k.split(" ")[-1] if " " in str(k) else str(k)
                     if date_key in seen_dates: continue
                     
                     weather_stats = {}
@@ -57,7 +58,9 @@ class AnalyticsEngine:
                         "labour": day_total,
                         "materials": mat_count,
                         "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
-                        "is_weekend": 1 if is_weekend else 0
+                        "is_weekend": 1 if is_weekend else 0,
+                        "financial_progress": entry.get("pct_work") or entry.get("financial_progress") or "0%",
+                        "time_progress": entry.get("pct_period") or entry.get("time_progress") or "0%"
                     })
                     seen_dates.add(date_key)
             
@@ -80,7 +83,9 @@ class AnalyticsEngine:
                         "labour": day_total,
                         "materials": mat_count,
                         "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
-                        "is_weekend": 1 if curr_date.weekday() >= 5 else 0
+                        "is_weekend": 1 if curr_date.weekday() >= 5 else 0,
+                        "financial_progress": entry.get("pct_work") or entry.get("financial_progress") or "0%",
+                        "time_progress": entry.get("pct_period") or entry.get("time_progress") or "0%"
                     })
                     seen_dates.add(date_key)
 
@@ -101,7 +106,9 @@ class AnalyticsEngine:
                     "_sort_date": w_start,
                     "labour": weekly_labour[i] if i < len(weekly_labour) else {},
                     "weather": weekly_weather[i] if i < len(weekly_weather) else [],
-                    "materials_sum": m_entry.get("materials_sum", {})
+                    "materials_sum": m_entry.get("materials_sum", {}),
+                    "financial_progress": m_entry.get("pct_work"),
+                    "time_progress": m_entry.get("pct_period")
                 }
                 process_entry(w_entry)
 
@@ -197,6 +204,7 @@ class AnalyticsEngine:
         
         # 2. Use a dictionary to enforce uniqueness by date period
         unique_trends = {} # Key: _display_date, Value: Normalized Data
+        consumed_weekly_dates = set()
 
         # Process Monthly Data First (Priority for "Exact" reconstructed weeks)
         for m_entry in raw_monthly:
@@ -254,10 +262,30 @@ class AnalyticsEngine:
                         if note not in weather_notes:
                             weather_notes.append(note)
 
-                # 2. Descriptive Material Summary (Full Detail: Names + Qty + Units)
-                m_sum = m_entry.get("materials_sum", {})
-                mat_lines = [f"{n} ({i.get('qty')} {i.get('unit')})" for n, i in list(m_sum.items())[:5]]
-                materials_desc = f"{len(m_sum)} categories: {', '.join(mat_lines)}" if m_sum else "0 categories"
+                # Strategy: Match the actual standalone weekly report using the parsed start date (allow 3 days variance for month boundaries)
+                w_match = next((w for w in raw_weekly if w.get("_sort_date") and abs((w.get("_sort_date").date() - w_start.date()).days) <= 4), None)
+                
+                if w_match:
+                    # Found the specific weekly JSON - extract verbatim
+                    m_delivered = w_match.get("materials_delivered", [])
+                    # Filter out materials with 0 quantity
+                    valid_materials = [m for m in m_delivered if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
+                    m_lines = [f"{m.get('description', 'Unknown').upper()} ({m.get('quantity', '0')})" for m in valid_materials[:5]]
+                    materials_desc = f"{len(valid_materials)} categories: {', '.join(m_lines)}" if valid_materials else "0 categories"
+                    # Adopt the true reporting period from the weekly file if available
+                    period = w_match.get("_display_date", period)
+                    if w_match.get("_sort_date"):
+                        consumed_weekly_dates.add(w_match.get("_sort_date").strftime("%Y-%m-%d"))
+                else:
+                    # Fallback to Master data (per-week list if available)
+                    m_list = m_entry.get("weekly_materials", [])
+                    if i < len(m_list):
+                        materials_desc = m_list[i]
+                    else:
+                        # Final Fallback to monthly total (Legacy)
+                        m_sum = m_entry.get("materials_sum", {})
+                        mat_lines = [f"{n} ({i.get('qty')} {i.get('unit')})" for n, i in list(m_sum.items())[:5]]
+                        materials_desc = f"{len(m_sum)} categories: {', '.join(mat_lines)}" if m_sum else "0 categories"
 
                 unique_trends[date_key] = {
                     "sort_date": w_start,
@@ -293,7 +321,7 @@ class AnalyticsEngine:
                 w_start = ReportParser()._parse_weekly_start_date(period) or datetime.min
             
             date_key = w_start.strftime("%Y-%m-%d")
-            if date_key in unique_trends: continue
+            if date_key in unique_trends or date_key in consumed_weekly_dates: continue
             
             # Detect schema
             labour_data = d.get("labour_daily") or d.get("labour") or {}
@@ -310,16 +338,23 @@ class AnalyticsEngine:
             is_disrupted = any(day.get("Condition") != "Workable" for day in weather_data.values()) if isinstance(weather_data, dict) else False
             weather_comments = [day.get("Comments") for day in weather_data.values() if day.get("Comments")]
             
+            m_delivered = d.get("materials_delivered", [])
+            valid_mats = [m for m in m_delivered if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
+            m_lines = [f"{m.get('description', 'Unknown').upper()} ({m.get('quantity', '0')})" for m in valid_mats[:5]]
+            materials_val = f"{len(valid_mats)} categories: {', '.join(m_lines)}" if valid_mats else "0 categories"
+            if not m_delivered:
+                materials_val = d.get("materials_count", 0)
+                
             unique_trends[date_key] = {
                 "sort_date": w_start,
                 "label": period,
                 "value": round(val, 1),
-                "materials": d.get("materials_count", 0),
+                "materials": materials_val,
                 "weather_disrupted": is_disrupted,
                 "weather_comments": weather_comments,
                 "prose_summary": d.get("executive_summary", ""),
-                "work_completed_percent": "N/A",
-                "time_elapsed_percent": "N/A",
+                "work_completed_percent": d.get("pct_work") or d.get("work_completed_percent") or "N/A",
+                "time_elapsed_percent": d.get("pct_period") or d.get("time_elapsed_percent") or "N/A",
                 "site_instructions": [],
                 "critical_warnings": []
             }

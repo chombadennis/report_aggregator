@@ -325,6 +325,27 @@ class MonthlyAggregator:
                             week_comments.append(c)
             weather_comments.append(" • " + "\n • ".join(week_comments) if week_comments else "None")
 
+            # Capture Materials for this specific week
+            week_mat_sum = {}
+            if report:
+                for item in report.get("materials_delivered", []):
+                    if not isinstance(item, dict): continue
+                    m_name = (item.get("description") or item.get("Description") or "Unknown").upper().strip()
+                    m_qty = item.get("quantity") or item.get("Quantity") or "0"
+                    m_unit = item.get("unit") or item.get("units") or item.get("Unit") or ""
+                    week_mat_sum[m_name] = {"qty": m_qty, "unit": m_unit}
+            
+            # Format a compact string for the trend tooltip
+            if week_mat_sum:
+                m_lines = [f"{n} ({i['qty']} {i['unit']})" for n, i in list(week_mat_sum.items())[:5]]
+                m_desc = f"{len(week_mat_sum)} categories: {', '.join(m_lines)}"
+            else:
+                m_desc = "0 categories"
+            
+            if not hasattr(self, 'weekly_materials_list'):
+                self.weekly_materials_list = []
+            self.weekly_materials_list.append(m_desc)
+
         # 2. Aggregated Sections
         latest_week = weekly_reports[-1] if weekly_reports else {}
         
@@ -470,6 +491,7 @@ class MonthlyAggregator:
             "weekly_valid_days": [w["valid_days"] for w in expected_weeks],
             "weekly_labour": weekly_labour_matrices,
             "weekly_weather": weekly_weather_grids,
+            "weekly_materials": self.weekly_materials_list,
             "weather_comments": weather_comments,
             "summary_to_date": latest_week.get("summary_to_date", {}),
             "materials_sum": materials_sum,
