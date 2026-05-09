@@ -146,14 +146,6 @@ export default function ContractSummary() {
               </div>
             </div>
 
-            <div className="md:col-span-2 flex justify-end">
-                <button 
-                    onClick={() => setSummary(null)}
-                    className="text-xs font-bold text-vivid-tangerine-400 hover:text-vivid-tangerine-600 uppercase tracking-widest"
-                >
-                    Reset Project Details
-                </button>
-            </div>
           </div>
         )}
       </div>
