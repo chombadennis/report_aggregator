@@ -22,121 +22,113 @@ class AnalyticsEngine:
         return int(m.group(0)) if m else 0
 
     def get_daily_trends(self):
-        all_data = self._get_all_data(source="weekly")
-        monthly_data = self._get_all_data(source="monthly")
+        raw_dailies = self._get_all_data(source="daily")
         
         daily_timeline = []
         seen_dates = set()
         
-        def process_entry(entry):
-            start_dt = entry.get("_sort_date")
-            labour_daily = entry.get("labour_daily", {})
-            weather_daily = entry.get("weather_daily", {})
-            
-            # CASE A: Modern Schema
-            if isinstance(labour_daily, dict) and labour_daily:
-                for k, labour_stats in labour_daily.items():
-                    date_key = k.split(" ")[-1] if " " in str(k) else str(k)
-                    if date_key in seen_dates: continue
-                    
-                    weather_stats = {}
-                    if isinstance(weather_daily, dict):
-                        for w_key, w_val in weather_daily.items():
-                            if date_key in w_key:
-                                weather_stats = w_val
-                                break
-                    
-                    day_total = self._clean_val(labour_stats.get("TOTAL", "0") if isinstance(labour_stats, dict) else labour_stats)
-                    mat_count = len(entry.get("materials_delivered", []) or entry.get("materials_sum", {}))
-                    
-                    try:
-                        is_weekend = datetime.strptime(date_key, "%Y-%m-%d").weekday() >= 5
-                    except: is_weekend = False
-
-                    daily_timeline.append({
-                        "date": date_key,
-                        "labour": day_total,
-                        "materials": mat_count,
-                        "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
-                        "is_weekend": 1 if is_weekend else 0,
-                        "financial_progress": entry.get("pct_work_done") or entry.get("pct_work") or entry.get("financial_progress") or "0%",
-                        "time_progress": entry.get("pct_period_elapsed") or entry.get("pct_period") or entry.get("time_progress") or "0%"
-                    })
-                    seen_dates.add(date_key)
-            
-            # CASE B: Legacy/Aggregated Schema
-            elif "labour" in entry and isinstance(entry["labour"], dict) and start_dt:
-                total_row = entry["labour"].get("TOTAL", [])
-                weather_list = entry.get("weather", [])
-                
-                for i, val in enumerate(total_row):
-                    curr_date = start_dt + timedelta(days=i)
-                    date_key = curr_date.strftime("%Y-%m-%d")
-                    if date_key in seen_dates: continue
-                    
-                    weather_stats = weather_list[i] if i < len(weather_list) else {}
-                    day_total = self._clean_val(val)
-                    mat_count = len(entry.get("materials_sum", {}))
-
-                    daily_timeline.append({
-                        "date": date_key,
-                        "labour": day_total,
-                        "materials": mat_count,
-                        "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
-                        "is_weekend": 1 if curr_date.weekday() >= 5 else 0,
-                        "financial_progress": entry.get("pct_work_done") or entry.get("pct_work") or entry.get("financial_progress") or "0%",
-                        "time_progress": entry.get("pct_period_elapsed") or entry.get("pct_period") or entry.get("time_progress") or "0%"
-                    })
-                    seen_dates.add(date_key)
-
-        # 1. PROCESS MONTHLY FIRST (Priority for the reconstructed Master timeline)
-        from parser import ReportParser
-        p = ReportParser()
+        def _parse_daily_date(date_str):
+            import re
+            from datetime import datetime
+            if not date_str: return None
+            cleaned = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", date_str, flags=re.IGNORECASE)
+            for fmt in ["%A %d %B %Y", "%d %B %Y", "%A, %d %B %Y", "%Y-%m-%d"]:
+                try: return datetime.strptime(cleaned.strip(), fmt)
+                except: continue
+            return None
         
-        for m_entry in monthly_data:
-            weekly_labour = m_entry.get("weekly_labour", [])
-            weekly_weather = m_entry.get("weekly_weather", [])
-            weekly_periods = m_entry.get("weekly_periods", [])
+        # PROCESS DAILY FILES DIRECTLY
+        for entry in raw_dailies:
+            dt = _parse_daily_date(entry.get("date", ""))
+            if not dt: continue
             
-            for i, period in enumerate(weekly_periods):
-                w_start = p._parse_weekly_start_date(period)
-                if not w_start: continue
-                
-                w_entry = {
-                    "_sort_date": w_start,
-                    "labour": weekly_labour[i] if i < len(weekly_labour) else {},
-                    "weather": weekly_weather[i] if i < len(weekly_weather) else [],
-                    "materials_sum": m_entry.get("materials_sum", {}),
-                    "financial_progress": m_entry.get("pct_work"),
-                    "time_progress": m_entry.get("pct_period")
-                }
-                process_entry(w_entry)
-
-        # 2. PROCESS WEEKLY SECOND (Fill in any additional weeks not in the Master)
-        for entry in all_data:
-            process_entry(entry)
-        
+            date_key = dt.strftime("%Y-%m-%d")
+            if date_key in seen_dates: continue
+            
+            labour = entry.get("labour", {})
+            total_labour = self._clean_val(labour.get("TOTAL", "0"))
+            mat_count = len(entry.get("materials_delivered", []))
+            
+            w_stats = entry.get("weather", {})
+            weather_disrupted = 1 if "favorable" not in str(w_stats).lower() and "sunny" not in str(w_stats).lower() and "-" not in str(w_stats) else 0
+            
+            daily_timeline.append({
+                "date": date_key,
+                "labour": total_labour,
+                "materials": mat_count,
+                "weather_disrupted": weather_disrupted,
+                "is_weekend": 1 if dt.weekday() >= 5 else 0,
+                "financial_progress": entry.get("pct_work_done") or "0%",
+                "time_progress": entry.get("pct_period_elapsed") or entry.get("time_lapsed_weeks") or "0%"
+            })
+            seen_dates.add(date_key)
+            
         daily_timeline.sort(key=lambda x: x["date"])
         return daily_timeline
 
-    def get_correlations(self):
+    def get_correlations(self, financials_data=None):
         """
         Calculates correlation data for heatmaps and scatter plots.
-        Labour vs Materials, Labour vs Weather.
+        Uses Weekly data to match the financial reporting cycle.
         """
-        daily = self.get_daily_trends()
-        if not daily: return {}
+        raw_weekly = self._get_all_data(source="weekly")
+        if not raw_weekly or not financials_data: return {}
+        
+        weekly_fin = financials_data.get("weekly_financials", [])
+        # We need to map by normalized label to match financial_engine deduplication
+        import re
+        fin_map = {re.sub(r'[^a-z0-9]', '', str(w["label"]).lower()): w for w in weekly_fin}
+        
+        merged_data = []
+        for w in raw_weekly:
+            date_label = w.get("_display_date") or w.get("label", "Unknown Week")
+            norm_label = re.sub(r'[^a-z0-9]', '', str(date_label).lower())
+            
+            fin = fin_map.get(norm_label)
+            if not fin: continue
+            
+            # User's exact mathematical formula for Average Labour Turnover
+            # Total labour that week / ((number of non zero value categories in mon+tue+...)/7)
+            daily_labour = w.get("labour_daily", {})
+            total_labour_week = 0
+            non_zero_categories = 0
+            
+            for day, categories in daily_labour.items():
+                if not isinstance(categories, dict): continue
+                for cat_name, cat_val in categories.items():
+                    val = self._clean_val(cat_val)
+                    if cat_name == "TOTAL":
+                        total_labour_week += val
+                    else:
+                        if val > 0:
+                            non_zero_categories += 1
+                            
+            if non_zero_categories > 0:
+                # The user's formula
+                avg_labour = round(total_labour_week / (non_zero_categories / 7.0), 2)
+            else:
+                avg_labour = 0
+                
+            if avg_labour > 0: # Exclude dead weeks
+                merged_data.append({
+                    "date": date_label,
+                    "labour": avg_labour,
+                    "pct_work": fin["pct_work"],
+                    "slippage_gap": fin["slippage_gap"]
+                })
+                
+        if not merged_data: return {}
         
         import pandas as pd
-        df = pd.DataFrame(daily)
+        df = pd.DataFrame(merged_data)
         
         # Simple correlation matrix
-        corr = df[["labour", "materials", "weather_disrupted"]].corr().to_dict()
+        corr = df[["labour", "pct_work", "slippage_gap"]].corr().fillna(0).to_dict()
         
         return {
             "matrix": corr,
-            "scatter_labour_materials": df[["labour", "materials"]].to_dict(orient="records"),
-            "weather_impact_data": df.groupby("weather_disrupted")["labour"].mean().to_dict()
+            "scatter_labour_slippage": df[["labour", "slippage_gap"]].to_dict(orient="records"),
+            "scatter_labour_progress": df[["labour", "pct_work"]].to_dict(orient="records")
         }
 
     def _get_all_data(self, source="weekly"):
@@ -144,25 +136,25 @@ class AnalyticsEngine:
         target_dir = self.history_dir if source == "weekly" else self.monthly_dir
         all_data = []
         
-        if not os.path.exists(target_dir):
-            return []
-
-        history_files = [f for f in os.listdir(target_dir) if f.endswith('.json')]
+        history_files = [f for f in os.listdir(target_dir) if f.endswith('.json')] if os.path.exists(target_dir) else []
         
-        # 1. Process Cache (Weekly only)
-        if source == "weekly":
+        # 1. Process Cache (Weekly and Daily)
+        if source in ["weekly", "daily"]:
             cache_dir = "cache"
+            prefix = "WEEKLY_" if source == "weekly" else "DAILY_"
             if os.path.exists(cache_dir):
-                cache_files = [os.path.join(cache_dir, f) for f in os.listdir(cache_dir) if f.startswith("WEEKLY_") and f.endswith(".json")]
+                cache_files = [os.path.join(cache_dir, f) for f in os.listdir(cache_dir) if f.startswith(prefix) and f.endswith(".json")]
                 for cf in cache_files:
                     try:
                         with open(cf, "r") as f:
                             data = json.load(f)
-                            if "reporting_period" in data and "_display_date" not in data:
+                            if source == "weekly" and "reporting_period" in data and "_display_date" not in data:
                                 data["_display_date"] = data["reporting_period"]
                                 # USE GLOBAL ReportParser() DIRECTLY
                                 data["_sort_date"] = ReportParser()._parse_weekly_start_date(data["reporting_period"])
-                            all_data.append(data)
+                                all_data.append(data)
+                            elif source == "daily" and "date" in data:
+                                all_data.append(data)
                     except: continue
 
         for f_name in history_files:
@@ -193,7 +185,7 @@ class AnalyticsEngine:
             except Exception as e:
                 logger.error(f"Error reading {f}: {e}")
         
-        all_data.sort(key=lambda x: x["_sort_date"])
+        all_data.sort(key=lambda x: x.get("_sort_date", datetime.min) if isinstance(x.get("_sort_date"), datetime) else datetime.min)
         return all_data
 
     def get_historical_trends(self, source="weekly"):
@@ -295,8 +287,8 @@ class AnalyticsEngine:
                     "weather_disrupted": rain_detected,
                     "weather_comments": weather_notes,
                     "prose_summary": m_entry.get("overall_summary", ""),
-                    "work_completed_percent": m_entry.get("pct_work_done") or m_entry.get("pct_work") or "0%",
-                    "time_elapsed_percent": m_entry.get("pct_period_elapsed") or m_entry.get("pct_period", "0%"),
+                    "work_completed_percent": (w_match.get("pct_work_done") if w_match else None) or (w_match.get("work_completed_percent") if w_match else None) or m_entry.get("pct_work_done") or m_entry.get("pct_work") or "0%",
+                    "time_elapsed_percent": (w_match.get("pct_period_elapsed") if w_match else None) or (w_match.get("time_elapsed_percent") if w_match else None) or m_entry.get("pct_period_elapsed") or m_entry.get("pct_period", "0%"),
                     "site_instructions": [
                         {
                             "text": si.get("instruction_issued"),
@@ -378,10 +370,29 @@ class AnalyticsEngine:
             } for t in sorted_trends
         ]
 
-    async def generate_ai_insights(self, trends: Dict[str, Any], contract_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_ai_insights(self, trends: Dict[str, Any], contract_context: Dict[str, Any], financials: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Enhanced AI Insights with SWOT and detailed recommendations.
         """
+        run_rate_context = "No run-rate data available."
+        if financials:
+            latest_fin = None
+            if financials.get("weekly_financials"):
+                latest_fin = financials["weekly_financials"][-1]
+            elif financials.get("daily_financials"):
+                latest_fin = financials["daily_financials"][-1]
+                
+            if latest_fin:
+                money_earned = latest_fin.get("revenue_earned", 0)
+                pct_time = latest_fin.get("pct_time", 0.1)
+                time_elapsed = round(731 * (pct_time / 100))
+                pace = money_earned / time_elapsed if time_elapsed > 0 else 0
+                remaining_money = max(0, 2127100000 - money_earned)
+                remaining_days = round(remaining_money / pace) if pace > 0 else 0
+                delay_days = remaining_days - max(0, 731 - time_elapsed)
+                
+                run_rate_context = f"FORECASTING VARIANCE:\n- Time Elapsed: {time_elapsed} Days out of 731\n- Current Pace: KES {pace:,.0f} per day\n- Projected Variance: {abs(delay_days)} Days {'LATE' if delay_days > 0 else 'EARLY'}\n- Projected Completion requires earning the remaining KES {remaining_money:,.0f} in the remaining {max(0, 731 - time_elapsed)} days."
+
         prompt = f"""
         You are a Senior Project Management Consultant for a high-value affordable housing project.
         
@@ -393,12 +404,18 @@ class AnalyticsEngine:
         HISTORICAL TRENDS & QUALITATIVE DATA (Weather Comments & Prose Summaries):
         {json.dumps(trends, indent=2)}
         
+        PRE-CALCULATED FINANCIAL & SLIPPAGE DATA:
+        {json.dumps(financials, indent=2) if financials else "No financial data available."}
+        
+        {run_rate_context}
+        
         Your analysis MUST include:
         1. FINANCIAL & PROGRESS AUDIT (CRITICAL):
-           - Revenue Audit: Calculate Revenue Earned = (Contract Sum) * (% Work Completed / 100). Mention the approximate value in your summary.
-           - Slippage Audit: Compare % Time Elapsed vs % Work Completed.
-           - THE 10% RULE: If (% Time Elapsed - % Work Completed) > 10%, you MUST explicitly flag this as "SLUGGISH PROGRESS" or "SCHEDULE SLIPPAGE" in Weaknesses/Threats.
-           - Verify if site comments (rain, material delays, slow mobilization) justify this slippage or if it indicates underlying contractor inefficiency.
+           - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section above.
+           - Revenue & Slippage Trend: Do not just report the final numbers. Explicitly analyze the historical trajectory—is the Slippage Gap widening or narrowing over time? Is the Revenue generation accelerating or decelerating?
+           - FORECASTING AUDIT: You MUST explicitly state the "Projected Variance" (Days Late/Early) and the "Current Pace" from the FORECASTING VARIANCE section.
+           - TONE & COLLABORATION: Maintain a highly constructive, team-oriented tone. We are partners with the contractor. Frame delays as shared challenges to be solved together, and focus on collaborative recovery strategies rather than being punitive or adversarial.
+           - THE 10% RULE: If the Slippage Gap > 10%, explicitly flag it, but frame it as an urgent opportunity for joint intervention rather than a failure.
 
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
            - Use the 'prose_summary' and 'weather_comments' to explain the momentum.

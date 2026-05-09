@@ -14,16 +14,29 @@ import {
   Layers,
   ArrowRight,
   Activity,
-  Building2
+  Building2,
+  TrendingDown
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 
 export default function TrendsDashboard() {
   const [data, setData] = useState<any>(null);
   const [insights, setInsights] = useState<any>(null);
   const [correlations, setCorrelations] = useState<any>(null);
+  const [financials, setFinancials] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [generatingAudit, setGeneratingAudit] = useState(false);
   const [showAuditModal, setShowAuditModal] = useState(false);
+  const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [timeScale, setTimeScale] = useState<'daily' | 'weekly'>('weekly');
 
   useEffect(() => {
@@ -48,6 +61,12 @@ export default function TrendsDashboard() {
         .then(res => res.json())
         .then(res => setCorrelations(res))
         .catch(err => console.error("Correlations fetch failed", err));
+
+      // 4. Fetch financial trends
+      fetch('http://localhost:8000/api/analytics/financials')
+        .then(res => res.json())
+        .then(res => setFinancials(res))
+        .catch(err => console.error("Financials fetch failed", err));
     }
     fetchData();
   }, []);
@@ -56,6 +75,11 @@ export default function TrendsDashboard() {
     if (!data) return [];
     return timeScale === 'weekly' ? data.weekly : data.daily;
   }, [data, timeScale]);
+
+  const activeFinancials = useMemo(() => {
+    if (!financials) return [];
+    return timeScale === 'weekly' ? (financials.weekly_financials || []) : (financials.daily_financials || []);
+  }, [financials, timeScale]);
 
   const globalProgress = useMemo(() => {
     if (!data) return { work: 0, time: 0, timeStr: '0%', workStr: '0%' };
@@ -120,6 +144,7 @@ export default function TrendsDashboard() {
 
   const downloadAuditReport = async () => {
     try {
+      setDownloadingDoc(true);
       const response = await fetch('http://localhost:8000/api/generate-audit-report');
       if (!response.ok) throw new Error('Download failed');
 
@@ -135,6 +160,8 @@ export default function TrendsDashboard() {
     } catch (error) {
       console.error('Audit download error:', error);
       alert('Failed to download report.');
+    } finally {
+      setDownloadingDoc(false);
     }
   };
 
@@ -257,6 +284,81 @@ export default function TrendsDashboard() {
           </p>
         </header>
 
+        {/* Financials & Progress Trend Charts */}
+        {financials && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            {/* Revenue Trend Line Chart */}
+            <section className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+              <div className="mb-8">
+                <h2 className="text-xl font-bold mb-1">Financial Progress S-Curve</h2>
+                <p className="text-xs text-slate-400 font-medium italic">Revenue earned (KES) vs. Time over {timeScale} reporting</p>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey={timeScale === 'weekly' ? "label" : "date"} 
+                      tickFormatter={formatXAxis}
+                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tickFormatter={(value: any) => `K ${(value / 1000000).toFixed(0)}M`}
+                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      axisLine={false}
+                      tickLine={false}
+                      width={80}
+                    />
+                    <RechartsTooltip 
+                      formatter={(value: any) => [`KES ${value.toLocaleString(undefined, {maximumFractionDigits: 0})}`, "Revenue"]}
+                      labelFormatter={(label: any) => `Period: ${label}`}
+                      contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)'}}
+                    />
+                    <Line type="monotone" dataKey="revenue_earned" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            {/* Slippage Trend Line Chart */}
+            <section className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+              <div className="mb-8">
+                <h2 className="text-xl font-bold mb-1">Schedule Slippage Gap</h2>
+                <p className="text-xs text-slate-400 font-medium italic">% Time Elapsed minus % Work Done over {timeScale} periods</p>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey={timeScale === 'weekly' ? "label" : "date"} 
+                      tickFormatter={formatXAxis}
+                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tickFormatter={(value: any) => `${value}%`}
+                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      axisLine={false}
+                      tickLine={false}
+                      width={40}
+                    />
+                    <RechartsTooltip 
+                      formatter={(value: any) => [`${value}% Gap`, "Slippage"]}
+                      labelFormatter={(label: any) => `Period: ${label}`}
+                      contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)'}}
+                    />
+                    <Line type="monotone" dataKey="slippage_gap" stroke="#f43f5e" strokeWidth={3} dot={{r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          </div>
+        )}
+
         {/* Main Performance Chart */}
         <section className="mb-12">
           <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
@@ -294,7 +396,7 @@ export default function TrendsDashboard() {
               <div className="flex-1 h-80 overflow-x-auto overflow-y-visible custom-scrollbar pb-12">
                 <div
                   className="h-72 relative flex items-end gap-2 px-32 pb-8 border-b border-l border-slate-100 group/chart transition-all"
-                  style={{ minWidth: `${activeTrend.length * (timeScale === 'daily' ? 40 : 100) + 128}px` }}
+                  style={{ minWidth: `${activeTrend.length * (timeScale === 'daily' ? 48 : 88) + 256}px` }}
                 >
                   {/* Grid Lines */}
                   <div className="absolute inset-0 flex flex-col justify-between pb-8 pointer-events-none">
@@ -317,7 +419,7 @@ export default function TrendsDashboard() {
                         const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
                         const val = p.value ?? p.labour ?? 0;
                         const y = 100 - ((val / max) * 100);
-                        const pxX = i * (timeScale === 'daily' ? 36 : 100) + 40;
+                        const pxX = i * (timeScale === 'daily' ? 48 : 88) + (timeScale === 'daily' ? 148 : 168);
                         return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * 256}`;
                       }).join(' ')}
                       fill="none"
@@ -463,36 +565,90 @@ export default function TrendsDashboard() {
             </div>
           </section>
 
-          {/* Correlations & Scatter Plot */}
+          {/* Forecasting & Run-Rate Analysis */}
           <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex items-center gap-3 mb-8">
-              <BarChart3 className="text-vivid-tangerine-500 w-6 h-6" />
-              <h2 className="text-2xl font-bold">Operational Correlations</h2>
+              <Target className="text-indigo-500 w-6 h-6" />
+              <h2 className="text-2xl font-bold">Velocity & Forecasting Analysis</h2>
             </div>
-            <p className="text-xs text-slate-400 mb-8 font-medium italic uppercase tracking-wider text-center">Labour Force vs. Logistics Intensity</p>
+            
+            {(() => {
+              if (!activeFinancials || activeFinancials.length === 0) return <p>Loading forecast data...</p>;
+              
+              const latestFin = activeFinancials[activeFinancials.length - 1];
+              
+              // Absolute Values Math
+              const totalContractDays = 731; // Nov 24, 2025 to Nov 24, 2027
+              const startDate = new Date("2025-11-24");
+              const totalContractSum = 2127100000;
+              
+              const moneyEarned = latestFin.revenue_earned || 0;
+              const remainingMoney = Math.max(0, totalContractSum - moneyEarned);
+              
+              const pctTime = latestFin.pct_time || 0.1;
+              const timeElapsedDays = Math.round(totalContractDays * (pctTime / 100));
+              const remainingContractDays = Math.max(0, totalContractDays - timeElapsedDays);
+              
+              const paceMoneyPerDay = timeElapsedDays > 0 ? (moneyEarned / timeElapsedDays) : 0;
+              const remainingDaysNeeded = paceMoneyPerDay > 0 ? Math.round(remainingMoney / paceMoneyPerDay) : 0;
+              
+              const projectedEndDate = new Date(startDate.getTime() + ((timeElapsedDays + remainingDaysNeeded) * 24 * 60 * 60 * 1000));
+              const delayDays = remainingDaysNeeded - remainingContractDays;
+              const isLate = delayDays > 0;
+              
+              // Velocity for the UI badge (Earned per day vs Target per day)
+              const targetMoneyPerDay = totalContractSum / totalContractDays;
+              const velocity = targetMoneyPerDay > 0 ? (paceMoneyPerDay / targetMoneyPerDay) : 0;
 
-            <div className="h-64 w-full border-l border-b border-slate-100 relative mb-8">
-              {correlations?.scatter_labour_materials?.map((d: any, i: number) => {
-                const x = (d.labour / 150) * 100;
-                const y = (d.materials / 15) * 100;
-                return (
-                  <div
-                    key={i}
-                    className="absolute w-3 h-3 bg-vivid-tangerine-500/30 border border-vivid-tangerine-500 rounded-full cursor-pointer hover:scale-150 transition-transform hover:bg-vivid-tangerine-500 z-10"
-                    style={{ left: `${Math.min(95, x)}%`, bottom: `${Math.min(95, y)}%` }}
-                  />
-                );
-              })}
-              <span className="absolute bottom-[-20px] right-0 text-[8px] font-bold text-slate-400">Personnel Count →</span>
-              <span className="absolute left-[-40px] top-0 text-[8px] font-bold text-slate-400 rotate-[-90deg] origin-top-right">Material Variety →</span>
-            </div>
-            <div className="bg-vivid-tangerine-50 p-4 rounded-2xl flex items-center gap-4">
-              <Zap className="text-vivid-tangerine-600 w-5 h-5" />
-              <div>
-                <p className="text-[10px] font-bold text-vivid-tangerine-800 uppercase tracking-widest">Efficiency Insight</p>
-                <p className="text-xs text-vivid-tangerine-600 font-medium">Strong positive correlation detected between steel fixing crew size and reinforcement delivery frequency.</p>
-              </div>
-            </div>
+              return (
+                <div className="flex flex-col gap-8">
+                  
+                  {/* Top Stats Row */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Time Elapsed</p>
+                      <p className="text-2xl font-black text-slate-700">
+                        {timeElapsedDays} <span className="text-sm">Days</span>
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-500 mt-1">Out of {totalContractDays} total</p>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Pace (Value / Day)</p>
+                      <p className={`text-xl font-black ${velocity >= 1 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        KES {(paceMoneyPerDay / 1000).toFixed(0)}K
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-500 mt-1">Target: KES {(targetMoneyPerDay / 1000).toFixed(0)}K/day</p>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Est. Completion</p>
+                      <p className={`text-xl font-black ${isLate ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        {projectedEndDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-500 mt-1">Target: Nov 24, 2027</p>
+                    </div>
+
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Projected Variance</p>
+                      <p className={`text-2xl font-black ${isLate ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {isLate ? `+${delayDays}` : `${delayDays}`} <span className="text-sm font-bold">Days</span>
+                      </p>
+                      <p className="text-[10px] font-medium text-slate-500 mt-1">{isLate ? 'Late' : 'Early'}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                    <p className="text-[10px] font-bold text-indigo-800 uppercase tracking-widest mb-2">Financial Pace Insight</p>
+                    <p className="text-sm text-indigo-800 font-medium leading-relaxed">
+                      For the <strong>KES {moneyEarned.toLocaleString(undefined, {maximumFractionDigits: 0})}</strong> of work done, we have completed it in <strong>{timeElapsedDays} days</strong>. Hence, it will take approximately <strong>{remainingDaysNeeded.toLocaleString()} days</strong> to earn the remaining <strong>KES {remainingMoney.toLocaleString(undefined, {maximumFractionDigits: 0})}</strong>. 
+                      <br/><br/>
+                      This pace places the projected finish date on <strong>{projectedEndDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>, which is <strong>{Math.abs(delayDays)} days {isLate ? 'after' : 'before'}</strong> the official project completion date of Nov 24, 2027.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </section>
         </div>
 
@@ -709,9 +865,14 @@ export default function TrendsDashboard() {
             <div className="p-8 bg-slate-50 border-t border-slate-100 shrink-0">
               <button
                 onClick={downloadAuditReport}
-                className="w-full py-5 bg-vivid-tangerine-500 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-vivid-tangerine-600 transition-all shadow-xl shadow-vivid-tangerine-500/20 hover:scale-[1.02] active:scale-95"
+                disabled={downloadingDoc}
+                className={`w-full py-5 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl hover:scale-[1.02] active:scale-95 ${
+                  downloadingDoc 
+                    ? 'bg-slate-400 cursor-not-allowed shadow-none' 
+                    : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20'
+                }`}
               >
-                Download Full .DOCX Report
+                {downloadingDoc ? 'Generating DOCX... Please Wait' : 'Download Full .DOCX Report'}
               </button>
             </div>
           </div>

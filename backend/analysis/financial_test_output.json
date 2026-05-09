@@ -1,0 +1,214 @@
+{
+  "contract_sum": 2127050827.72,
+  "last_updated": "",
+  "daily_financials": [
+    {
+      "date": "2026-04-06",
+      "pct_work": 6.08,
+      "pct_time": 18.33,
+      "revenue_earned": 129324690.325376,
+      "slippage_gap": 12.25
+    },
+    {
+      "date": "2026-04-08",
+      "pct_work": 6.08,
+      "pct_time": 18.6,
+      "revenue_earned": 129324690.325376,
+      "slippage_gap": 12.52
+    },
+    {
+      "date": "2026-04-10",
+      "pct_work": 6.08,
+      "pct_time": 18.88,
+      "revenue_earned": 129324690.325376,
+      "slippage_gap": 12.8
+    },
+    {
+      "date": "2026-04-11",
+      "pct_work": 6.1,
+      "pct_time": 19.02,
+      "revenue_earned": 129750100.49091999,
+      "slippage_gap": 12.92
+    },
+    {
+      "date": "2026-04-13",
+      "pct_work": 7.29,
+      "pct_time": 19.29,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.0
+    },
+    {
+      "date": "2026-04-14",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    },
+    {
+      "date": "2026-04-15",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    },
+    {
+      "date": "2026-04-16",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    },
+    {
+      "date": "2026-04-17",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    },
+    {
+      "date": "2026-04-18",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    },
+    {
+      "date": "2026-04-19",
+      "pct_work": 8.04,
+      "pct_time": 20.0,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 11.96
+    },
+    {
+      "date": "2026-04-21",
+      "pct_work": 8.04,
+      "pct_time": 20.0,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 11.96
+    },
+    {
+      "date": "2026-04-24",
+      "pct_work": 8.04,
+      "pct_time": 20.79,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.75
+    },
+    {
+      "date": "2026-04-25",
+      "pct_work": 8.04,
+      "pct_time": 20.93,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.89
+    },
+    {
+      "date": "2026-04-26",
+      "pct_work": 8.04,
+      "pct_time": 20.93,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.89
+    },
+    {
+      "date": "2026-04-27",
+      "pct_work": 8.22,
+      "pct_time": 21.2,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 12.98
+    },
+    {
+      "date": "2026-04-29",
+      "pct_work": 8.22,
+      "pct_time": 21.48,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 13.26
+    },
+    {
+      "date": "2026-05-03",
+      "pct_work": 8.3,
+      "pct_time": 22.02,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 13.72
+    }
+  ],
+  "weekly_financials": [
+    {
+      "date": "13TH - 19TH APRIL 2026",
+      "label": "13TH - 19TH APRIL 2026",
+      "pct_work": 8.04,
+      "pct_time": 20.11,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.07
+    },
+    {
+      "date": "13th - 19th April 2026",
+      "label": "13th - 19th April 2026",
+      "pct_work": 8.04,
+      "pct_time": 20.11,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.07
+    },
+    {
+      "date": "20TH - 26TH APRIL 2026",
+      "label": "20TH - 26TH APRIL 2026",
+      "pct_work": 8.22,
+      "pct_time": 21.07,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 12.85
+    },
+    {
+      "date": "20th - 26th April 2026",
+      "label": "20th - 26th April 2026",
+      "pct_work": 8.22,
+      "pct_time": 21.07,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 12.85
+    },
+    {
+      "date": "27TH APRIL - 3RD MAY 2026",
+      "label": "27TH APRIL - 3RD MAY 2026",
+      "pct_work": 8.3,
+      "pct_time": 22.02,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 13.72
+    },
+    {
+      "date": "27th April - 3rd May 2026",
+      "label": "27th April - 3rd May 2026",
+      "pct_work": 8.3,
+      "pct_time": 22.02,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 13.72
+    },
+    {
+      "date": "30th March 2026 - 5th April 2026",
+      "label": "30th March 2026 - 5th April 2026",
+      "pct_work": 6.08,
+      "pct_time": 18.33,
+      "revenue_earned": 129324690.325376,
+      "slippage_gap": 12.25
+    },
+    {
+      "date": "6TH - 12TH APRIL 2026",
+      "label": "6TH - 12TH APRIL 2026",
+      "pct_work": 7.29,
+      "pct_time": 19.29,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.0
+    },
+    {
+      "date": "6TH - 12th APRIL 2026",
+      "label": "6TH - 12th APRIL 2026",
+      "pct_work": 7.29,
+      "pct_time": 19.29,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.0
+    },
+    {
+      "date": "6th \u2013 12th April 2026",
+      "label": "6th \u2013 12th April 2026",
+      "pct_work": 7.29,
+      "pct_time": 19.43,
+      "revenue_earned": 155062005.340788,
+      "slippage_gap": 12.14
+    }
+  ]
+}

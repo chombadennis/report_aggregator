@@ -16,6 +16,7 @@ from monthly_generator import MonthlyReportGenerator
 from contract_parser import ContractParser
 from analytics import AnalyticsEngine
 from audit_generator import AuditReportGenerator
+from financial_engine import FinancialEngine
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -37,6 +38,7 @@ monthly_aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
 contract_parser = ContractParser(cache_dir="cache")
 analytics_engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
 audit_generator = AuditReportGenerator()
+financial_engine = FinancialEngine()
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -235,22 +237,30 @@ async def get_trends():
         "daily": daily
     }
 
+@app.get("/api/analytics/financials")
+async def get_financials():
+    """Serves the materialized financial analysis data. Always computes to ensure real-time accuracy."""
+    return financial_engine.compute_and_cache_financials()
+
 @app.get("/api/analytics/correlations")
 async def get_correlations():
     """Returns data for scatter plots and heatmaps."""
-    return analytics_engine.get_correlations()
+    financials = financial_engine.compute_and_cache_financials()
+    return analytics_engine.get_correlations(financials)
 
 @app.get("/api/analytics/insights")
 async def get_insights():
     """Triggers AI analysis of current trends."""
     trends = analytics_engine.get_historical_trends()
+    financials = financial_engine.compute_and_cache_financials()
+    
     context = {}
     context_path = "cache/contract_summary.json"
     if os.path.exists(context_path):
         with open(context_path, "r") as f:
             context = json.load(f)
     
-    insights = await analytics_engine.generate_ai_insights(trends, context)
+    insights = await analytics_engine.generate_ai_insights(trends, context, financials)
     return insights
 
 @app.get("/api/generate-audit-report")
@@ -263,6 +273,8 @@ async def generate_audit_report(background_tasks: BackgroundTasks):
     try:
         # 1. Gather data
         trends = analytics_engine.get_historical_trends()
+        financials = financial_engine.compute_and_cache_financials()
+        
         context = {}
         context_path = "cache/contract_summary.json"
         if os.path.exists(context_path):
@@ -270,7 +282,7 @@ async def generate_audit_report(background_tasks: BackgroundTasks):
                 context = json.load(f)
         
         # 2. Get AI Insights
-        insights = await analytics_engine.generate_ai_insights(trends, context)
+        insights = await analytics_engine.generate_ai_insights(trends, context, financials)
         
         # 3. Generate Document
         output_docx = os.path.join(session_dir, "Audit_Report.docx")
