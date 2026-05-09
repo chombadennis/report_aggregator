@@ -59,8 +59,8 @@ class AnalyticsEngine:
                         "materials": mat_count,
                         "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
                         "is_weekend": 1 if is_weekend else 0,
-                        "financial_progress": entry.get("pct_work") or entry.get("financial_progress") or "0%",
-                        "time_progress": entry.get("pct_period") or entry.get("time_progress") or "0%"
+                        "financial_progress": entry.get("pct_work_done") or entry.get("pct_work") or entry.get("financial_progress") or "0%",
+                        "time_progress": entry.get("pct_period_elapsed") or entry.get("pct_period") or entry.get("time_progress") or "0%"
                     })
                     seen_dates.add(date_key)
             
@@ -84,8 +84,8 @@ class AnalyticsEngine:
                         "materials": mat_count,
                         "weather_disrupted": 1 if "favorable" not in str(weather_stats).lower() and "-" not in str(weather_stats) else 0,
                         "is_weekend": 1 if curr_date.weekday() >= 5 else 0,
-                        "financial_progress": entry.get("pct_work") or entry.get("financial_progress") or "0%",
-                        "time_progress": entry.get("pct_period") or entry.get("time_progress") or "0%"
+                        "financial_progress": entry.get("pct_work_done") or entry.get("pct_work") or entry.get("financial_progress") or "0%",
+                        "time_progress": entry.get("pct_period_elapsed") or entry.get("pct_period") or entry.get("time_progress") or "0%"
                     })
                     seen_dates.add(date_key)
 
@@ -295,8 +295,8 @@ class AnalyticsEngine:
                     "weather_disrupted": rain_detected,
                     "weather_comments": weather_notes,
                     "prose_summary": m_entry.get("overall_summary", ""),
-                    "work_completed_percent": m_entry.get("pct_work", "0%"),
-                    "time_elapsed_percent": m_entry.get("pct_period", "0%"),
+                    "work_completed_percent": m_entry.get("pct_work_done") or m_entry.get("pct_work") or "0%",
+                    "time_elapsed_percent": m_entry.get("pct_period_elapsed") or m_entry.get("pct_period", "0%"),
                     "site_instructions": [
                         {
                             "text": si.get("instruction_issued"),
@@ -353,8 +353,8 @@ class AnalyticsEngine:
                 "weather_disrupted": is_disrupted,
                 "weather_comments": weather_comments,
                 "prose_summary": d.get("executive_summary", ""),
-                "work_completed_percent": d.get("pct_work") or d.get("work_completed_percent") or "N/A",
-                "time_elapsed_percent": d.get("pct_period") or d.get("time_elapsed_percent") or "N/A",
+                "work_completed_percent": d.get("pct_work_done") or d.get("pct_work") or d.get("work_completed_percent") or "N/A",
+                "time_elapsed_percent": d.get("pct_period_elapsed") or d.get("pct_period") or d.get("time_elapsed_percent") or "N/A",
                 "site_instructions": [],
                 "critical_warnings": []
             }

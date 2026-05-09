@@ -32,6 +32,10 @@ class DailyReportSchema(BaseModel):
     date: str # e.g., "Saturday 18th April 2026"
     day_of_week: Optional[str] = None # e.g., "Saturday"
     
+    time_lapsed_weeks: Optional[str] = None
+    pct_period_elapsed: Optional[str] = None
+    pct_work_done: Optional[str] = None
+    
     building_works: Dict[str, List[str]] = Field(default_factory=dict)
     general_works: List[str] = Field(default_factory=list)
     labour: Dict[str, Any] = Field(default_factory=dict) # e.g. {"Mason": "5", "Steel Fixer": {"Day": "5", "Night": "2"}}
@@ -53,6 +57,10 @@ class DailyReportSchema(BaseModel):
 
 class WeeklyReportSchema(BaseModel):
     reporting_period: str
+    
+    time_lapsed_weeks: Optional[str] = None
+    pct_period_elapsed: Optional[str] = None
+    pct_work_done: Optional[str] = None
     
     # Daily breakdowns (7 days)
     labour_daily: Dict[str, Dict[str, str]] = Field(default_factory=dict) # "YYYY-MM-DD": {"Category": "Value"}

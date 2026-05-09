@@ -26,10 +26,11 @@ class ReportParser:
         Analyze this screenshot from a Daily Progress Report.
         
         1. Read the COVER PAGE first to identify the DATE and DAY of the week.
-        2. SKIP sections A to D (Scope of Works) - these are repetitive.
+        2. READ section A (Contract Details) ONLY to extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done'. SKIP sections B to D (Scope of Works).
         3. FOCUS ON: "SITE REPORT" through "SUMMARY OF WORKS DONE TO DATE".
         
         CRITICAL EXTRACTION RULES:
+        - CONTRACT DETAILS: If you see section A, extract the numeric/percentage values for 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done'. Map them to the keys: time_lapsed_weeks, pct_period_elapsed, pct_work_done.
         - WEATHER: Locate the 'WEATHER:' section in the SITE REPORT table. Extract the conditions for 'Morning', 'Afternoon', and 'Night' (map Night to 'evening' in the JSON schema).
         - LABOUR: Capture ALL labour categories listed in the table (e.g., Site Agent/PM, Ass. Site Agent, Office Attendant, Office Assistant, Foreman, Operator, Mason, Electrician, Painters, Carpenters, Steel fixers, Drivers, Surveyors, Intern, Unskilled, Safety officer, Store keeper, Security, etc).
           CRITICAL RULE: For every category visible in the table, return its value exactly as written (e.g. "4(m)", "13(12m,1f)", "41(7f,34m)"). 
@@ -97,8 +98,9 @@ class ReportParser:
            - VERIFY THE YEAR: If the cover says 2026, all dates MUST be in 2026.
         !!! END OF CRITICAL RULE !!!
 
-        1. SKIP sections A to D (Project Info, Scope of Works).
+        1. READ section A (Contract Details/Project Info) ONLY to extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done'. SKIP sections B to D.
         2. FOCUS ON the following sections: 
+           - CONTRACT DETAILS: Extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done' into the keys: time_lapsed_weeks, pct_period_elapsed, pct_work_done.
            - SITE REPORT: Progress details.
            - WORKS CARRIED OUT ON SITE: Day-by-day activities.
            - MATERIALS DELIVERED TO SITE: Extract description, quantity, and units.
@@ -205,9 +207,9 @@ class ReportParser:
                 else:
                     has_start_header = any(
                         re.search(rf'^\s*{letter}[\.\s\:]', text, re.MULTILINE) 
-                        for letter in ["E", "F", "G"]
+                        for letter in ["A", "E", "F", "G"]
                     )
-                    is_start_title = "SITE REPORT" in text or "WORKS CARRIED OUT" in text
+                    is_start_title = "SITE REPORT" in text or "WORKS CARRIED OUT" in text or "CONTRACT DETAILS" in text
                     
                     if has_start_header or is_start_title: 
                         scanning_mode = "EXTRACTING"
@@ -219,7 +221,7 @@ class ReportParser:
                 if not text.strip() and i < 5:
                     logger.warning(f"⚠️ Page {i+1} has no extractable text. Using Vision Fallback.")
                 else:
-                    is_site_report = "SITE REPORT" in text or "PROGRESS REPORT" in text
+                    is_site_report = "SITE REPORT" in text or "PROGRESS REPORT" in text or "CONTRACT DETAILS" in text
                     if is_site_report or i > 3: 
                         scanning_mode = "EXTRACTING"
                     else:
@@ -434,7 +436,9 @@ class ReportParser:
     def _merge_results(self, page_results):
         """Intelligently merges data from multiple pages into one DailyReport."""
         merged = {
-            "date": "", "day_of_week": "", "weather": {},
+            "date": "", "day_of_week": "", 
+            "time_lapsed_weeks": "", "pct_period_elapsed": "", "pct_work_done": "",
+            "weather": {},
             "labour": {}, "building_works": {}, "general_works": [],
             "machinery": [], "materials_delivered": [], "material_tests": [],
             "instructions": [], "interns": {}, "security_status": "",
@@ -443,7 +447,7 @@ class ReportParser:
         }
         for res in page_results:
             if not isinstance(res, dict): continue
-            for field in ["date", "day_of_week", "security_status", "health_safety_status"]:
+            for field in ["date", "day_of_week", "security_status", "health_safety_status", "time_lapsed_weeks", "pct_period_elapsed", "pct_work_done"]:
                 if res.get(field) and not merged[field]:
                     merged[field] = res[field]
             if res.get("weather"): 
@@ -474,6 +478,7 @@ class ReportParser:
         """Intelligently merges data from multiple pages into one WeeklyReport."""
         merged = {
             "reporting_period": "",
+            "time_lapsed_weeks": "", "pct_period_elapsed": "", "pct_work_done": "",
             "labour_daily": {}, "weather_daily": {},
             "insurances": [], "materials_delivered": [], "machinery": [],
             "instructions": [], "security_prose": "", "health_safety_prose": "",
@@ -482,9 +487,13 @@ class ReportParser:
         for res in page_results:
             if not isinstance(res, dict): continue
             
-            # 1. Period
+            # 1. Period & Contract Metadata
             if res.get("reporting_period") and not merged["reporting_period"]:
                 merged["reporting_period"] = res["reporting_period"]
+            
+            for field in ["time_lapsed_weeks", "pct_period_elapsed", "pct_work_done"]:
+                if res.get(field) and not merged[field]:
+                    merged[field] = res[field]
             
             # 2. Prose Sections (Concatenate if they span pages)
             for field in ["security_prose", "health_safety_prose", "visitors_prose", "challenges_prose"]:
