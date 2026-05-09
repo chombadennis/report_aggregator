@@ -196,20 +196,6 @@ async def get_contract_summary():
         return {"msg": "No contract summary found. Please upload a report to extract details."}
     return data
 
-@app.post("/api/extract-contract-summary")
-async def extract_contract_summary(file: UploadFile = File(...)):
-    unique_id = uuid.uuid4().hex[:8]
-    temp_filename = f"upload_{unique_id}_{file.filename}"
-    temp_path = os.path.join(TEMP_DIR, temp_filename)
-    
-    with open(temp_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-        
-    try:
-        result = await contract_parser.extract_contract_details(temp_path)
-        return result
-    finally:
-        shutil.rmtree(session_dir, ignore_errors=True)
 
 @app.get("/api/trends")
 async def get_trends():
@@ -286,7 +272,7 @@ async def generate_audit_report(background_tasks: BackgroundTasks):
         
         # 3. Generate Document
         output_docx = os.path.join(session_dir, "Audit_Report.docx")
-        audit_generator.generate_report(output_docx, trends, insights)
+        audit_generator.generate_report(output_docx, trends, insights, financials)
         
         # 4. Return file (don't delete immediately, let download-session handle it if we want, 
         # or just return it now and delete later)

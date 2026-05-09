@@ -409,31 +409,32 @@ class AnalyticsEngine:
         
         {run_rate_context}
         
-        Your analysis MUST include:
-        1. FINANCIAL & PROGRESS AUDIT (CRITICAL):
-           - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section above.
-           - Revenue & Slippage Trend: Do not just report the final numbers. Explicitly analyze the historical trajectory—is the Slippage Gap widening or narrowing over time? Is the Revenue generation accelerating or decelerating?
-           - FORECASTING AUDIT: You MUST explicitly state the "Projected Variance" (Days Late/Early) and the "Current Pace" from the FORECASTING VARIANCE section.
-           - TONE & COLLABORATION: Maintain a highly constructive, team-oriented tone. We are partners with the contractor. Frame delays as shared challenges to be solved together, and focus on collaborative recovery strategies rather than being punitive or adversarial.
-           - THE 10% RULE: If the Slippage Gap > 10%, explicitly flag it, but frame it as an urgent opportunity for joint intervention rather than a failure.
+         Your analysis MUST include:
+        1. FINANCIAL & RECALIBRATION AUDIT (CRITICAL):
+           - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section.
+           - MONTHLY PERFORMANCE: Analyze the last completed month (e.g. April 2026). Compare the 'actual_production' vs 'envisaged_production'. Explicitly state if it was a shortfall or an achievement and by how much.
+           - RECALIBRATION TARGETS: Discuss the 'required_weekly' rate for the ongoing month (e.g. May 2026). Explain why this acceleration is necessary (or why it has decreased) based on the historical chain.
+           - THE 10% RULE: If the cumulative Slippage Gap > 10%, explicitly flag it as an urgent opportunity for joint intervention.
+           - RECALIBRATION CHAIN: Reference the weekly variance (k) from the Recalibration Chain table to explain where the momentum was lost or gained.
+           - TONE: Maintain a highly constructive, partner-oriented tone. Frame delays as shared challenges to be solved with the contractor.
 
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
-           - Use the 'prose_summary' and 'weather_comments' to explain the momentum.
-           - STRICTURE: NEVER claim 'optimal' or 'clear' weather if the 'weather_comments' mention rain or disruptions.
-           - Audit 'site_instructions' against their issuance dates: Did the contractor comply promptly? 
-             Compare the instruction date with subsequent personnel and progress shifts.
-           - Strengths (e.g., consistent labour, good weather handling)
-           - Weaknesses (e.g., progress lag, supply chain gaps, low turnout)
-           - Opportunities (e.g., clear weather windows, resource reallocation)
-           - Threats (e.g., liquidated damages risk due to slippage, security incidents)
+           - Use the 'prose_summary', 'weather_comments', and recalibration deltas to explain the momentum.
+           - STRICTURE: NEVER claim 'optimal' or 'clear' weather if the 'weather_comments' mention rain.
+           - Audit 'site_instructions' against their issuance dates: Did subsequent production (actual vs envisaged) improve after instructions were issued?
+           - Strengths (e.g., consistent labour, recovering slippage in specific weeks)
+           - Weaknesses (e.g., production shortfall in April, widening variance)
+           - Opportunities (e.g., clear weather windows, catching up to the recalibrated May target)
+           - Threats (e.g., liquidated damages risk, security incidents)
         
         2. STAKEHOLDER RECOMMENDATIONS:
            - TO THE CLIENT (PM): Strategic moves to protect the budget and timeline.
-           - TO THE CONTRACTOR: Operational improvements to boost productivity.
+           - TO THE CONTRACTOR: Operational improvements to boost productivity and hit the recalibrated weekly targets.
         
         3. EXECUTIVE SUMMARY & VERDICT:
            - Summary of momentum.
            - Claim probability assessment.
+.
 
         Return the analysis in JSON matching this schema:
         {{

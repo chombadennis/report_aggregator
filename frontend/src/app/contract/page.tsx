@@ -5,7 +5,6 @@ import Link from 'next/link';
 export default function ContractSummary() {
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -16,7 +15,7 @@ export default function ContractSummary() {
     try {
       const resp = await fetch('http://localhost:8000/api/contract-summary');
       const data = await resp.json();
-      if (data.msg) {
+      if (data.msg && !data.project_title) {
         setSummary(null);
       } else {
         setSummary(data);
@@ -25,29 +24,6 @@ export default function ContractSummary() {
       setError('Failed to fetch contract summary.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setError('');
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const resp = await fetch('http://localhost:8000/api/extract-contract-summary', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await resp.json();
-      setSummary(data);
-    } catch (err) {
-      setError('Failed to extract contract details.');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -60,24 +36,16 @@ export default function ContractSummary() {
           Project Contract Details
         </h1>
 
-        {!summary && !loading && (
-          <div className="bg-white p-12 rounded-3xl shadow-xl text-center border-2 border-dashed border-vanilla-custard-200">
-            <div className="text-6xl mb-4">🏗️</div>
-            <h2 className="text-2xl font-bold mb-4">No Project Data Found</h2>
-            <p className="text-vivid-tangerine-700 mb-8">Upload a PDF report (Cover + Sections A-D) to initialize the project context.</p>
-            <input 
-              type="file" 
-              id="setup-upload" 
-              className="hidden" 
-              onChange={handleFileUpload}
-              accept=".pdf"
-            />
-            <label 
-              htmlFor="setup-upload"
-              className="bg-vivid-tangerine-600 text-white px-8 py-4 rounded-2xl font-bold cursor-pointer hover:bg-vivid-tangerine-700 transition-all shadow-lg"
-            >
-              {uploading ? 'Extracting Details...' : 'Initialize Project Details'}
-            </label>
+        {loading && (
+          <div className="text-center p-12">
+            <p className="text-vivid-tangerine-600 animate-pulse font-bold">Loading project data...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-vivid-tangerine-50 p-6 rounded-2xl border border-vivid-tangerine-200 text-vivid-tangerine-900 mb-8">
+            <p className="font-bold">Error</p>
+            <p>{error}</p>
           </div>
         )}
 
@@ -145,7 +113,6 @@ export default function ContractSummary() {
                 </table>
               </div>
             </div>
-
           </div>
         )}
       </div>

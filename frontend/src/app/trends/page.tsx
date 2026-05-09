@@ -565,6 +565,168 @@ export default function TrendsDashboard() {
             </div>
           </section>
 
+          {/* Production Velocity & Recalibration */}
+          <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-3 mb-8">
+              <Zap className="text-sunflower-gold-600 w-6 h-6" />
+              <h2 className="text-2xl font-bold">Production Velocity & Recalibration</h2>
+            </div>
+
+            {(() => {
+              if (!financials || !financials.monthly_financials || financials.monthly_financials.length === 0) 
+                return <p className="text-slate-400 text-sm italic">Initializing monthly calibration data...</p>;
+              
+              const completedMonth = financials.monthly_financials.filter((m: any) => !m.is_ongoing).slice(-1)[0];
+              const ongoingMonth = financials.monthly_financials.find((m: any) => m.is_ongoing);
+              const latestWeek = (financials.weekly_financials || []).slice(-1)[0];
+              const variance = latestWeek?.variance || 0;
+
+              return (
+                <div className="space-y-10">
+                  {/* Last Completed Month Analysis */}
+                  {completedMonth && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-6">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Last Completed Month: {completedMonth.month}</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month Start</p>
+                          <p className="text-2xl font-black text-slate-900">{completedMonth.start_pct?.toFixed(2)}%</p>
+                        </div>
+                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month End</p>
+                          <p className="text-2xl font-black text-slate-900">{completedMonth.end_pct?.toFixed(2)}%</p>
+                        </div>
+                        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
+                          <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">Actual Production</p>
+                          <p className="text-2xl font-black text-emerald-600">+{completedMonth.actual_production?.toFixed(2)}%</p>
+                        </div>
+                        <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
+                          <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-2">Envisaged Production</p>
+                          <p className="text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ongoing Month Recalibration */}
+                  {ongoingMonth && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-6">
+                        <div className="w-2 h-2 bg-sunflower-gold-500 rounded-full animate-bounce" />
+                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Ongoing Calibration: {ongoingMonth.month}</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-white shadow-2xl">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Total Progress</p>
+                          <p className="text-3xl font-black text-sunflower-gold-400">{ongoingMonth.end_pct?.toFixed(2)}%</p>
+                          <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest May report</p>
+                        </div>
+                        <div className="bg-indigo-600 p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl">
+                          <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Month Target (May 31)</p>
+                          <p className="text-3xl font-black text-white">{ongoingMonth.target_next_month_end?.toFixed(2)}%</p>
+                          <p className="text-[10px] font-medium text-indigo-200 mt-2">Required by end of month</p>
+                        </div>
+                        <div className="bg-sunflower-gold-500 p-6 rounded-3xl border border-sunflower-gold-400 text-slate-900 shadow-2xl">
+                          <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Required Weekly Rate</p>
+                          <p className="text-3xl font-black text-white">{ongoingMonth.required_weekly?.toFixed(2)}% <span className="text-sm font-bold">/ week</span></p>
+                          <p className="text-[10px] font-black text-slate-800 mt-2">RECALIBRATED VELOCITY</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl border border-white/5">
+                    <div className="absolute top-0 right-0 p-6 opacity-10">
+                      <TrendingUp className="w-20 h-20 text-sunflower-gold-500" />
+                    </div>
+                    <div className="flex items-start gap-6 relative z-10">
+                      <div className="p-3 bg-sunflower-gold-500/20 rounded-2xl">
+                        <AlertTriangle className="w-6 h-6 text-sunflower-gold-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2">Recalibration Executive Audit</p>
+                        <p className="text-base leading-relaxed text-white/90 font-medium max-w-4xl">
+                          Analysis shows that in <strong>{completedMonth?.month}</strong>, the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged <strong>{completedMonth?.envisaged_production}%</strong>. 
+                          The cumulative variance is now <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline.
+                          To hit the required milestone by <strong>{ongoingMonth?.month} 31st ({ongoingMonth?.target_this_month_end}%)</strong>, the contractor must maintain a velocity of 
+                          <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of <strong>{ongoingMonth?.month}</strong>.
+                        </p>
+                        
+                        <div className="mt-6 pt-6 border-t border-white/10">
+                          <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-2">P.S. Mathematical Logic</p>
+                          <p className="text-[11px] text-white/60 leading-relaxed italic">
+                            The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> is the cumulative "Slippage Gap." 
+                            By May 2026, <strong>22.12%</strong> of the project time has elapsed, but only <strong>8.30%</strong> of work is done. 
+                            This 13.82% backlog is the total deficit that has shifted the required weekly production rate from the original 0.96% to the current <strong>{ongoingMonth?.required_weekly}%</strong>.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </section>
+
+          {/* Production Recalibration Chain Table */}
+          <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center gap-3 mb-8">
+              <Layers className="text-vivid-tangerine-600 w-6 h-6" />
+              <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
+            </div>
+
+            <div className="overflow-x-auto rounded-[2rem] border border-slate-100">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50">
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporting Week</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start %</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End %</th>
+                    <th className="p-4 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-right">Actual (x)</th>
+                    <th className="p-4 text-[10px] font-black text-indigo-600 uppercase tracking-widest text-right">Envisaged (y)</th>
+                    <th className="p-4 text-[10px] font-black text-slate-900 uppercase tracking-widest text-right">Variance (k)</th>
+                    <th className="p-4 text-[10px] font-black text-sunflower-gold-600 uppercase tracking-widest text-right">Recalibrated (New y)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(financials?.weekly_financials || []).map((w: any, i: number) => (
+                    <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                      <td className="p-4">
+                        <p className="text-xs font-bold text-slate-700">{w.label}</p>
+                      </td>
+                      <td className="p-4 text-right">
+                        <p className="text-xs font-medium text-slate-400">{w.start_pct?.toFixed(2)}%</p>
+                      </td>
+                      <td className="p-4 text-right">
+                        <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
+                      </td>
+                      <td className="p-4 text-right bg-emerald-50/20">
+                        <p className="text-xs font-black text-emerald-600">{w.weekly_actual?.toFixed(2)}%</p>
+                      </td>
+                      <td className="p-4 text-right bg-indigo-50/20">
+                        <p className="text-xs font-black text-indigo-600">{w.weekly_envisaged?.toFixed(2)}%</p>
+                      </td>
+                      <td className="p-4 text-right">
+                        <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                          {w.weekly_variance >= 0 ? '+' : ''}{w.weekly_variance?.toFixed(2)}%
+                        </span>
+                      </td>
+                      <td className="p-4 text-right bg-sunflower-gold-50/30">
+                        <p className="text-xs font-black text-sunflower-gold-600">{w.required_future_rate?.toFixed(2)}%</p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 p-4 bg-slate-900 rounded-2xl text-[10px] text-white/60 font-medium">
+              <span className="text-sunflower-gold-400 font-black">LOGIC:</span> Actual (x) is current production. Envisaged (y) is the required rate for that week based on remaining balance. Variance (k) = x - y. Recalibrated is the new target rate for the following week.
+            </div>
+          </section>
+
           {/* Forecasting & Run-Rate Analysis */}
           <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex items-center gap-3 mb-8">
