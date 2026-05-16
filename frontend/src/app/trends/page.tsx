@@ -196,28 +196,66 @@ export default function TrendsDashboard() {
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
             <div className="p-8 flex-1">
               <div className="flex justify-between items-start mb-6">
-                <div className="p-3 bg-rose-50 rounded-2xl group-hover:scale-110 transition-transform">
-                  <Activity className="w-5 h-5 text-rose-500" />
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Slippage Tolerance (10%)</p>
-                  <p className={`text-2xl font-black tracking-tighter ${(globalProgress.time - globalProgress.work) > 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                    {(globalProgress.time - globalProgress.work) >= 0 ? '+' : ''}{(globalProgress.time - globalProgress.work).toFixed(2)}%
-                  </p>
-                </div>
+                {(() => {
+                  const slippage = globalProgress.time - globalProgress.work;
+                  const getStatus = (val: number) => {
+                    if (val <= 10) return { label: '🟢 On Track', color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-600' };
+                    if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'amber', bg: 'bg-amber-50', text: 'text-amber-600' };
+                    if (val <= 25) return { label: '🟠 High Slippage', color: 'orange', bg: 'bg-orange-50', text: 'text-orange-600' };
+                    return { label: '🔴 Critical Progress Delay', color: 'rose', bg: 'bg-rose-50', text: 'text-rose-600' };
+                  };
+                  const status = getStatus(slippage);
+                  
+                  return (
+                    <>
+                      <div className={`p-3 ${status.bg} rounded-2xl group-hover:scale-110 transition-transform`}>
+                        <Activity className={`w-5 h-5 ${status.text}`} />
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-[10px] font-black ${status.text} uppercase tracking-widest mb-1`}>Slippage Gap</p>
+                        <p className={`text-2xl font-black tracking-tighter ${status.text}`}>
+                          {slippage >= 0 ? '+' : ''}{slippage.toFixed(2)}%
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
-              <div className={`px-4 py-1.5 rounded-full inline-block mb-4 ${(globalProgress.time - globalProgress.work) > 10 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                  {(globalProgress.time - globalProgress.work) > 10 ? '🔴 Critical Progress Delay' : '🟢 On Track'}
-                </span>
-              </div>
+              {(() => {
+                const slippage = globalProgress.time - globalProgress.work;
+                const getStatus = (val: number) => {
+                  if (val <= 10) return { label: '🟢 On Track', color: 'bg-emerald-500' };
+                  if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'bg-amber-500' };
+                  if (val <= 25) return { label: '🟠 High Slippage', color: 'bg-orange-500' };
+                  return { label: '🔴 Critical Delay', color: 'bg-rose-500' };
+                };
+                const status = getStatus(slippage);
+                return (
+                  <div className={`px-4 py-1.5 rounded-full inline-block mb-4 ${status.color} text-white`}>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                      {status.label}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
             <div className="bg-slate-50 px-8 py-4">
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-1000 ${(globalProgress.time - globalProgress.work) > 10 ? 'bg-rose-500' : 'bg-emerald-500'}`}
-                  style={{ width: `${Math.min(100, Math.max(10, (globalProgress.time - globalProgress.work) * 5))}%` }}
-                ></div>
+                {(() => {
+                  const slippage = globalProgress.time - globalProgress.work;
+                  const getColor = (val: number) => {
+                    if (val <= 10) return 'bg-emerald-500';
+                    if (val <= 15) return 'bg-amber-500';
+                    if (val <= 25) return 'bg-orange-500';
+                    return 'bg-rose-500';
+                  };
+                  return (
+                    <div
+                      className={`h-full transition-all duration-1000 ${getColor(slippage)}`}
+                      style={{ width: `${Math.min(100, Math.max(10, slippage * 4))}%` }}
+                    ></div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -246,10 +284,16 @@ export default function TrendsDashboard() {
       {/* Navigation Header */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 text-vivid-tangerine-600 hover:text-vivid-tangerine-700 transition-colors">
-            <ArrowRight className="rotate-180 w-4 h-4" />
-            <span className="font-bold text-sm">Dashboard</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-vivid-tangerine-600 transition-colors">
+              Home
+            </Link>
+            <div className="w-px h-4 bg-slate-200"></div>
+            <Link href="/dashboard" className="flex items-center gap-2 text-vivid-tangerine-600 hover:text-vivid-tangerine-700 transition-colors">
+              <ArrowRight className="rotate-180 w-4 h-4" />
+              <span className="font-bold text-sm">Dashboard</span>
+            </Link>
+          </div>
           <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
             <button
               onClick={() => setTimeScale('daily')}
@@ -618,17 +662,25 @@ export default function TrendsDashboard() {
                         <div className="w-2 h-2 bg-sunflower-gold-500 rounded-full animate-bounce" />
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Ongoing Calibration: {ongoingMonth.month}</h3>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-white shadow-2xl">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Total Progress</p>
                           <p className="text-3xl font-black text-sunflower-gold-400">{ongoingMonth.end_pct?.toFixed(2)}%</p>
-                          <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest May report</p>
+                          <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest report</p>
                         </div>
-                        <div className="bg-indigo-600 p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl">
-                          <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Month Target (May 31)</p>
-                          <p className="text-3xl font-black text-white">{ongoingMonth.target_next_month_end?.toFixed(2)}%</p>
-                          <p className="text-[10px] font-medium text-indigo-200 mt-2">Required by end of month</p>
+                        
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Baseline Month Target</p>
+                          <p className="text-3xl font-black text-slate-900">{ongoingMonth.target_fixed_month_end?.toFixed(2)}%</p>
+                          <p className="text-[10px] font-bold text-vivid-tangerine-500 mt-2">+{ongoingMonth.production_planned_fixed?.toFixed(2)}% Required</p>
                         </div>
+
+                        <div className="bg-indigo-600 p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl group hover:scale-105 transition-all">
+                          <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Recalibrated Target (Rolling)</p>
+                          <p className="text-3xl font-black text-white">{ongoingMonth.target_rolling_month_end?.toFixed(2)}%</p>
+                          <p className="text-[10px] font-bold text-indigo-200 mt-2">+{ongoingMonth.production_required_rolling?.toFixed(2)}% New Pace</p>
+                        </div>
+
                         <div className="bg-sunflower-gold-500 p-6 rounded-3xl border border-sunflower-gold-400 text-slate-900 shadow-2xl">
                           <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Required Weekly Rate</p>
                           <p className="text-3xl font-black text-white">{ongoingMonth.required_weekly?.toFixed(2)}% <span className="text-sm font-bold">/ week</span></p>
@@ -651,7 +703,7 @@ export default function TrendsDashboard() {
                         <p className="text-base leading-relaxed text-white/90 font-medium max-w-4xl">
                           Analysis shows that in <strong>{completedMonth?.month}</strong>, the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged <strong>{completedMonth?.envisaged_production}%</strong>. 
                           The cumulative variance is now <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline.
-                          To hit the required milestone by <strong>{ongoingMonth?.month} 31st ({ongoingMonth?.target_this_month_end}%)</strong>, the contractor must maintain a velocity of 
+                          To hit the recalibrated milestone by <strong>{ongoingMonth?.month} 31st ({ongoingMonth?.target_rolling_month_end}%)</strong>, the contractor must maintain a velocity of 
                           <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of <strong>{ongoingMonth?.month}</strong>.
                         </p>
                         
@@ -727,91 +779,6 @@ export default function TrendsDashboard() {
             </div>
           </section>
 
-          {/* Forecasting & Run-Rate Analysis */}
-          <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-3 mb-8">
-              <Target className="text-indigo-500 w-6 h-6" />
-              <h2 className="text-2xl font-bold">Velocity & Forecasting Analysis</h2>
-            </div>
-            
-            {(() => {
-              if (!activeFinancials || activeFinancials.length === 0) return <p>Loading forecast data...</p>;
-              
-              const latestFin = activeFinancials[activeFinancials.length - 1];
-              
-              // Absolute Values Math
-              const totalContractDays = 731; // Nov 24, 2025 to Nov 24, 2027
-              const startDate = new Date("2025-11-24");
-              const totalContractSum = 2127100000;
-              
-              const moneyEarned = latestFin.revenue_earned || 0;
-              const remainingMoney = Math.max(0, totalContractSum - moneyEarned);
-              
-              const pctTime = latestFin.pct_time || 0.1;
-              const timeElapsedDays = Math.round(totalContractDays * (pctTime / 100));
-              const remainingContractDays = Math.max(0, totalContractDays - timeElapsedDays);
-              
-              const paceMoneyPerDay = timeElapsedDays > 0 ? (moneyEarned / timeElapsedDays) : 0;
-              const remainingDaysNeeded = paceMoneyPerDay > 0 ? Math.round(remainingMoney / paceMoneyPerDay) : 0;
-              
-              const projectedEndDate = new Date(startDate.getTime() + ((timeElapsedDays + remainingDaysNeeded) * 24 * 60 * 60 * 1000));
-              const delayDays = remainingDaysNeeded - remainingContractDays;
-              const isLate = delayDays > 0;
-              
-              // Velocity for the UI badge (Earned per day vs Target per day)
-              const targetMoneyPerDay = totalContractSum / totalContractDays;
-              const velocity = targetMoneyPerDay > 0 ? (paceMoneyPerDay / targetMoneyPerDay) : 0;
-
-              return (
-                <div className="flex flex-col gap-8">
-                  
-                  {/* Top Stats Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Time Elapsed</p>
-                      <p className="text-2xl font-black text-slate-700">
-                        {timeElapsedDays} <span className="text-sm">Days</span>
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-500 mt-1">Out of {totalContractDays} total</p>
-                    </div>
-                    
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Pace (Value / Day)</p>
-                      <p className={`text-xl font-black ${velocity >= 1 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        KES {(paceMoneyPerDay / 1000).toFixed(0)}K
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-500 mt-1">Target: KES {(targetMoneyPerDay / 1000).toFixed(0)}K/day</p>
-                    </div>
-                    
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Est. Completion</p>
-                      <p className={`text-xl font-black ${isLate ? 'text-rose-600' : 'text-emerald-600'}`}>
-                        {projectedEndDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-500 mt-1">Target: Nov 24, 2027</p>
-                    </div>
-
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Projected Variance</p>
-                      <p className={`text-2xl font-black ${isLate ? 'text-rose-500' : 'text-emerald-500'}`}>
-                        {isLate ? `+${delayDays}` : `${delayDays}`} <span className="text-sm font-bold">Days</span>
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-500 mt-1">{isLate ? 'Late' : 'Early'}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
-                    <p className="text-[10px] font-bold text-indigo-800 uppercase tracking-widest mb-2">Financial Pace Insight</p>
-                    <p className="text-sm text-indigo-800 font-medium leading-relaxed">
-                      For the <strong>KES {moneyEarned.toLocaleString(undefined, {maximumFractionDigits: 0})}</strong> of work done, we have completed it in <strong>{timeElapsedDays} days</strong>. Hence, it will take approximately <strong>{remainingDaysNeeded.toLocaleString()} days</strong> to earn the remaining <strong>KES {remainingMoney.toLocaleString(undefined, {maximumFractionDigits: 0})}</strong>. 
-                      <br/><br/>
-                      This pace places the projected finish date on <strong>{projectedEndDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>, which is <strong>{Math.abs(delayDays)} days {isLate ? 'after' : 'before'}</strong> the official project completion date of Nov 24, 2027.
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-          </section>
         </div>
 
         {/* Stakeholder Recommendations */}
@@ -1058,6 +1025,24 @@ export default function TrendsDashboard() {
           background: #d1d1d1;
         }
       `}</style>
+
+      {/* Footer Panel */}
+      <footer className="mt-20 border-t border-slate-100 pt-12 pb-8 max-w-7xl mx-auto px-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-left">
+            <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Field Intelligence & Reporting</p>
+          </div>
+          <div className="flex gap-4">
+            <Link href="/" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Home</Link>
+            <Link href="/dashboard" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Dashboard</Link>
+            <Link href="/contract" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Contract</Link>
+          </div>
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
+        </div>
+      </footer>
     </main>
   );
 }

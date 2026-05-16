@@ -41,7 +41,7 @@ class AuditReportGenerator:
         if completed_month and ongoing_month:
             p.add_run(f"Analysis shows that in {completed_month.get('month', 'April 2026')}, the project achieved {completed_month.get('actual_production', 0):.2f}% production against an envisaged {completed_month.get('envisaged_production', 0):.2f}%. ").bold = False
             p.add_run(f"The cumulative variance is now {variance:.2f}% behind the project baseline. ").bold = True
-            p.add_run(f"To hit 100% completion by Nov 24, 2027, the contractor must maintain a velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'May 2026')}.")
+            p.add_run(f"To hit the recalibrated milestone by {ongoing_month.get('month', 'May 2026')} 31st ({ongoing_month.get('target_rolling_month_end', 0):.2f}%), the contractor must maintain a velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'May 2026')}.")
         else:
             p.add_run("Recalibration data is still initializing for the current period. Baseline linear tracking remains at 0.96% per week.")
 
@@ -97,7 +97,10 @@ class AuditReportGenerator:
                 p = doc.add_paragraph()
                 run = p.add_run(f"\nONGOING CALIBRATION ({ongoing['month']}):")
                 run.bold = True
-                doc.add_paragraph(f"The project is currently tracking at {ongoing['end_pct']:.2f}% progress. To hit the required milestone by {ongoing['month']} 31st, the target is {ongoing.get('target_this_month_end', 0):.2f}% progress, requiring a recalibrated velocity of {ongoing['required_weekly']:.2f}% per week.")
+                doc.add_paragraph(f"The project is currently tracking at {ongoing['end_pct']:.2f}% progress.")
+                doc.add_paragraph(f"- Baseline Month Target: {ongoing.get('target_fixed_month_end', 0):.2f}% (Production: {ongoing.get('production_planned_fixed', 0):.2f}%)")
+                doc.add_paragraph(f"- Recalibrated Rolling Target: {ongoing.get('target_rolling_month_end', 0):.2f}% (Production: {ongoing.get('production_required_rolling', 0):.2f}%)")
+                doc.add_paragraph(f"Required Velocity: {ongoing['required_weekly']:.2f}% per week.")
 
         # --- RECALIBRATION CHAIN ---
         if financials and financials.get("weekly_financials"):

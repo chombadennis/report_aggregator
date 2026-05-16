@@ -1,6 +1,6 @@
-# Report Aggregator
+# Makindu AHP Field Intelligence & Reporting
 
-A full-stack web application for automating construction site report compilation. It processes daily PDF site reports using AI-powered vision parsing to generate consolidated weekly and monthly Word documents, ready for distribution.
+A full-stack web application for automating construction site report compilation and analytics. It processes daily PDF site reports using AI-powered vision parsing to generate consolidated weekly and monthly Word documents, ready for distribution.
 
 ## Features
 
@@ -42,7 +42,7 @@ report_aggregator/
 ## Setup
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.11 (CRITICAL: 3.12, 3.13, and 3.14 are not supported due to dependency constraints)
 - Node.js 18+
 - Two Google Cloud service account JSON keys with Vertex AI access (one minimum, two recommended for load balancing).
 - Word document templates: `weekly_template.docx` and `monthly_template.docx` in the `backend/` folder.

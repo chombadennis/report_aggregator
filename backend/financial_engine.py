@@ -158,10 +158,12 @@ class FinancialEngine:
         CURRENT_MONTH_STR = "May 2026"
         
         for w in weekly_financials:
-            # Extract month from label
-            m = re.search(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})", w["label"])
-            if m:
-                m_key = f"{m.group(1)} {m.group(2)}"
+            # Extract ALL months from label to handle "March - April"
+            months = re.findall(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})", w["label"])
+            if months:
+                # Use the LAST month mentioned (the end of the week) for grouping
+                m_name, m_year = months[-1]
+                m_key = f"{m_name} {m_year}"
                 month_groups[m_key].append(w)
         
         sorted_months = sorted(month_groups.keys(), key=lambda k: datetime.datetime.strptime(k, "%B %Y"))
@@ -188,17 +190,37 @@ class FinancialEngine:
             # Recalibrated required rate (using the last week of this month)
             req_weekly = group[-1]["required_future_rate"]
             
-            # Target for the END of THIS month (for ongoing tracking)
-            # Calculated as (start of month) + (req_weekly_at_start * 4.345)
-            # For the first month, we use baseline 0.96
+            # --- RECALIBRATION LOGIC ---
+            # 1. Target set at the VERY BEGINNING of the month (Static Milestone)
+            # Formula: Start % + (Required Rate at Start * Weeks in Month)
             m_idx = sorted_months.index(m_key)
             prev_m_key = sorted_months[m_idx-1] if m_idx > 0 else None
             req_at_start = month_groups[prev_m_key][-1]["required_future_rate"] if prev_m_key else 0.96
-            target_this_month = round(m_start_pct + (req_at_start * 4.345), 2)
-
-            # Target for NEXT month is (current end) + (req_weekly * 4.345)
-            target_next_month = round(m_end_pct + (req_weekly * 4.345), 2)
             
+            # Use 4.43 for 31-day months, 4.28 for 30-day, etc.
+            days_in_month = 31 # Default
+            if "April" in m_key or "June" in m_key or "September" in m_key or "November" in m_key:
+                days_in_month = 30
+            elif "February" in m_key:
+                days_in_month = 28 # Simplified
+            
+            weeks_in_month = days_in_month / 7.0
+            
+            # This is the "Fixed" target for the end of the month, set when the month began
+            target_fixed_month_end = round(m_start_pct + (req_at_start * weeks_in_month), 2)
+            production_planned_fixed = round(target_fixed_month_end - m_start_pct, 2)
+
+            # 2. Rolling Target (Dynamic Milestone)
+            # This is where we SHOULD be by month end if we work at the CURRENT required rate starting from TODAY.
+            # We need to know "Today" or the "Latest Report Date" in this group.
+            # For simplicity, we calculate "Required Weekly Rate * Weeks in Month" added to the CURRENT progress.
+            # This shows the "New Velocity Month Target".
+            target_rolling_month_end = round(m_end_pct + (req_weekly * weeks_in_month), 2) # Rolling full-month target
+            
+            # OR: Dynamic target for the REMAINING days of the month
+            # Let's provide the "Rolling Month Production" which is (Required Weekly * Weeks in Month)
+            production_required_rolling = round(req_weekly * weeks_in_month, 2)
+
             monthly_financials.append({
                 "month": m_key,
                 "start_pct": m_start_pct,
@@ -208,8 +230,10 @@ class FinancialEngine:
                 "variance": round(m_actual - m_envisaged_total, 2),
                 "is_ongoing": is_ongoing,
                 "required_weekly": req_weekly,
-                "target_this_month_end": target_this_month,
-                "target_next_month_end": target_next_month
+                "target_fixed_month_end": target_fixed_month_end,
+                "production_planned_fixed": production_planned_fixed,
+                "target_rolling_month_end": target_rolling_month_end,
+                "production_required_rolling": production_required_rolling
             })
 
 

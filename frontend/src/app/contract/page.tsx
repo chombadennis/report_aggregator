@@ -30,7 +30,12 @@ export default function ContractSummary() {
   return (
     <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900 p-8">
       <div className="max-w-4xl mx-auto">
-        <Link href="/" className="text-vivid-tangerine-600 hover:underline mb-8 inline-block font-bold">← Back to Dashboard</Link>
+        <div className="flex justify-between items-center mb-8">
+          <Link href="/dashboard" className="text-vivid-tangerine-600 hover:underline font-bold text-sm">← Back to Dashboard</Link>
+          <Link href="/" className="text-[10px] font-black text-vivid-tangerine-600 uppercase tracking-widest bg-vivid-tangerine-50 px-3 py-1.5 rounded-full hover:bg-vivid-tangerine-100 transition-colors border border-vivid-tangerine-200">
+            Home
+          </Link>
+        </div>
         
         <h1 className="text-4xl font-bold mb-8 font-serif bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent">
           Project Contract Details
@@ -116,6 +121,24 @@ export default function ContractSummary() {
           </div>
         )}
       </div>
+
+      {/* Footer Panel */}
+      <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-left">
+            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter">Field Intelligence & Reporting</p>
+          </div>
+          <div className="flex gap-4">
+            <Link href="/" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Home</Link>
+            <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Dashboard</Link>
+            <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Trends</Link>
+          </div>
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
+        </div>
+      </footer>
     </main>
   );
 }

@@ -267,28 +267,18 @@
   ],
   "monthly_financials": [
     {
-      "month": "March 2026",
-      "start_pct": 5.472,
-      "end_pct": 6.08,
-      "actual_production": 0.61,
-      "envisaged_production": 1.1,
-      "variance": -0.49,
-      "is_ongoing": false,
-      "required_weekly": 1.1,
-      "target_this_month_end": 9.64,
-      "target_next_month_end": 10.86
-    },
-    {
       "month": "April 2026",
-      "start_pct": 6.08,
+      "start_pct": 5.472,
       "end_pct": 8.22,
-      "actual_production": 2.14,
-      "envisaged_production": 3.02,
-      "variance": -0.88,
+      "actual_production": 2.75,
+      "envisaged_production": 3.98,
+      "variance": -1.23,
       "is_ongoing": false,
       "required_weekly": 1.12,
-      "target_this_month_end": 10.86,
-      "target_next_month_end": 13.09
+      "target_fixed_month_end": 9.59,
+      "production_planned_fixed": 4.12,
+      "target_rolling_month_end": 13.02,
+      "production_required_rolling": 4.8
     },
     {
       "month": "May 2026",
@@ -299,8 +289,10 @@
       "variance": -1.04,
       "is_ongoing": true,
       "required_weekly": 1.13,
-      "target_this_month_end": 13.09,
-      "target_next_month_end": 13.21
+      "target_fixed_month_end": 13.18,
+      "production_planned_fixed": 4.96,
+      "target_rolling_month_end": 13.3,
+      "production_required_rolling": 5.0
     }
   ]
 }

@@ -374,6 +374,7 @@ class AnalyticsEngine:
         """
         Enhanced AI Insights with SWOT and detailed recommendations.
         """
+        calculated_verdict = "Low" # Default fallback
         run_rate_context = "No run-rate data available."
         if financials:
             latest_fin = None
@@ -382,19 +383,23 @@ class AnalyticsEngine:
             elif financials.get("daily_financials"):
                 latest_fin = financials["daily_financials"][-1]
                 
-            if latest_fin:
-                money_earned = latest_fin.get("revenue_earned", 0)
-                pct_time = latest_fin.get("pct_time", 0.1)
-                time_elapsed = round(731 * (pct_time / 100))
-                pace = money_earned / time_elapsed if time_elapsed > 0 else 0
-                remaining_money = max(0, 2127100000 - money_earned)
-                remaining_days = round(remaining_money / pace) if pace > 0 else 0
-                delay_days = remaining_days - max(0, 731 - time_elapsed)
-                
-                run_rate_context = f"FORECASTING VARIANCE:\n- Time Elapsed: {time_elapsed} Days out of 731\n- Current Pace: KES {pace:,.0f} per day\n- Projected Variance: {abs(delay_days)} Days {'LATE' if delay_days > 0 else 'EARLY'}\n- Projected Completion requires earning the remaining KES {remaining_money:,.0f} in the remaining {max(0, 731 - time_elapsed)} days."
+            # Final run_rate_context for the prompt
+            run_rate_context = "PROJECT MOMENTUM ANALYSIS: Focus on the Slippage Gap (%) and Recalibrated Weekly targets to assess health."
+
+            # Calculate hard-coded verdict to force AI consistency
+            slippage = latest_fin.get("slippage_gap", 0) if latest_fin else 0
+            if slippage <= 15:
+                calculated_verdict = "Low"
+            elif slippage <= 25:
+                calculated_verdict = "Moderate"
+            else:
+                calculated_verdict = "High"
 
         prompt = f"""
         You are a Senior Project Management Consultant for a high-value affordable housing project.
+        
+        STRICT REQUIREMENT: The Contractual Exposure Level for this report is {calculated_verdict.upper()}. 
+        You MUST use "{calculated_verdict}" as the value for 'claim_verdict' in your JSON response.
         
         Based ONLY on the following historical data (including numerical trends and qualitative site comments), provide a comprehensive analysis.
         
@@ -414,9 +419,14 @@ class AnalyticsEngine:
            - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section.
            - MONTHLY PERFORMANCE: Analyze the last completed month (e.g. April 2026). Compare the 'actual_production' vs 'envisaged_production'. Explicitly state if it was a shortfall or an achievement and by how much.
            - RECALIBRATION TARGETS: Discuss the 'required_weekly' rate for the ongoing month (e.g. May 2026). Explain why this acceleration is necessary (or why it has decreased) based on the historical chain.
-           - THE 10% RULE: If the cumulative Slippage Gap > 10%, explicitly flag it as an urgent opportunity for joint intervention.
+           - SLIPPAGE SEVERITY LEVELS:
+             * 0% - 10%: ON TRACK (Emerald). Frame as maintainable.
+             * 10.1% - 15%: MODERATE SLIPPAGE (Amber). Frame as a minor divergence requiring tactical adjustment.
+             * 15.1% - 25%: HIGH SLIPPAGE (Orange). Frame as a significant concern requiring a detailed catch-up plan.
+             * > 25%: CRITICAL DELAY (Red). Frame as an urgent priority for executive intervention.
+           - THE 10% THRESHOLD: 10% is the baseline tolerance. Only start flagging concerns when slippage exceeds this.
            - RECALIBRATION CHAIN: Reference the weekly variance (k) from the Recalibration Chain table to explain where the momentum was lost or gained.
-           - TONE: Maintain a highly constructive, partner-oriented tone. Frame delays as shared challenges to be solved with the contractor.
+           - TONE: Maintain a highly constructive, partner-oriented tone. Frame delays as shared challenges to be solved with the contractor. Avoid alarmist language for moderate slippage.
 
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
            - Use the 'prose_summary', 'weather_comments', and recalibration deltas to explain the momentum.
@@ -432,8 +442,14 @@ class AnalyticsEngine:
            - TO THE CONTRACTOR: Operational improvements to boost productivity and hit the recalibrated weekly targets.
         
         3. EXECUTIVE SUMMARY & VERDICT:
-           - Summary of momentum.
-           - Claim probability assessment.
+           - Summary of momentum and overall health.
+           - CLAIM & RISK VERDICT (claim_verdict): 
+             * IMPORTANT: Base this level ONLY on the Slippage Gap % levels below. IGNORE the "Projected Variance (Days)" or "Completion Date" when choosing this level.
+             * 'Low': If slippage is <= 15%. Frame as "Manageable operational variance."
+             * 'Moderate': If slippage is 15.1% - 25%. Frame as "Significant divergence requiring monitoring."
+             * 'High': If slippage is > 25%. Frame as "Critical schedule exposure."
+           - CRITICAL STRICTURE: DO NOT mention the "Projected Variance" (e.g., '1209 Days LATE') or the estimated completion date (e.g., '18 Mar 2031') in the executive_summary or recommendations. These are for internal reference only. Instead, refer to the Slippage Gap %, Revenue earned, and the Recalibrated Monthly targets to describe the status.
+           - Ensure the executive_summary reflects the TONE of the assigned slippage level (Constructive for Low/Moderate, Urgent for High).
 .
 
         Return the analysis in JSON matching this schema:
@@ -456,6 +472,11 @@ class AnalyticsEngine:
         
         try:
             result = await generate_summary_json(prompt)
+            # FORCE OVERRIDE: The AI is sometimes stubborn; we overwrite its verdict with our hard-coded logic.
+            if isinstance(result, dict):
+                result["claim_verdict"] = calculated_verdict
+                result["_generated_at"] = os.popen("date /t").read().strip() + " " + os.popen("time /t").read().strip()
+                logger.info(f"✅ AI Insights generated with FORCED VERDICT: {calculated_verdict}")
             return result
         except Exception as e:
             logger.error(f"AI Insights generation failed: {e}")
@@ -463,5 +484,5 @@ class AnalyticsEngine:
                 "swot": {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []},
                 "recommendations": {"to_client": ["Error generating AI insights."], "to_contractor": []},
                 "executive_summary": "Error generating insights.",
-                "claim_verdict": "Unknown"
+                "claim_verdict": calculated_verdict # Use the safe calculated value
             }

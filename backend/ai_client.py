@@ -169,25 +169,37 @@ async def _call_vertex_vision(prompt: str, model: str, file_path: str, mime_type
 
 def _clean_ai_json(raw_text: str) -> dict:
     """Attempts to clean and parse AI-generated JSON, handling common errors."""
+    clean_text = raw_text.strip()
     try:
         # 1. Strip Markdown code blocks if present
-        clean_text = raw_text.strip()
         if "```json" in clean_text:
             clean_text = clean_text.split("```json")[1].split("```")[0].strip()
         elif "```" in clean_text:
             clean_text = clean_text.split("```")[1].split("```")[0].strip()
             
-        # 2. Basic cleanup for common AI mistakes
+        # 2. Remove control characters (\x00-\x1F, except \n and \r)
+        import re
+        clean_text = re.sub(r'[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]', '', clean_text)
+            
+        # 3. Attempt parsing
         return json.loads(clean_text)
     except Exception as e:
-        logger.error(f"Failed to parse AI JSON. Raw: {raw_text[:200]}... | Error: {e}")
-        # Final attempt: remove non-printable control characters
+        logger.error(f"Initial AI JSON parse failed: {e}. Attempting deep clean...")
         try:
-            import re
-            cleaner = re.sub(r'[\x00-\x1F\x7F]', '', clean_text)
-            return json.loads(cleaner)
-        except:
-            raise ValueError(f"AI returned invalid JSON: {e}")
+            # Deep clean: remove any non-standard whitespace and ensure valid quotes
+            # Handle the specific case where AI might return a "Raw: { ..." string
+            if clean_text.startswith("Raw:"):
+                clean_text = clean_text.replace("Raw:", "", 1).strip()
+            
+            # Try to fix truncated JSON by appending closing braces if it looks like an object
+            if clean_text.startswith("{") and not clean_text.endswith("}"):
+                logger.warning("Detected potentially truncated JSON object. Attempting fix...")
+                clean_text += "}"
+            
+            return json.loads(clean_text)
+        except Exception as deep_e:
+            logger.error(f"Deep clean failed. Raw head: {raw_text[:500]}")
+            raise ValueError(f"AI returned invalid JSON: {deep_e}")
 
 async def generate_structured_data(prompt: str, file_path: str, mime_type: str = "application/pdf", force_pro: bool = False):
     """Entry point with fallback logic and optional high-precision 'Pro' mode."""

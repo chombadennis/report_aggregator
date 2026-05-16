@@ -654,9 +654,8 @@ class ReportParser:
             
             start_dt = datetime(year, month_idx, day)
             if start_dt.weekday() != 0:
-                # 0 is Monday
-                import logging
-                logging.warning(f"🚩 Logical Date Conflict: '{period_str}' starts on a {start_dt.strftime('%A')}, not Monday.")
+                # 0 is Monday. We log this as INFO as it might be a partial week (e.g. start of month).
+                logging.info(f"📅 Note: Weekly period '{period_str}' starts on a {start_dt.strftime('%A')}. (Expected: Monday).")
             return start_dt
         except Exception as e:
             import logging
