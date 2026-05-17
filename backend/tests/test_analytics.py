@@ -25,27 +25,28 @@ async def run_analytics_test():
     print("\n--- 📊 PHASE 1: Quantitative Trends ---")
     trends = engine.get_historical_trends()
     
-    if not trends.get("labour_trend"):
+    if not trends:
         print("❌ No labour trends found. Check if history directory has JSON files.")
     else:
-        for entry in trends["labour_trend"]:
+        for entry in trends:
             print(f"📅 Week: {entry['label']}")
-            print(f"   👷 Avg Labour: {entry['value']} | Peak: {entry['peak']}")
-            
-        for entry in trends["material_trends"]:
-             print(f"   🚚 Materials variety: {entry['value']} ({', '.join(entry['key_items'])})")
-             
-        for entry in trends["weather_impact"]:
-            print(f"   ☁️ Weather: {entry['rainy_days']} rainy days, {entry['disruptions']} disruptions")
+            print(f"   👷 Avg Labour: {entry['value']}")
+            print(f"   🚚 Materials: {entry['materials']}")
+            print(f"   ☁️ Weather Disrupted: {entry['weather_disrupted']}")
 
     # 2. Test Risk Indicators
-    print("\n--- 🚨 PHASE 2: Risk Indicators ---")
-    if not trends.get("risk_indicators"):
-        print("✅ No critical risks detected in prose.")
-    else:
-        for risk in trends["risk_indicators"]:
-            severity_icon = "🔴" if risk["severity"] == "High" else "🟡"
-            print(f"{severity_icon} [{risk['severity']}] {risk['risk']} on {risk['date']}")
+    has_warnings = False
+    for entry in trends:
+        if entry.get("warnings"):
+            has_warnings = True
+            for w in entry["warnings"]:
+                print(f"⚠️ [Warning] {w} on {entry['label']}")
+        if entry.get("instructions"):
+            has_warnings = True
+            for inst in entry["instructions"]:
+                print(f"📋 [Instruction] {inst} on {entry['label']}")
+    if not has_warnings:
+        print("✅ No critical risks or warnings detected in trends.")
 
     # 3. Test AI Insights (Optional - set RUN_AI=True to execute)
     RUN_AI = True # Set to True to test Gemini integration

@@ -158,11 +158,15 @@ class FinancialEngine:
         CURRENT_MONTH_STR = "May 2026"
         
         for w in weekly_financials:
-            # Extract ALL months from label to handle "March - April"
-            months = re.findall(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})", w["label"])
+            months = re.findall(
+                r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})", 
+                w["label"], 
+                re.IGNORECASE
+            )
             if months:
                 # Use the LAST month mentioned (the end of the week) for grouping
                 m_name, m_year = months[-1]
+                m_name = m_name.capitalize()
                 m_key = f"{m_name} {m_year}"
                 month_groups[m_key].append(w)
         

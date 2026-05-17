@@ -32,9 +32,25 @@ class AnalyticsEngine:
             from datetime import datetime
             if not date_str: return None
             cleaned = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", date_str, flags=re.IGNORECASE)
-            for fmt in ["%A %d %B %Y", "%d %B %Y", "%A, %d %B %Y", "%Y-%m-%d"]:
-                try: return datetime.strptime(cleaned.strip(), fmt)
+            cleaned = cleaned.replace(",", " ").strip()
+            cleaned = re.sub(r"\s+", " ", cleaned)
+            formats = [
+                "%A %d %B %Y",
+                "%d %B %Y",
+                "%A %d %b %Y",
+                "%d %b %Y",
+                "%Y-%m-%d",
+                "%d/%m/%Y",
+                "%m/%d/%Y",
+                "%Y/%m/%d",
+            ]
+            for fmt in formats:
+                try: return datetime.strptime(cleaned, fmt)
                 except: continue
+            match = re.search(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", cleaned)
+            if match:
+                try: return datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+                except: pass
             return None
         
         # PROCESS DAILY FILES DIRECTLY
@@ -317,7 +333,7 @@ class AnalyticsEngine:
             
             # Detect schema
             labour_data = d.get("labour_daily") or d.get("labour") or {}
-            weather_data = d.get("weather_daily") or {}
+            weather_data = d.get("weather_daily") or d.get("weather") or {}
             
             # Extract totals
             totals = []
@@ -325,10 +341,49 @@ class AnalyticsEngine:
                 for date_key_day, day_data in labour_data.items():
                     if isinstance(day_data, dict) and "TOTAL" in day_data:
                         totals.append(self._clean_val(day_data["TOTAL"]))
+                if not totals and "TOTAL" in labour_data:
+                    total_list = labour_data["TOTAL"]
+                    if isinstance(total_list, list):
+                        totals = [self._clean_val(v) for v in total_list if self._clean_val(v) > 0]
+                    elif isinstance(total_list, (str, int, float)):
+                        totals = [self._clean_val(total_list)]
+            elif isinstance(labour_data, list):
+                for day_data in labour_data:
+                    if isinstance(day_data, dict) and "TOTAL" in day_data:
+                        totals.append(self._clean_val(day_data["TOTAL"]))
             
             val = sum(totals) / len(totals) if totals else 0
-            is_disrupted = any(day.get("Condition") != "Workable" for day in weather_data.values()) if isinstance(weather_data, dict) else False
-            weather_comments = [day.get("Comments") for day in weather_data.values() if day.get("Comments")]
+            
+            is_disrupted = False
+            weather_comments = []
+            
+            def _check_disrupted(day_info):
+                if not isinstance(day_info, dict): return False
+                cond = str(day_info.get("Condition") or day_info.get("condition") or "").lower()
+                morn = str(day_info.get("morning") or "").lower()
+                aft = str(day_info.get("afternoon") or "").lower()
+                eve = str(day_info.get("evening") or "").lower()
+                combined = f"{cond} {morn} {aft} {eve}"
+                if any(x in combined for x in ["rain", "shower", "storm", "wet", "flood"]):
+                    return True
+                if "unfavorable" in combined or "semi-favorable" in combined or "disrupted" in combined:
+                    return True
+                return False
+
+            if isinstance(weather_data, dict):
+                is_disrupted = any(_check_disrupted(day) for day in weather_data.values())
+                weather_comments = [
+                    day.get("Comments") or day.get("Comments Given") or day.get("comments") or day.get("condition") or day.get("morning")
+                    for day in weather_data.values()
+                    if isinstance(day, dict) and (day.get("Comments") or day.get("Comments Given") or day.get("comments") or day.get("condition") or day.get("morning"))
+                ]
+            elif isinstance(weather_data, list):
+                is_disrupted = any(_check_disrupted(day) for day in weather_data)
+                weather_comments = [
+                    day.get("Comments") or day.get("Comments Given") or day.get("comments") or day.get("condition") or day.get("morning")
+                    for day in weather_data
+                    if isinstance(day, dict) and (day.get("Comments") or day.get("Comments Given") or day.get("comments") or day.get("condition") or day.get("morning"))
+                ]
             
             m_delivered = d.get("materials_delivered", [])
             valid_mats = [m for m in m_delivered if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]

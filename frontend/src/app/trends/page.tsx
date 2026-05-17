@@ -711,8 +711,8 @@ export default function TrendsDashboard() {
                           <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-2">P.S. Mathematical Logic</p>
                           <p className="text-[11px] text-white/60 leading-relaxed italic">
                             The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> is the cumulative "Slippage Gap." 
-                            By May 2026, <strong>22.12%</strong> of the project time has elapsed, but only <strong>8.30%</strong> of work is done. 
-                            This 13.82% backlog is the total deficit that has shifted the required weekly production rate from the original 0.96% to the current <strong>{ongoingMonth?.required_weekly}%</strong>.
+                            By <strong>{ongoingMonth?.month}</strong>, <strong>{latestWeek?.envisaged_pct_work?.toFixed(2)}%</strong> of the project progress was envisaged, but only <strong>{latestWeek?.pct_work?.toFixed(2)}%</strong> of work is done. 
+                            This <strong>{Math.abs(variance).toFixed(2)}%</strong> backlog is the total deficit that has shifted the required weekly production rate from the original 0.96% to the current <strong>{ongoingMonth?.required_weekly}%</strong>.
                           </p>
                         </div>
                       </div>

@@ -219,6 +219,7 @@ class MonthlyAggregator:
         weekly_weather_grids = []
         weekly_periods = []
         weather_comments = []
+        weekly_materials_list = []
         
         days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -231,6 +232,7 @@ class MonthlyAggregator:
                 weekly_labour_matrices.append({})
                 weekly_weather_grids.append([])
                 weather_comments.append("No report available for this period.")
+                weekly_materials_list.append("0 categories")
                 continue
 
             # Process Labour for this week using hardcoded categories
@@ -342,9 +344,7 @@ class MonthlyAggregator:
             else:
                 m_desc = "0 categories"
             
-            if not hasattr(self, 'weekly_materials_list'):
-                self.weekly_materials_list = []
-            self.weekly_materials_list.append(m_desc)
+            weekly_materials_list.append(m_desc)
 
         # 2. Aggregated Sections
         latest_week = weekly_reports[-1] if weekly_reports else {}
@@ -491,7 +491,7 @@ class MonthlyAggregator:
             "weekly_valid_days": [w["valid_days"] for w in expected_weeks],
             "weekly_labour": weekly_labour_matrices,
             "weekly_weather": weekly_weather_grids,
-            "weekly_materials": self.weekly_materials_list,
+            "weekly_materials": weekly_materials_list,
             "weather_comments": weather_comments,
             "summary_to_date": latest_week.get("summary_to_date", {}),
             "materials_sum": materials_sum,

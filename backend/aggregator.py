@@ -57,7 +57,8 @@ class Aggregator:
             raw = r.get("date", "")
             # Strip ordinal suffixes: 16th -> 16, 1st -> 1, etc.
             cleaned = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", raw, flags=re.IGNORECASE)
-            for fmt in ["%A %d %B %Y", "%d %B %Y", "%A, %d %B %Y"]:
+            cleaned = cleaned.replace(",", " ").strip()
+            for fmt in ["%A %d %B %Y", "%d %B %Y", "%A, %d %B %Y", "%Y-%m-%d"]:
                 try: return datetime.strptime(cleaned.strip(), fmt).date()
                 except: continue
             return None
