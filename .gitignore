@@ -26,3 +26,9 @@ extracted_images/
 screenshots/
 backend/cache_monthly/
 backend/history_monthly/
+
+# --- Test Outputs & Dynamic Runs ---
+backend/tests/tests_output/
+backend/tests_monthly/monthly_test_outputs/
+backend/history_monthly_test/
+

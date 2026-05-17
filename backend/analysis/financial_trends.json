@@ -23,6 +23,16 @@
       "slippage_gap": 12.52
     },
     {
+      "date": "2026-04-09",
+      "pct_work": 6.1,
+      "pct_time": 18.74,
+      "envisaged_pct_work": 18.74,
+      "variance": -12.64,
+      "required_future_rate": 1.11,
+      "revenue_earned": 129750100.49091999,
+      "slippage_gap": 12.64
+    },
+    {
       "date": "2026-04-10",
       "pct_work": 6.08,
       "pct_time": 18.88,
@@ -113,6 +123,16 @@
       "slippage_gap": 12.07
     },
     {
+      "date": "2026-04-20",
+      "pct_work": 8.04,
+      "pct_time": 20.25,
+      "envisaged_pct_work": 20.25,
+      "variance": -12.21,
+      "required_future_rate": 1.1,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.21
+    },
+    {
       "date": "2026-04-21",
       "pct_work": 8.04,
       "pct_time": 20.38,
@@ -121,6 +141,26 @@
       "required_future_rate": 1.11,
       "revenue_earned": 171014886.54868796,
       "slippage_gap": 12.34
+    },
+    {
+      "date": "2026-04-22",
+      "pct_work": 8.04,
+      "pct_time": 20.52,
+      "envisaged_pct_work": 20.52,
+      "variance": -12.48,
+      "required_future_rate": 1.11,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.48
+    },
+    {
+      "date": "2026-04-23",
+      "pct_work": 8.04,
+      "pct_time": 20.66,
+      "envisaged_pct_work": 20.66,
+      "variance": -12.62,
+      "required_future_rate": 1.11,
+      "revenue_earned": 171014886.54868796,
+      "slippage_gap": 12.62
     },
     {
       "date": "2026-04-24",
@@ -163,6 +203,16 @@
       "slippage_gap": 12.98
     },
     {
+      "date": "2026-04-28",
+      "pct_work": 8.22,
+      "pct_time": 21.34,
+      "envisaged_pct_work": 21.34,
+      "variance": -13.12,
+      "required_future_rate": 1.12,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 13.12
+    },
+    {
       "date": "2026-04-29",
       "pct_work": 8.22,
       "pct_time": 21.48,
@@ -173,6 +223,26 @@
       "slippage_gap": 13.26
     },
     {
+      "date": "2026-04-30",
+      "pct_work": 8.22,
+      "pct_time": 21.61,
+      "envisaged_pct_work": 21.61,
+      "variance": -13.39,
+      "required_future_rate": 1.12,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 13.39
+    },
+    {
+      "date": "2026-05-01",
+      "pct_work": 8.22,
+      "pct_time": 21.75,
+      "envisaged_pct_work": 21.75,
+      "variance": -13.53,
+      "required_future_rate": 1.12,
+      "revenue_earned": 174843578.03858402,
+      "slippage_gap": 13.53
+    },
+    {
       "date": "2026-05-03",
       "pct_work": 8.3,
       "pct_time": 22.02,
@@ -181,6 +251,76 @@
       "required_future_rate": 1.13,
       "revenue_earned": 176545218.70076,
       "slippage_gap": 13.72
+    },
+    {
+      "date": "2026-05-04",
+      "pct_work": 8.3,
+      "pct_time": 22.16,
+      "envisaged_pct_work": 22.16,
+      "variance": -13.86,
+      "required_future_rate": 1.13,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 13.86
+    },
+    {
+      "date": "2026-05-05",
+      "pct_work": 8.3,
+      "pct_time": 22.3,
+      "envisaged_pct_work": 22.3,
+      "variance": -14.0,
+      "required_future_rate": 1.13,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.0
+    },
+    {
+      "date": "2026-05-06",
+      "pct_work": 8.3,
+      "pct_time": 22.44,
+      "envisaged_pct_work": 22.44,
+      "variance": -14.14,
+      "required_future_rate": 1.13,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.14
+    },
+    {
+      "date": "2026-05-07",
+      "pct_work": 8.3,
+      "pct_time": 22.57,
+      "envisaged_pct_work": 22.57,
+      "variance": -14.27,
+      "required_future_rate": 1.13,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.27
+    },
+    {
+      "date": "2026-05-08",
+      "pct_work": 8.3,
+      "pct_time": 22.71,
+      "envisaged_pct_work": 22.71,
+      "variance": -14.41,
+      "required_future_rate": 1.14,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.41
+    },
+    {
+      "date": "2026-05-09",
+      "pct_work": 8.3,
+      "pct_time": 22.85,
+      "envisaged_pct_work": 22.85,
+      "variance": -14.55,
+      "required_future_rate": 1.14,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.55
+    },
+    {
+      "date": "2026-05-10",
+      "pct_work": 8.3,
+      "pct_time": 22.98,
+      "envisaged_pct_work": 22.98,
+      "variance": -14.68,
+      "required_future_rate": 1.14,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.68
     }
   ],
   "weekly_financials": [
@@ -263,6 +403,22 @@
       "required_future_rate": 1.13,
       "revenue_earned": 176545218.70076,
       "slippage_gap": 13.72
+    },
+    {
+      "date": "4TH - 10TH MAY 2026",
+      "label": "4TH - 10TH MAY 2026",
+      "start_pct": 8.3,
+      "end_pct": 8.3,
+      "weekly_actual": 0.0,
+      "weekly_envisaged": 1.13,
+      "weekly_variance": -1.13,
+      "pct_work": 8.3,
+      "pct_time": 22.88,
+      "envisaged_pct_work": 23.08,
+      "variance": -14.78,
+      "required_future_rate": 1.15,
+      "revenue_earned": 176545218.70076,
+      "slippage_gap": 14.58
     }
   ],
   "monthly_financials": [
@@ -285,14 +441,14 @@
       "start_pct": 8.22,
       "end_pct": 8.3,
       "actual_production": 0.08,
-      "envisaged_production": 1.12,
-      "variance": -1.04,
+      "envisaged_production": 2.08,
+      "variance": -2.0,
       "is_ongoing": true,
-      "required_weekly": 1.13,
+      "required_weekly": 1.15,
       "target_fixed_month_end": 13.18,
       "production_planned_fixed": 4.96,
-      "target_rolling_month_end": 13.3,
-      "production_required_rolling": 5.0
+      "target_rolling_month_end": 13.39,
+      "production_required_rolling": 5.09
     }
   ]
 }
