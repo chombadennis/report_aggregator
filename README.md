@@ -7,6 +7,8 @@ A full-stack web application for automating construction site report compilation
 - **Daily → Weekly Aggregation**: Upload 7 daily PDF reports to generate a consolidated weekly Word document.
 - **Weekly → Monthly Aggregation**: Upload 4 weekly PDF reports to generate a monthly Word document.
 - **AI-Powered Vision Parsing**: Uses Google Vertex AI (Gemini 2.5 Flash/Pro) to extract structured data from PDF screenshots — capturing labour, weather, materials, machinery, instructions, and more.
+- **Advanced Project Analytics & Trends**: Provides comprehensive historical tracking, AI analysis for performance trends, and deterministic, non-alarmist risk verdicts.
+- **Financial & Production Calculations**: Automates complex contract summaries, financial tracking, and precise production metrics against stable, non-rolling monthly baseline targets.
 - **Dual-Project Round-Robin Load Balancing**: Distributes Vertex AI requests across two Google Cloud projects to maximise quota and avoid rate limits (429 → 90s cool-down, 500/503 → exponential backoff).
 - **SHA256 Fingerprint Caching**: Identical PDFs are never AI-scanned twice. Per-file and per-page caches allow full pipeline resumption after interruptions.
 - **Strict Section Separation**: Prompt engineering enforces a hard boundary between Section F (daily works carried out) and Section Q (cumulative summary of works to date) to prevent data bleed.
