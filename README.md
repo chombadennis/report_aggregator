@@ -26,6 +26,12 @@ report_aggregator/
 │   ├── parser.py     # PDF → screenshots → AI vision extraction (with caching)
 │   ├── aggregator.py # Merges daily/weekly results into summary data
 │   ├── generator.py  # Injects data into Word .docx templates
+│   ├── monthly_aggregator.py # Merges weekly results into monthly summary data
+│   ├── monthly_generator.py  # Injects monthly data into Word .docx templates
+│   ├── financial_engine.py   # Calculates contract sums, baseline targets, & production metrics
+│   ├── analytics.py          # Performs trend analysis, historical tracking, and deterministic risk verdicts
+│   ├── contract_parser.py    # Extracts structured contract summaries
+│   ├── audit_generator.py    # Ensures report documentation reflects accurate financial & production metrics
 │   └── schemas.py    # Pydantic data models (DailyReportSchema, etc.)
 └── frontend/         # Next.js (React/TypeScript) web application
 ```
@@ -39,6 +45,12 @@ report_aggregator/
 | `parser.py` | Converts each PDF page to a high-res screenshot, then calls the AI vision endpoint. Uses SHA256 fingerprinting for per-file and per-page result caching. Intelligently skips non-data pages (Scope of Works, Progress Photos). |
 | `aggregator.py` | Compiles 7 daily reports into a weekly summary: adaptive labour matrix, weather grid, material totals, machinery status, AI-generated professional works summary (via `generate_summary_json`), deduplication of challenges and instructions. |
 | `generator.py` | Loads the `.docx` template, locates tables by their header text, and injects the aggregated data. Handles labour, weather, works, materials, machinery, instructions, interns, and text sections (Security, H&S, Visitors, Challenges). |
+| `monthly_aggregator.py` | Compiles 4 weekly reports into a consolidated monthly summary. |
+| `monthly_generator.py` | Injects the aggregated monthly data into the `monthly_template.docx`. |
+| `financial_engine.py` | Calculates and tracks project costs against stable, non-rolling monthly baseline targets, ensuring consistent financial reporting. |
+| `analytics.py` | Tracks historical progress and performance metrics to generate deterministic, non-alarmist risk verdicts and trend analysis. |
+| `contract_parser.py` | Extracts and structures essential contract details and statuses for reporting integration. |
+| `audit_generator.py` | Synchronises generated report documentation with accurate analytical and financial metrics. |
 | `schemas.py` | Pydantic models defining the JSON contract between the AI parser and the rest of the pipeline. |
 
 ## Setup
