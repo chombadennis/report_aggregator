@@ -450,6 +450,32 @@ class AnalyticsEngine:
             else:
                 calculated_verdict = "High"
 
+        # Load all uploaded project correspondence to enrich the AI context!
+        docs_text = ""
+        docs_dir = os.path.join("cache", "project_documents")
+        if os.path.exists(docs_dir):
+            docs_list = []
+            for f_name in os.listdir(docs_dir):
+                if f_name.endswith(".json"):
+                    try:
+                        with open(os.path.join(docs_dir, f_name), "r") as f:
+                            doc_data = json.load(f)
+                            docs_list.append(doc_data)
+                    except:
+                        continue
+            if docs_list:
+                docs_text = "\nPROJECT CORRESPONDENCE & KEY COMMUNICATIONS REGISTER:\n"
+                for idx, doc in enumerate(docs_list):
+                    docs_text += f"{idx+1}. Title: {doc.get('title')}\n"
+                    docs_text += f"   Category: {doc.get('category').upper()} | Date Sent: {doc.get('date_sent')} | From: {doc.get('sender')} | To: {doc.get('recipient')}\n"
+                    docs_text += f"   AI Summary: {doc.get('summary')}\n"
+                    ai_a = doc.get("ai_analysis", {})
+                    if ai_a:
+                        docs_text += f"   Core Requests: {', '.join(ai_a.get('requests_made', []))}\n"
+                        docs_text += f"   Detailed Analysis: {ai_a.get('detailed_analysis')}\n"
+                        docs_text += f"   Contractual Implications: {ai_a.get('contractual_implications')}\n"
+                    docs_text += "\n"
+
         prompt = f"""
         You are a Senior Project Management Consultant for a high-value affordable housing project.
         
@@ -469,7 +495,15 @@ class AnalyticsEngine:
         
         {run_rate_context}
         
+        PROJECT CORRESPONDENCE & COMMUNICATIONS (LETTERS/REQUESTS/INSTRUCTIONS):
+        {docs_text if docs_text else "No correspondence or requests uploaded yet."}
+        
          Your analysis MUST include:
+         
+        STRICT TIMELINE & DOCUMENT CHRONOLOGY RULE:
+        Whenever you reference any correspondence, claims, schedules, instructions, or Program of Works in the SWOT analysis or recommendations, you MUST ALWAYS explicitly cite the document's subject/title followed immediately by its "Date Sent" in parentheses, for example: "Letter regarding EOT No. 3 (Sent: 15th May 2026)" or "Program of Works Recovery baseline (Sent: 24th April 2026)". 
+        This is critical for tracking baseline revisions, comparing old submissions against newer revisions, and auditing how chronological timeline events mature over the life of the project. Contrasting early proposals with down-the-line revisions is essential.
+
         1. FINANCIAL & RECALIBRATION AUDIT (CRITICAL):
            - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section.
            - MONTHLY PERFORMANCE: Analyze the last completed month (e.g. April 2026). Compare the 'actual_production' vs 'envisaged_production'. Explicitly state if it was a shortfall or an achievement and by how much.
@@ -482,9 +516,9 @@ class AnalyticsEngine:
            - THE 10% THRESHOLD: 10% is the baseline tolerance. Only start flagging concerns when slippage exceeds this.
            - RECALIBRATION CHAIN: Reference the weekly variance (k) from the Recalibration Chain table to explain where the momentum was lost or gained.
            - TONE: Maintain a highly constructive, partner-oriented tone. Frame delays as shared challenges to be solved with the contractor. Avoid alarmist language for moderate slippage.
-
+ 
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
-           - Use the 'prose_summary', 'weather_comments', and recalibration deltas to explain the momentum.
+           - Use the 'prose_summary', 'weather_comments', recalibration deltas, and the uploaded Project Correspondence/Communications to explain the momentum, risks, EOT claims, and timeline impacts.
            - STRICTURE: NEVER claim 'optimal' or 'clear' weather if the 'weather_comments' mention rain.
            - Audit 'site_instructions' against their issuance dates: Did subsequent production (actual vs envisaged) improve after instructions were issued?
            - Strengths (e.g., consistent labour, recovering slippage in specific weeks)

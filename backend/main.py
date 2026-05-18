@@ -17,6 +17,7 @@ from contract_parser import ContractParser
 from analytics import AnalyticsEngine
 from audit_generator import AuditReportGenerator
 from financial_engine import FinancialEngine
+from document_parser import DocumentParser
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -39,6 +40,7 @@ contract_parser = ContractParser(cache_dir="cache")
 analytics_engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
 audit_generator = AuditReportGenerator()
 financial_engine = FinancialEngine()
+document_parser = DocumentParser(cache_dir="cache")
 
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str):
@@ -283,6 +285,117 @@ async def generate_audit_report(background_tasks: BackgroundTasks):
         )
     except Exception as e:
         shutil.rmtree(session_dir, ignore_errors=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/upload-document")
+async def upload_document(
+    file: UploadFile = File(...),
+    title: str = Form(""),
+    summary: str = Form(""),
+    date_sent: str = Form(""),
+    category: str = Form(""),
+    sender: str = Form(""),
+    recipient: str = Form("")
+):
+    try:
+        doc_id = str(uuid.uuid4())
+        docs_dir = os.path.join("cache", "project_documents")
+        pdfs_dir = os.path.join(docs_dir, "pdfs")
+        os.makedirs(pdfs_dir, exist_ok=True)
+        
+        pdf_filename = f"{doc_id}.pdf"
+        pdf_path = os.path.join(pdfs_dir, pdf_filename)
+        with open(pdf_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+            
+        parsed_data = await document_parser.parse_document(pdf_path)
+        
+        final_title = title.strip() if title.strip() else parsed_data.get("title", file.filename)
+        final_summary = summary.strip() if summary.strip() else parsed_data.get("summary", "")
+        
+        final_sender = sender.strip()
+        final_recipient = recipient.strip()
+        if category == "contractor":
+            final_sender = "Contractor"
+        elif category == "client":
+            final_sender = "Client / Project Manager"
+            
+        final_date_sent = date_sent.strip() if date_sent.strip() else datetime.now().strftime("%Y-%m-%d")
+        
+        doc_metadata = {
+            "id": doc_id,
+            "title": final_title,
+            "summary": final_summary,
+            "date_uploaded": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "date_sent": final_date_sent,
+            "category": category,
+            "sender": final_sender,
+            "recipient": final_recipient,
+            "pdf_path": pdf_path,
+            "ai_analysis": {
+                "title": parsed_data.get("title"),
+                "summary": parsed_data.get("summary"),
+                "detailed_analysis": parsed_data.get("detailed_analysis"),
+                "requests_made": parsed_data.get("requests_made", []),
+                "action_items": parsed_data.get("action_items", []),
+                "contractual_implications": parsed_data.get("contractual_implications")
+            },
+            "verbatim_text": parsed_data.get("verbatim_text", "")
+        }
+        
+        metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
+        with open(metadata_path, "w") as f:
+            json.dump(doc_metadata, f, indent=2)
+            
+        return doc_metadata
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
+
+@app.get("/api/project-documents")
+async def get_project_documents():
+    try:
+        docs_dir = os.path.join("cache", "project_documents")
+        if not os.path.exists(docs_dir):
+            return []
+            
+        documents = []
+        for f_name in os.listdir(docs_dir):
+            if f_name.endswith(".json"):
+                try:
+                    with open(os.path.join(docs_dir, f_name), "r") as f:
+                        doc_data = json.load(f)
+                        doc_list_item = doc_data.copy()
+                        if "verbatim_text" in doc_list_item:
+                            del doc_list_item["verbatim_text"]
+                        documents.append(doc_list_item)
+                except:
+                    continue
+                    
+        documents.sort(key=lambda x: x.get("date_sent", ""), reverse=True)
+        return documents
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/project-documents/{doc_id}")
+async def delete_project_document(doc_id: str):
+    try:
+        docs_dir = os.path.join("cache", "project_documents")
+        metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
+        pdf_path = os.path.join(docs_dir, "pdfs", f"{doc_id}.pdf")
+        
+        deleted = False
+        if os.path.exists(metadata_path):
+            os.remove(metadata_path)
+            deleted = True
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+            deleted = True
+            
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Document not found.")
+            
+        return {"status": "success", "msg": f"Document {doc_id} successfully deleted."}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
