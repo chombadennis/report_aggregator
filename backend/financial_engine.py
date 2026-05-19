@@ -120,7 +120,7 @@ class FinancialEngine:
             weekly_variance = round(weekly_actual - weekly_envisaged, 2)
             
             # Global Cumulative Recalibration
-            envisaged_pct_work_cum = round(weeks_elapsed * (100.0 / TOTAL_WEEKS), 2)
+            envisaged_pct_work_cum = pct_time
             
             # Recalibrate for FUTURE (used for next week/month targets)
             rem_weeks_next = max(1, TOTAL_WEEKS - weeks_elapsed)

@@ -83,6 +83,50 @@ class ReportGenerator:
         last_tr.addprevious(new_tr)
         return table.rows[-2]  # The newly inserted row
 
+    def _normalize_document_formatting(self, doc):
+        """
+        Clears manual indentation overrides from Section E onwards and left-aligns
+        tables 3 to 10 to ensure a beautiful and consistent layout.
+        """
+        from docx.enum.table import WD_TABLE_ALIGNMENT
+        
+        # 1. Normalize tables 3 to 10 only (these are the ones from Section E to Weather)
+        for idx, table in enumerate(doc.tables):
+            if 3 <= idx <= 10:
+                table.alignment = WD_TABLE_ALIGNMENT.LEFT
+                
+                tblPr = table._tbl.tblPr
+                tblInds = tblPr.xpath('w:tblInd')
+                if tblInds:
+                    for tblInd in tblInds:
+                        tblPr.remove(tblInd)
+                
+                new_tblInd = OxmlElement('w:tblInd')
+                new_tblInd.set(qn('w:w'), '0')
+                new_tblInd.set(qn('w:type'), 'dxa')
+                tblPr.append(new_tblInd)
+                
+        # 2. Normalize paragraphs starting from Section E onwards
+        # Find the start paragraph of Section E dynamically
+        start_normalize_idx = 33 # default fallback
+        for idx, para in enumerate(doc.paragraphs):
+            text = para.text.upper().strip()
+            if "E." in text and "PROGRESS" in text:
+                start_normalize_idx = idx
+                break
+                
+        for idx, para in enumerate(doc.paragraphs):
+            if idx >= start_normalize_idx:
+                pPr = para._p.get_or_add_pPr()
+                ind_elems = pPr.xpath('w:ind')
+                if ind_elems:
+                    for ind in ind_elems:
+                        pPr.remove(ind)
+                        
+                para.paragraph_format.left_indent = None
+                para.paragraph_format.first_line_indent = None
+                para.paragraph_format.right_indent = None
+
     # ─── MAIN ENTRY ───────────────────────────────────────────────────────────
 
     def generate_report(self, output_path, data, report_type="WEEKLY"):
@@ -142,6 +186,9 @@ class ReportGenerator:
         summary_table = self._find_table_by_any_header_cell(doc, "SUMMARY OF WORK")
         if summary_table:
             self._fill_summary_works_table(summary_table, data.get("summary_to_date", {}))
+
+        # 12. Normalize document layout formatting (indentation and alignment)
+        self._normalize_document_formatting(doc)
 
         # Delete old output and save fresh
         if os.path.exists(output_path):

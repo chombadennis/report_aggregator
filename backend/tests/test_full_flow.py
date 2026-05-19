@@ -9,9 +9,60 @@ from parser import ReportParser
 from aggregator import Aggregator
 from generator import ReportGenerator
 
+def normalize_formatting(path):
+    import docx
+    from docx import Document
+    from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    
+    print(f"Normalizing layout formatting for {os.path.basename(path)}...")
+    doc = Document(path)
+    
+    # 1. Normalize tables 3 to 10 only (these are the ones from Section E to Weather)
+    for idx, table in enumerate(doc.tables):
+        if 3 <= idx <= 10:
+            table.alignment = WD_TABLE_ALIGNMENT.LEFT
+            
+            tblPr = table._tbl.tblPr
+            tblInds = tblPr.xpath('w:tblInd')
+            if tblInds:
+                for tblInd in tblInds:
+                    tblPr.remove(tblInd)
+            
+            new_tblInd = OxmlElement('w:tblInd')
+            new_tblInd.set(qn('w:w'), '0')
+            new_tblInd.set(qn('w:type'), 'dxa')
+            tblPr.append(new_tblInd)
+            
+    # 2. Normalize paragraphs starting from Section E onwards
+    # Find the start paragraph of Section E dynamically
+    start_normalize_idx = 33 # default fallback
+    for idx, para in enumerate(doc.paragraphs):
+        text = para.text.upper().strip()
+        if "E." in text and "PROGRESS" in text:
+            start_normalize_idx = idx
+            break
+            
+    print(f"Normalizing paragraphs starting from index {start_normalize_idx}...")
+    for idx, para in enumerate(doc.paragraphs):
+        if idx >= start_normalize_idx:
+            pPr = para._p.get_or_add_pPr()
+            ind_elems = pPr.xpath('w:ind')
+            if ind_elems:
+                for ind in ind_elems:
+                    pPr.remove(ind)
+                    
+            para.paragraph_format.left_indent = None
+            para.paragraph_format.first_line_indent = None
+            para.paragraph_format.right_indent = None
+                
+    doc.save(path)
+    print(f"[OK] Document formatting normalized successfully.")
+
 async def main():
     # ── Configuration ──
-    REPORTS_DIR = r"d:\maks_ahp\dailies"
+    REPORTS_DIR = r"../../dailies"
     DAILY_PDFS = [
         "MAKINDU AHP DAILY PROGRESS REPORT Monday  13th April 2026-1.pdf",
         "MAKINDU AHP DAILY PROGRESS REPORT Tuesday  14th April 2026-1.pdf",
@@ -54,6 +105,10 @@ async def main():
     print(f"\n--- STEP 3: GENERATING FINAL DOCX ---")
     print(f"Injecting data into {template_path}...")
     generator.generate_report(output_path, weekly_data, "WEEKLY")
+    
+    # 5. Normalize layout formatting (indentation and alignment)
+    print(f"\n--- STEP 4: NORMALIZING FORMATTING (TEST ONLY) ---")
+    normalize_formatting(output_path)
 
     print(f"\n[OK] SUCCESS! Open your report: {os.path.abspath(output_path)}")
 

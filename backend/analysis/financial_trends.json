@@ -404,8 +404,8 @@
       "weekly_variance": -0.49,
       "pct_work": 6.08,
       "pct_time": 18.33,
-      "envisaged_pct_work": 18.27,
-      "variance": -12.19,
+      "envisaged_pct_work": 18.33,
+      "variance": -12.25,
       "required_future_rate": 1.1,
       "revenue_earned": 129324690.325376,
       "slippage_gap": 12.25
@@ -420,8 +420,8 @@
       "weekly_variance": 0.11,
       "pct_work": 7.29,
       "pct_time": 19.43,
-      "envisaged_pct_work": 19.23,
-      "variance": -11.94,
+      "envisaged_pct_work": 19.43,
+      "variance": -12.14,
       "required_future_rate": 1.1,
       "revenue_earned": 155062005.340788,
       "slippage_gap": 12.14
@@ -436,8 +436,8 @@
       "weekly_variance": -0.35,
       "pct_work": 8.04,
       "pct_time": 20.11,
-      "envisaged_pct_work": 20.19,
-      "variance": -12.15,
+      "envisaged_pct_work": 20.11,
+      "variance": -12.07,
       "required_future_rate": 1.11,
       "revenue_earned": 171014886.54868796,
       "slippage_gap": 12.07
@@ -452,8 +452,8 @@
       "weekly_variance": -0.93,
       "pct_work": 8.22,
       "pct_time": 21.07,
-      "envisaged_pct_work": 21.15,
-      "variance": -12.93,
+      "envisaged_pct_work": 21.07,
+      "variance": -12.85,
       "required_future_rate": 1.12,
       "revenue_earned": 174843578.03858402,
       "slippage_gap": 12.85
@@ -468,8 +468,8 @@
       "weekly_variance": -1.04,
       "pct_work": 8.3,
       "pct_time": 22.02,
-      "envisaged_pct_work": 22.12,
-      "variance": -13.82,
+      "envisaged_pct_work": 22.02,
+      "variance": -13.72,
       "required_future_rate": 1.13,
       "revenue_earned": 176545218.70076,
       "slippage_gap": 13.72
@@ -484,8 +484,8 @@
       "weekly_variance": -1.13,
       "pct_work": 8.3,
       "pct_time": 22.88,
-      "envisaged_pct_work": 23.08,
-      "variance": -14.78,
+      "envisaged_pct_work": 22.88,
+      "variance": -14.58,
       "required_future_rate": 1.15,
       "revenue_earned": 176545218.70076,
       "slippage_gap": 14.58
@@ -499,12 +499,12 @@
       "weekly_envisaged": 1.15,
       "weekly_variance": -1.15,
       "pct_work": 8.3,
-      "pct_time": 24.08,
-      "envisaged_pct_work": 24.04,
-      "variance": -15.74,
+      "pct_time": 23.94,
+      "envisaged_pct_work": 23.94,
+      "variance": -15.64,
       "required_future_rate": 1.16,
       "revenue_earned": 176545218.70076,
-      "slippage_gap": 15.78
+      "slippage_gap": 15.64
     }
   ],
   "monthly_financials": [
@@ -513,8 +513,8 @@
       "start_pct": 5.472,
       "end_pct": 8.22,
       "actual_production": 2.75,
-      "envisaged_production": 3.98,
-      "variance": -1.23,
+      "envisaged_production": 3.84,
+      "variance": -1.09,
       "is_ongoing": false,
       "required_weekly": 1.12,
       "target_fixed_month_end": 9.59,
