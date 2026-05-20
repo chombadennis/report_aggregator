@@ -32,6 +32,7 @@ export default function Home() {
   const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
   const [activeDocDetail, setActiveDocDetail] = useState<any | null>(null);
   const [docToDelete, setDocToDelete] = useState<any | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Fetch existing correspondence documents on mount
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function Home() {
         throw new Error(errData.detail || 'Server failed to process document');
       }
 
-      setDocStatus('✨ Claims AI analysis complete!');
+      setDocStatus('Claims AI analysis complete!');
       setDocFile(null);
       setDocTitle('');
       setDocSummary('');
@@ -112,7 +113,8 @@ export default function Home() {
       // Refresh documents list
       await fetchDocs();
       
-      setTimeout(() => setDocStatus(''), 3000);
+      setDocStatus('');
+      setShowSuccessModal(true);
     } catch (err: any) {
       setDocError(err.message || 'An error occurred during document parsing.');
       setDocStatus('');
@@ -771,6 +773,27 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm transition-all duration-300">
+            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden border border-sunflower-gold-200/40 shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
+              <h3 className="text-lg font-bold text-vivid-tangerine-950 mb-2 font-serif">Document Upload Successful</h3>
+              <p className="text-xs text-vivid-tangerine-800 mb-6 leading-relaxed">
+                View your analysed document in the register below, or upload a new document for scanning.
+              </p>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessModal(false)}
+                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Footer Panel */}
@@ -778,15 +801,28 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter">Field Intelligence & Reporting</p>
+            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
+            
+            {/* NeuralAxis Labs Branding Logo */}
+            <div className="flex items-center gap-2.5 mt-4">
+              <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
+              <img src="/neuralaxis-logo.png" alt="NeuralAxis Labs Logo" className="h-7 w-7 rounded-full aspect-square object-cover shadow-sm" />
+              <span className="text-xs font-black text-vivid-tangerine-950 tracking-tight">NeuralAxis Labs</span>
+            </div>
           </div>
-          <div className="flex gap-4">
-            <Link href="/" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Home</Link>
-            <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Contract</Link>
-            <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Trends</Link>
+          <div className="flex flex-col items-stretch md:items-end gap-3">
+            <div className="flex justify-center md:justify-end gap-4">
+              <Link href="/" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Home</Link>
+              <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Contract</Link>
+              <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Trends</Link>
+            </div>
+            <div className="flex justify-center md:justify-end gap-3">
+              <Link href="/terms" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-vanilla-custard-100/30 border border-vanilla-custard-200 px-3 py-1 rounded-full">Terms</Link>
+              <Link href="/privacy" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-vanilla-custard-100/30 border border-vanilla-custard-200 px-3 py-1 rounded-full">Privacy</Link>
+            </div>
           </div>
         </div>
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center border-t border-vanilla-custard-100 pt-6">
           <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
         </div>
       </footer>

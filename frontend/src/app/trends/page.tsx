@@ -1031,15 +1031,28 @@ export default function TrendsDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Field Intelligence & Reporting</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
+            
+            {/* NeuralAxis Labs Branding Logo */}
+            <div className="flex items-center gap-2.5 mt-4">
+              <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
+              <img src="/neuralaxis-logo.png" alt="NeuralAxis Labs Logo" className="h-7 w-7 rounded-full aspect-square object-cover shadow-sm" />
+              <span className="text-xs font-black text-slate-950 tracking-tight">NeuralAxis Labs</span>
+            </div>
           </div>
-          <div className="flex gap-4">
-            <Link href="/" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Home</Link>
-            <Link href="/dashboard" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Dashboard</Link>
-            <Link href="/contract" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Contract</Link>
+          <div className="flex flex-col items-stretch md:items-end gap-3">
+            <div className="flex justify-center md:justify-end gap-4">
+              <Link href="/" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Home</Link>
+              <Link href="/dashboard" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Dashboard</Link>
+              <Link href="/contract" className="text-xs font-bold text-slate-600 hover:text-vivid-tangerine-600 transition-colors">Contract</Link>
+            </div>
+            <div className="flex justify-center md:justify-end gap-3">
+              <Link href="/terms" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-slate-50 border border-slate-100 px-3 py-1 rounded-full">Terms</Link>
+              <Link href="/privacy" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-slate-50 border border-slate-100 px-3 py-1 rounded-full">Privacy</Link>
+            </div>
           </div>
         </div>
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center border-t border-slate-50 pt-6">
           <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
         </div>
       </footer>
