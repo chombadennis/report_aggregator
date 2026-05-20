@@ -133,6 +133,21 @@ export default function TrendsDashboard() {
     }
   };
 
+  // Dynamically compute the last day of a month (e.g. '31st', '30th', '28th')
+  const getMonthLastDay = (monthKey: string): string => {
+    try {
+      const [monthName, yearStr] = monthKey.split(' ');
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const monthIdx = months.indexOf(monthName);
+      if (monthIdx === -1) return '31st';
+      const year = parseInt(yearStr, 10);
+      const lastDay = new Date(year, monthIdx + 1, 0).getDate();
+      const s = lastDay % 100;
+      const suffix = s === 11 || s === 12 || s === 13 ? 'th' : lastDay % 10 === 1 ? 'st' : lastDay % 10 === 2 ? 'nd' : lastDay % 10 === 3 ? 'rd' : 'th';
+      return `${lastDay}${suffix}`;
+    } catch { return '31st'; }
+  };
+
   const handleGenerateAudit = async () => {
     setGeneratingAudit(true);
     // Simulate generation delay for "UI generation" feel
@@ -704,7 +719,7 @@ export default function TrendsDashboard() {
                           Analysis of the last completed month (<strong>{completedMonth?.month}</strong>) shows the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged S-curve target of <strong>{completedMonth?.envisaged_production}%</strong>. 
                           <br/><br/>
                           As of the latest live report in mid-{ongoingMonth?.month.split(' ')[0]}, the cumulative variance has widened to <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline S-curve. 
-                          To hit the newly recalibrated milestone of <strong>{ongoingMonth?.target_rolling_month_end}%</strong> by {ongoingMonth?.month} 31st, the contractor must maintain a strict velocity of 
+                          To hit the newly recalibrated milestone of <strong>{ongoingMonth?.target_rolling_month_end}%</strong> by {ongoingMonth?.month} {ongoingMonth?.month ? getMonthLastDay(ongoingMonth.month) : '31st'}, the contractor must maintain a strict velocity of 
                           <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of {ongoingMonth?.month}.
                         </p>
                         

@@ -172,10 +172,6 @@ class FinancialEngine:
         import collections
         month_groups = collections.defaultdict(list)
         
-        # We need a reference for "current" vs "completed"
-        # Today is May 9th, 2026 (based on local time)
-        CURRENT_MONTH_STR = "May 2026"
-        
         for w in weekly_financials:
             months = re.findall(
                 r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})", 
@@ -208,7 +204,8 @@ class FinancialEngine:
             m_envisaged_end = group[-1]["envisaged_pct_work"]
             m_envisaged_total = round(m_envisaged_end - m_envisaged_start, 2)
             
-            is_ongoing = (m_key == CURRENT_MONTH_STR)
+            # The month is dynamically marked as 'ongoing' if it is the very latest month in the dataset
+            is_ongoing = (m_key == sorted_months[-1])
             
             # Recalibrated required rate (using the last week of this month)
             req_weekly = group[-1]["required_future_rate"]

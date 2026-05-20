@@ -40,13 +40,36 @@ class AuditReportGenerator:
         latest_week = financials.get("weekly_financials", [{}])[-1] if financials else {}
         variance = abs(latest_week.get("variance", 0))
         
+        # Dynamically compute the last day of the ongoing month (no hardcoded "31st")
+        def _get_month_last_day(month_key: str) -> str:
+            """Returns the last day of a month as an ordinal string e.g. '31st', '30th', '28th'."""
+            import calendar
+            try:
+                dt = datetime.strptime(month_key, "%B %Y")
+                last_day = calendar.monthrange(dt.year, dt.month)[1]
+                if last_day in (11, 12, 13):
+                    suffix = "th"
+                elif last_day % 10 == 1:
+                    suffix = "st"
+                elif last_day % 10 == 2:
+                    suffix = "nd"
+                elif last_day % 10 == 3:
+                    suffix = "rd"
+                else:
+                    suffix = "th"
+                return f"{last_day}{suffix}"
+            except Exception:
+                return "31st"  # safe fallback
+        
+        ongoing_month_last_day = _get_month_last_day(ongoing_month.get("month", "Current Month")) if ongoing_month else "31st"
+        
         p = doc.add_paragraph()
         if completed_month and ongoing_month:
-            p.add_run(f"Analysis of the last completed month ({completed_month.get('month', 'April 2026')}) shows the project achieved {completed_month.get('actual_production', 0):.2f}% production against an envisaged S-curve target of {completed_month.get('envisaged_production', 0):.2f}%. ").bold = False
+            p.add_run(f"Analysis of the last completed month ({completed_month.get('month', 'Previous Month')}) shows the project achieved {completed_month.get('actual_production', 0):.2f}% production against an envisaged S-curve target of {completed_month.get('envisaged_production', 0):.2f}%. ").bold = False
             
-            p.add_run(f"As of the latest live report in mid-{ongoing_month.get('month', 'May 2026').split(' ')[0]}, the cumulative variance has widened to {variance:.2f}% behind the project baseline S-curve. ").bold = True
+            p.add_run(f"As of the latest live report in mid-{ongoing_month.get('month', 'Current Month').split(' ')[0]}, the cumulative variance has widened to {variance:.2f}% behind the project baseline S-curve. ").bold = True
             
-            p.add_run(f"To hit the newly recalibrated milestone of {ongoing_month.get('target_rolling_month_end', 0):.2f}% by {ongoing_month.get('month', 'May 2026')} 31st, the contractor must maintain a strict velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'May 2026')}.")
+            p.add_run(f"To hit the newly recalibrated milestone of {ongoing_month.get('target_rolling_month_end', 0):.2f}% by {ongoing_month.get('month', 'Current Month')} {ongoing_month_last_day}, the contractor must maintain a strict velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'Current Month')}.")
         else:
             p.add_run("Recalibration data is still initializing for the current period. Baseline linear tracking remains at 0.96% per week.")
 
@@ -62,7 +85,7 @@ class AuditReportGenerator:
         envisaged_pct_work = latest_week.get("envisaged_pct_work", 0)
         slippage_gap = latest_week.get("slippage_gap", 0)
         req_weekly = ongoing_month.get('required_weekly', 0) if ongoing_month else 0.96
-        m_name = ongoing_month.get('month', 'May 2026') if ongoing_month else 'Current Month'
+        m_name = ongoing_month.get('month', 'Current Month') if ongoing_month else 'Current Month'
         
         doc.add_paragraph(
             f"The {variance:.2f}% variance represents the true cumulative S-curve progress deficit. The S-curve expected progress to be at {envisaged_pct_work:.2f}%, but actual progress is {pct_work:.2f}%. "
