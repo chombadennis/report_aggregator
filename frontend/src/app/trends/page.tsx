@@ -572,7 +572,7 @@ export default function TrendsDashboard() {
                 <h2 className="text-2xl font-bold">SWOT Intelligence</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
                   <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Strengths</p>
                   <ul className="space-y-3">
@@ -701,18 +701,21 @@ export default function TrendsDashboard() {
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2">Recalibration Executive Audit</p>
                         <p className="text-base leading-relaxed text-white/90 font-medium max-w-4xl">
-                          Analysis shows that in <strong>{completedMonth?.month}</strong>, the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged <strong>{completedMonth?.envisaged_production}%</strong>. 
-                          The cumulative variance is now <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline.
-                          To hit the recalibrated milestone by <strong>{ongoingMonth?.month} 31st ({ongoingMonth?.target_rolling_month_end}%)</strong>, the contractor must maintain a velocity of 
-                          <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of <strong>{ongoingMonth?.month}</strong>.
+                          Analysis of the last completed month (<strong>{completedMonth?.month}</strong>) shows the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged S-curve target of <strong>{completedMonth?.envisaged_production}%</strong>. 
+                          <br/><br/>
+                          As of the latest live report in mid-{ongoingMonth?.month.split(' ')[0]}, the cumulative variance has widened to <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline S-curve. 
+                          To hit the newly recalibrated milestone of <strong>{ongoingMonth?.target_rolling_month_end}%</strong> by {ongoingMonth?.month} 31st, the contractor must maintain a strict velocity of 
+                          <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of {ongoingMonth?.month}.
                         </p>
                         
                         <div className="mt-6 pt-6 border-t border-white/10">
-                          <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-2">P.S. Mathematical Logic</p>
+                          <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-2">P.S. Mathematical Logic & S-Curve Forgiveness</p>
                           <p className="text-[11px] text-white/60 leading-relaxed italic">
-                            The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> is the cumulative "Slippage Gap." 
-                            By <strong>{ongoingMonth?.month}</strong>, <strong>{latestWeek?.envisaged_pct_work?.toFixed(2)}%</strong> of the project progress was envisaged, but only <strong>{latestWeek?.pct_work?.toFixed(2)}%</strong> of work is done. 
-                            This <strong>{Math.abs(variance).toFixed(2)}%</strong> backlog is the total deficit that has shifted the required weekly production rate from the original 0.96% to the current <strong>{ongoingMonth?.required_weekly}%</strong>.
+                            The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> represents the true cumulative S-curve progress deficit. The S-curve expected progress to be at <strong>{latestWeek?.envisaged_pct_work?.toFixed(2)}%</strong>, but actual progress is <strong>{latestWeek?.pct_work?.toFixed(2)}%</strong>. 
+                            <br/><br/>
+                            This is fundamentally distinct from the pure calendar <span className="text-white font-bold">Slippage Gap of {latestWeek?.slippage_gap?.toFixed(2)}%</span> (which is the elapsed project time of <strong>{latestWeek?.pct_time?.toFixed(2)}%</strong> minus work completed). If the system used a straight linear mathematical baseline, the contractor would be heavily penalized for the naturally slow site mobilization phase, and the deficit would incorrectly match the massive {latestWeek?.slippage_gap?.toFixed(2)}% slippage gap. 
+                            <br/><br/>
+                            Instead, the mathematical S-Curve mathematically forgives the slow start. It calculates that the project was only ever expected to be at {latestWeek?.envisaged_pct_work?.toFixed(2)}% by this date. This true, realistic {Math.abs(variance).toFixed(2)}% backlog is the exact mathematical deficit that forced the required weekly velocity to shift from the original baseline up to the current <strong>{ongoingMonth?.required_weekly}%</strong> in order to recover the timeline.
                           </p>
                         </div>
                       </div>

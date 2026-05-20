@@ -42,30 +42,34 @@ class AuditReportGenerator:
         
         p = doc.add_paragraph()
         if completed_month and ongoing_month:
-            p.add_run(f"Analysis shows that in {completed_month.get('month', 'April 2026')}, the project achieved {completed_month.get('actual_production', 0):.2f}% production against an envisaged {completed_month.get('envisaged_production', 0):.2f}%. ").bold = False
-            p.add_run(f"The cumulative variance is now {variance:.2f}% behind the project baseline. ").bold = True
-            p.add_run(f"To hit the recalibrated milestone by {ongoing_month.get('month', 'May 2026')} 31st ({ongoing_month.get('target_rolling_month_end', 0):.2f}%), the contractor must maintain a velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'May 2026')}.")
+            p.add_run(f"Analysis of the last completed month ({completed_month.get('month', 'April 2026')}) shows the project achieved {completed_month.get('actual_production', 0):.2f}% production against an envisaged S-curve target of {completed_month.get('envisaged_production', 0):.2f}%. ").bold = False
+            
+            p.add_run(f"As of the latest live report in mid-{ongoing_month.get('month', 'May 2026').split(' ')[0]}, the cumulative variance has widened to {variance:.2f}% behind the project baseline S-curve. ").bold = True
+            
+            p.add_run(f"To hit the newly recalibrated milestone of {ongoing_month.get('target_rolling_month_end', 0):.2f}% by {ongoing_month.get('month', 'May 2026')} 31st, the contractor must maintain a strict velocity of {ongoing_month.get('required_weekly', 0):.2f}% per week for the remainder of {ongoing_month.get('month', 'May 2026')}.")
         else:
             p.add_run("Recalibration data is still initializing for the current period. Baseline linear tracking remains at 0.96% per week.")
 
         # P.S. Section
         doc.add_paragraph("")
         ps_p = doc.add_paragraph()
-        run = ps_p.add_run("P.S. Mathematical Logic:")
+        run = ps_p.add_run("P.S. Mathematical Logic & S-Curve Forgiveness:")
         run.bold = True
         run.underline = True
         
         pct_time = latest_week.get("pct_time", 0)
         pct_work = latest_week.get("pct_work", 0)
+        envisaged_pct_work = latest_week.get("envisaged_pct_work", 0)
+        slippage_gap = latest_week.get("slippage_gap", 0)
         req_weekly = ongoing_month.get('required_weekly', 0) if ongoing_month else 0.96
         m_name = ongoing_month.get('month', 'May 2026') if ongoing_month else 'Current Month'
         
         doc.add_paragraph(
-            f"The {variance:.2f}% variance is the cumulative \"Slippage Gap.\" "
-            f"By {m_name}, {pct_time:.2f}% of the project time has elapsed, "
-            f"but only {pct_work:.2f}% of work is done. This {variance:.2f}% backlog is the total deficit "
-            f"that has shifted the required weekly production rate from the original 0.96% to the current "
-            f"{req_weekly:.2f}%."
+            f"The {variance:.2f}% variance represents the true cumulative S-curve progress deficit. The S-curve expected progress to be at {envisaged_pct_work:.2f}%, but actual progress is {pct_work:.2f}%. "
+            f"This is fundamentally distinct from the pure calendar Slippage Gap of {slippage_gap:.2f}% (which is the elapsed project time of {pct_time:.2f}% minus work completed). "
+            f"If the system used a straight linear mathematical baseline, the contractor would be heavily penalized for the naturally slow site mobilization phase, and the deficit would incorrectly match the massive {slippage_gap:.2f}% slippage gap. "
+            f"Instead, the mathematical S-Curve mathematically forgives the slow start. It calculates that the project was only ever expected to be at {envisaged_pct_work:.2f}% by this date. "
+            f"This true, realistic {variance:.2f}% backlog is the exact mathematical deficit that forced the required weekly velocity to shift from the original baseline up to the current {req_weekly:.2f}% in order to recover the timeline."
         )
         
         # --- MONTHLY PRODUCTION CALIBRATION ---

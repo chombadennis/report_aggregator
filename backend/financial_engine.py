@@ -23,6 +23,15 @@ class FinancialEngine:
         except ValueError:
             return 0.0
 
+    def _get_s_curve_target(self, pct_time):
+        """
+        Calculates planned cumulative progress (envisaged progress w%)
+        using Hermite smoothstep polynomial interpolation: S(x) = 3x^2 - 2x^3.
+        """
+        x = max(0.0, min(1.0, pct_time / 100.0))
+        s_curve_fraction = 3.0 * (x ** 2) - 2.0 * (x ** 3)
+        return round(s_curve_fraction * 100.0, 2)
+
     def compute_and_cache_financials(self):
         """Calculates revenue and slippage gap for all days and weeks."""
         
@@ -53,7 +62,7 @@ class FinancialEngine:
             TOTAL_DAYS = 731
             IDEAL_DAILY_RATE = 100.0 / TOTAL_DAYS
             
-            envisaged_pct_work = round(days_elapsed * IDEAL_DAILY_RATE, 2)
+            envisaged_pct_work = self._get_s_curve_target(pct_time)
             variance = round(pct_work - envisaged_pct_work, 2)
             
             remaining_work = 100.0 - pct_work
@@ -119,8 +128,17 @@ class FinancialEngine:
             weekly_envisaged = round((100.0 - start_pct) / remaining_weeks, 2)
             weekly_variance = round(weekly_actual - weekly_envisaged, 2)
             
-            # Global Cumulative Recalibration
-            envisaged_pct_work_cum = pct_time
+            # Global Cumulative S-Curve Baseline
+            if i > 0:
+                prev_pct_time = raw_weekly_processed[i-1].get("pct_period_elapsed") or raw_weekly_processed[i-1].get("pct_period") or raw_weekly_processed[i-1].get("time_elapsed_percent")
+            else:
+                # Estimate 1 week prior based on total days (104 weeks = 731 days)
+                prev_pct_time = max(0.0, pct_time - (7.0 / 731.0 * 100.0))
+            
+            prev_pct_time_val = self._parse_percent(prev_pct_time)
+            start_envisaged_pct = self._get_s_curve_target(prev_pct_time_val)
+            
+            envisaged_pct_work_cum = self._get_s_curve_target(pct_time)
             
             # Recalibrate for FUTURE (used for next week/month targets)
             rem_weeks_next = max(1, TOTAL_WEEKS - weeks_elapsed)
@@ -140,6 +158,7 @@ class FinancialEngine:
                 "weekly_variance": weekly_variance,
                 "pct_work": pct_work,
                 "pct_time": pct_time,
+                "start_envisaged_pct": start_envisaged_pct,
                 "envisaged_pct_work": envisaged_pct_work_cum,
                 "variance": variance_cum,
                 "required_future_rate": required_future_rate,
@@ -184,8 +203,8 @@ class FinancialEngine:
             # Envisaged for the month
             # Average linear target is ~0.96% per week. Month is ~4.345 weeks.
             # So month envisaged is ~4.17%.
-            # Let's use the cumulative envisaged delta
-            m_envisaged_start = group[0]["envisaged_pct_work"] - group[0]["weekly_envisaged"]
+            # Let's use the cumulative envisaged delta from the S-curve
+            m_envisaged_start = group[0]["start_envisaged_pct"]
             m_envisaged_end = group[-1]["envisaged_pct_work"]
             m_envisaged_total = round(m_envisaged_end - m_envisaged_start, 2)
             
@@ -216,14 +235,25 @@ class FinancialEngine:
 
             # 2. Rolling Target (Dynamic Milestone)
             # This is where we SHOULD be by month end if we work at the CURRENT required rate starting from TODAY.
-            # We need to know "Today" or the "Latest Report Date" in this group.
-            # For simplicity, we calculate "Required Weekly Rate * Weeks in Month" added to the CURRENT progress.
-            # This shows the "New Velocity Month Target".
-            target_rolling_month_end = round(m_end_pct + (req_weekly * weeks_in_month), 2) # Rolling full-month target
-            
-            # OR: Dynamic target for the REMAINING days of the month
-            # Let's provide the "Rolling Month Production" which is (Required Weekly * Weeks in Month)
-            production_required_rolling = round(req_weekly * weeks_in_month, 2)
+            if is_ongoing:
+                # Approximate remaining weeks in the month
+                # E.g. "11TH - 17TH MAY" means ~14 days left in a 31 day month = 2 weeks
+                # We can extract the last day from the label or use a simple approximation
+                # For high accuracy as requested: May 17th to May 31st is 14 days = 2.0 weeks.
+                # Let's dynamically calculate based on the last day in the label
+                last_day_match = re.search(r'(\d+)(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', group[-1]["label"], re.IGNORECASE)
+                if last_day_match:
+                    last_day = int(last_day_match.group(1))
+                    remaining_days = days_in_month - last_day
+                else:
+                    remaining_days = days_in_month / 2.0 # fallback
+
+                remaining_weeks_in_month = remaining_days / 7.0
+                target_rolling_month_end = round(m_end_pct + (req_weekly * remaining_weeks_in_month), 2)
+                production_required_rolling = round(req_weekly * remaining_weeks_in_month, 2)
+            else:
+                target_rolling_month_end = round(m_start_pct + (req_weekly * weeks_in_month), 2)
+                production_required_rolling = round(req_weekly * weeks_in_month, 2)
 
             monthly_financials.append({
                 "month": m_key,
