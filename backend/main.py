@@ -15,7 +15,7 @@ from monthly_aggregator import MonthlyAggregator
 from monthly_generator import MonthlyReportGenerator
 from contract_parser import ContractParser
 from analytics import AnalyticsEngine
-from audit_generator import AuditReportGenerator
+from progress_generator import ProgressReportGenerator
 from financial_engine import FinancialEngine
 from document_parser import DocumentParser
 
@@ -38,7 +38,7 @@ monthly_parser = ReportParser(cache_dir="cache")
 monthly_aggregator = MonthlyAggregator(history_dir="cache/history_monthly")
 contract_parser = ContractParser(cache_dir="cache")
 analytics_engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
-audit_generator = AuditReportGenerator()
+progress_generator = ProgressReportGenerator()
 financial_engine = FinancialEngine()
 document_parser = DocumentParser(cache_dir="cache")
 
@@ -251,11 +251,11 @@ async def get_insights():
     insights = await analytics_engine.generate_ai_insights(trends, context, financials)
     return insights
 
-@app.get("/api/generate-audit-report")
-async def generate_audit_report(background_tasks: BackgroundTasks):
-    """Generates a full audit report document based on current trends and AI insights."""
+@app.get("/api/generate-progress-report")
+async def generate_progress_report(background_tasks: BackgroundTasks):
+    """Generates a full progress report document based on current trends and AI insights."""
     session_id = str(uuid.uuid4())
-    session_dir = os.path.join(TEMP_DIR, f"audit_{session_id}")
+    session_dir = os.path.join(TEMP_DIR, f"progress_{session_id}")
     os.makedirs(session_dir, exist_ok=True)
     
     try:
@@ -273,14 +273,14 @@ async def generate_audit_report(background_tasks: BackgroundTasks):
         insights = await analytics_engine.generate_ai_insights(trends, context, financials)
         
         # 3. Generate Document
-        output_docx = os.path.join(session_dir, "Audit_Report.docx")
-        audit_generator.generate_report(output_docx, trends, insights, financials)
+        output_docx = os.path.join(session_dir, "Progress_Report.docx")
+        progress_generator.generate_report(output_docx, trends, insights, financials)
         
         # 4. Return file (don't delete immediately, let download-session handle it if we want, 
         # or just return it now and delete later)
         return FileResponse(
             output_docx, 
-            filename=f"Audit_Report_{datetime.now().strftime('%Y%m%d')}.docx",
+            filename=f"Progress_Report_{datetime.now().strftime('%Y%m%d')}.docx",
             background=background_tasks.add_task(shutil.rmtree, session_dir, ignore_errors=True)
         )
     except Exception as e:

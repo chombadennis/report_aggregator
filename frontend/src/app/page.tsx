@@ -32,7 +32,7 @@ const Icon = {
       <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
-  Audit: () => (
+  ProgressReport: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
       <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
     </svg>
@@ -204,12 +204,12 @@ export default function LandingPage() {
 
           <p className="text-base md:text-lg text-vivid-tangerine-800 mb-4 max-w-2xl mx-auto font-medium leading-relaxed">
             A unified AI-powered platform for site intelligence — parsing daily logs, generating weekly and monthly reports,
-            tracking S-curve production analytics, auditing project finances, and analysing contractor correspondence,
+            tracking S-curve production analytics, evaluating project finances, and analysing contractor correspondence,
             EOT claims, and legal documents.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Audit Reports", "S-Curve Analytics", "Claims Analysis", "Document Intelligence"].map((t) => (
+            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "S-Curve Analytics", "Claims Analysis", "Document Intelligence"].map((t) => (
               <span key={t} className="text-[10px] font-black uppercase tracking-wide px-3 py-1.5 bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-600 rounded-full">
                 {t}
               </span>
@@ -251,7 +251,7 @@ export default function LandingPage() {
             One platform. Every layer of site intelligence.
           </h2>
           <p className="text-sm text-vivid-tangerine-700 max-w-xl mx-auto">
-            From raw PDF logs to boardroom-ready audit reports — the system covers the full analytical lifecycle of a high-value construction project.
+            From raw PDF logs to boardroom-ready progress reports — the system covers the full analytical lifecycle of a high-value construction project.
           </p>
         </div>
 
@@ -305,10 +305,10 @@ export default function LandingPage() {
             accent="bg-sunflower-gold-200"
           />
           <CapCard
-            icon={<Icon.Audit />}
-            label="Audit Reports"
-            title="Project Audit &amp; Risk Intelligence"
-            desc="Generates a full Project Audit &amp; Risk Intelligence Report in Word format. Includes a recalibration executive audit, monthly production calibration table, weekly recalibration chain, SWOT analysis, strategic recommendations to both Client and Contractor, and a full correspondence register."
+            icon={<Icon.ProgressReport />}
+            label="Progress Reports"
+            title="Project Progress &amp; Risk Intelligence"
+            desc="Generates a full Project Progress &amp; Risk Intelligence Report in Word format. Includes a recalibration executive summary, monthly production calibration table, weekly recalibration chain, SWOT analysis, strategic recommendations to both Client and Contractor, and a full correspondence register."
             tags={["SWOT Analysis", "Recalibration Chain", "Risk Verdict", "Word Export", "Correspondence Register"]}
             accent="bg-vivid-tangerine-200"
           />
@@ -351,7 +351,7 @@ export default function LandingPage() {
               <p className="text-sm text-vivid-tangerine-700 leading-relaxed mb-8">
                 Upload any PDF — scanned or digital. The system classifies the document, extracts all requests and action items,
                 identifies contractual implications, and flags concrete strength risks using civil engineering standards.
-                Every document feeds directly into the Audit Report's correspondence register.
+                Every document feeds directly into the Progress Report's correspondence register.
               </p>
               <div className="flex flex-wrap gap-3">
                 <DocPill icon={<Icon.Claim />} label="EOT Claims" />
@@ -402,7 +402,7 @@ export default function LandingPage() {
         <div className="text-center mb-14">
           <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">End-to-End Pipeline</p>
           <h2 className="text-2xl md:text-3xl font-bold font-serif text-vivid-tangerine-950">
-            From raw site log to full audit intelligence
+            From raw site log to full progress intelligence
           </h2>
         </div>
         <div className="grid md:grid-cols-2 gap-10">
@@ -412,7 +412,7 @@ export default function LandingPage() {
             { n: "3", t: "Aggregation and chronology validation", d: "The aggregation engine compiles logs into weekly and monthly summaries, deduplicates by date, validates chronological alignment, and flags out-of-sequence or mismatched submissions." },
             { n: "4", t: "Financial engine and S-curve calibration", d: "The financial engine computes daily and weekly revenue against the KES 2.1B contract sum, calculates S-curve envisaged progress, variance (k), slippage gap, and recalibrated weekly target velocity." },
             { n: "5", t: "AI insights and risk verdict", d: "Gemini produces a management executive brief — SWOT analysis, stakeholder recommendations, and a Claim Risk Verdict (Low/Moderate/High) based on the slippage gap severity scale." },
-            { n: "6", t: "Generate and download professional reports", d: "Export a fully formatted Weekly Report, Monthly Report, or Project Audit & Risk Intelligence Report in branded Word format — ready for stakeholder review and sign-off." },
+            { n: "6", t: "Generate and download professional reports", d: "Export a fully formatted Weekly Report, Monthly Report, or Project Progress & Risk Intelligence Report in branded Word format — ready for stakeholder review and sign-off." },
           ].map((s) => (
             <Step key={s.n} num={s.n} title={s.t} desc={s.d} />
           ))}
@@ -487,21 +487,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── AUDIT REPORT HIGHLIGHT ──────────────────── */}
+      {/* ── PROGRESS REPORT HIGHLIGHT ────────────────── */}
       <section className="py-20 max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Audit Reports</p>
+          <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Progress Reports</p>
           <h2 className="text-2xl md:text-3xl font-bold font-serif text-vivid-tangerine-950 mb-3">
-            What goes into a full audit report?
+            What goes into a full progress report?
           </h2>
           <p className="text-sm text-vivid-tangerine-700 max-w-xl mx-auto">
-            One click generates a multi-section Project Audit &amp; Risk Intelligence Report in Word format — pulling from all data sources automatically.
+            One click generates a multi-section Project Progress &amp; Risk Intelligence Report in Word format — pulling from all data sources automatically.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { icon: <Icon.Document />, t: "1.0 Executive Summary", d: "AI-generated management brief reflecting current slippage level, tone-calibrated from constructive to urgent." },
-            { icon: <Icon.Finance />, t: "1.1 Recalibration Audit", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
+            { icon: <Icon.Finance />, t: "1.1 Recalibration Progress Summary", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
             { icon: <Icon.Trend />, t: "2.0 Monthly Production Table", d: "Completed months comparison: actual vs envisaged production and cumulative variance (k) per month." },
             { icon: <Icon.Calendar />, t: "3.0 Weekly Recalibration Chain", d: "Tactical week-by-week variance table showing where momentum was gained or lost throughout the project." },
             { icon: <Icon.Shield />, t: "4.0 SWOT &amp; Risk Intelligence", d: "AI-generated SWOT analysis referencing weather disruptions, site instructions, production recovery, and correspondence." },
@@ -532,7 +532,7 @@ export default function LandingPage() {
             Ready to replace manual reporting?
           </h2>
           <p className="relative z-10 text-white/80 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
-            Open the dashboard, upload this week's logs or any project document, and get a professional report — or a full audit — generated within minutes.
+            Open the dashboard, upload this week's logs or any project document, and get a professional report — or a full progress report — generated within minutes.
           </p>
           <Link href="/dashboard" className="relative z-10 inline-flex items-center gap-2 px-10 py-3.5 bg-white text-vivid-tangerine-700 rounded-2xl font-black text-sm shadow-lg hover:scale-[1.03] transition-all">
             Open Dashboard

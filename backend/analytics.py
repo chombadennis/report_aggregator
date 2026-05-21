@@ -500,11 +500,11 @@ class AnalyticsEngine:
         
          Your analysis MUST include:
          
-        STRICT TIMELINE & DOCUMENT CHRONOLOGY RULE:
+         STRICT TIMELINE & DOCUMENT CHRONOLOGY RULE:
         Whenever you reference any correspondence, claims, schedules, instructions, or Program of Works in the SWOT analysis or recommendations, you MUST ALWAYS explicitly cite the document's subject/title followed immediately by its "Date Sent" in parentheses, for example: "Letter regarding EOT No. 3 (Sent: 15th May 2026)" or "Program of Works Recovery baseline (Sent: 24th April 2026)". 
-        This is critical for tracking baseline revisions, comparing old submissions against newer revisions, and auditing how chronological timeline events mature over the life of the project. Contrasting early proposals with down-the-line revisions is essential.
+        This is critical for tracking baseline revisions, comparing old submissions against newer revisions, and reviewing how chronological timeline events mature over the life of the project. Contrasting early proposals with down-the-line revisions is essential.
 
-        1. FINANCIAL & RECALIBRATION AUDIT (CRITICAL):
+        1. FINANCIAL & RECALIBRATION ANALYSIS (CRITICAL):
            - DO NOT calculate the revenue or slippage yourself. Use the exact values provided in the "PRE-CALCULATED FINANCIAL & SLIPPAGE DATA" section.
            - MONTHLY PERFORMANCE: Analyze the last completed month (e.g. April 2026). Compare the 'actual_production' vs 'envisaged_production'. Explicitly state if it was a shortfall or an achievement and by how much.
            - RECALIBRATION TARGETS: Discuss the 'required_weekly' rate for the ongoing month (e.g. May 2026). Explain why this acceleration is necessary (or why it has decreased) based on the historical chain.
@@ -520,7 +520,7 @@ class AnalyticsEngine:
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
            - Use the 'prose_summary', 'weather_comments', recalibration deltas, and the uploaded Project Correspondence/Communications to explain the momentum, risks, EOT claims, and timeline impacts.
            - STRICTURE: NEVER claim 'optimal' or 'clear' weather if the 'weather_comments' mention rain.
-           - Audit 'site_instructions' against their issuance dates: Did subsequent production (actual vs envisaged) improve after instructions were issued?
+           - Review 'site_instructions' against their issuance dates: Did subsequent production (actual vs envisaged) improve after instructions were issued?
            - Strengths (e.g., consistent labour, recovering slippage in specific weeks)
            - Weaknesses (e.g., production shortfall in April, widening variance)
            - Opportunities (e.g., clear weather windows, catching up to the recalibrated May target)

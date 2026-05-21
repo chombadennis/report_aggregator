@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from document_parser import DocumentParser
 
 async def test_pow():
-    print("=== STARTING PROGRAM OF WORKS (POW) SCHEDULE AUDIT ===")
+    print("=== STARTING PROGRAM OF WORKS (POW) SCHEDULE REVIEW ===")
     
     pow_path = r"e:\MyProjects\maks_ahp\POW-Proposed Makindu AHP..pdf"
     if not os.path.exists(pow_path):

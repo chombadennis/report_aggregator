@@ -34,8 +34,8 @@ export default function TrendsDashboard() {
   const [correlations, setCorrelations] = useState<any>(null);
   const [financials, setFinancials] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [generatingAudit, setGeneratingAudit] = useState(false);
-  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [generatingProgress, setGeneratingProgress] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [timeScale, setTimeScale] = useState<'daily' | 'weekly'>('weekly');
 
@@ -148,32 +148,32 @@ export default function TrendsDashboard() {
     } catch { return '31st'; }
   };
 
-  const handleGenerateAudit = async () => {
-    setGeneratingAudit(true);
+  const handleGenerateProgress = async () => {
+    setGeneratingProgress(true);
     // Simulate generation delay for "UI generation" feel
     setTimeout(() => {
-      setGeneratingAudit(false);
-      setShowAuditModal(true);
+      setGeneratingProgress(false);
+      setShowProgressModal(true);
     }, 1500);
   };
 
-  const downloadAuditReport = async () => {
+  const downloadProgressReport = async () => {
     try {
       setDownloadingDoc(true);
-      const response = await fetch('http://localhost:8000/api/generate-audit-report');
+      const response = await fetch('http://localhost:8000/api/generate-progress-report');
       if (!response.ok) throw new Error('Download failed');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Audit_Report_${new Date().toISOString().split('T')[0]}.docx`;
+      a.download = `Progress_Report_${new Date().toISOString().split('T')[0]}.docx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Audit download error:', error);
+      console.error('Progress download error:', error);
       alert('Failed to download report.');
     } finally {
       setDownloadingDoc(false);
@@ -714,7 +714,7 @@ export default function TrendsDashboard() {
                         <AlertTriangle className="w-6 h-6 text-sunflower-gold-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2">Recalibration Executive Audit</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2">Recalibration Executive Summary</p>
                         <p className="text-base leading-relaxed text-white/90 font-medium max-w-4xl">
                           Analysis of the last completed month (<strong>{completedMonth?.month}</strong>) shows the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged S-curve target of <strong>{completedMonth?.envisaged_production}%</strong>. 
                           <br/><br/>
@@ -853,16 +853,16 @@ export default function TrendsDashboard() {
                 {insights?.executive_summary.substring(0, 200)}...
               </p>
               <button
-                onClick={handleGenerateAudit}
-                disabled={generatingAudit}
+                onClick={handleGenerateProgress}
+                disabled={generatingProgress}
                 className="px-8 py-3 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {generatingAudit ? (
+                {generatingProgress ? (
                   <>
                     <div className="w-3 h-3 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
                     Generating...
                   </>
-                ) : 'Generate Full Audit Report'}
+                ) : 'Generate Full Progress Report'}
               </button>
             </div>
             <div className="relative z-10 flex flex-col items-center">
@@ -878,8 +878,8 @@ export default function TrendsDashboard() {
         </section>
       </div>
 
-      {/* Audit Intelligence Modal */}
-      {showAuditModal && (
+      {/* Progress Intelligence Modal */}
+      {showProgressModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-[3rem] w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col">
             <div className="bg-slate-900 p-8 text-white relative shrink-0">
@@ -890,10 +890,10 @@ export default function TrendsDashboard() {
                     <ShieldCheck className="text-emerald-400 w-5 h-5" />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Intelligence Ready</span>
                   </div>
-                  <h2 className="text-3xl font-black tracking-tight">Audit Workspace</h2>
+                  <h2 className="text-3xl font-black tracking-tight">Progress Workspace</h2>
                 </div>
                 <button
-                  onClick={() => setShowAuditModal(false)}
+                  onClick={() => setShowProgressModal(false)}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
                   <ArrowRight className="w-6 h-6 rotate-45" />
@@ -910,7 +910,7 @@ export default function TrendsDashboard() {
                   </p>
                 </div>
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Slippage Audit</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Slippage Progress Analysis</p>
                   <p className="text-2xl font-black text-slate-900">
                     {(globalProgress.time - globalProgress.work).toFixed(2)}%
                   </p>
@@ -991,7 +991,7 @@ export default function TrendsDashboard() {
                 <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16"></div>
                   <div className="relative z-10">
-                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Financial Exposure Audit</p>
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Financial Exposure Analysis</p>
                     <div className="flex justify-between items-end">
                       <div>
                         <p className="text-[9px] text-slate-400 uppercase mb-1">Estimated Revenue Earned</p>
@@ -1011,7 +1011,7 @@ export default function TrendsDashboard() {
 
             <div className="p-8 bg-slate-50 border-t border-slate-100 shrink-0">
               <button
-                onClick={downloadAuditReport}
+                onClick={downloadProgressReport}
                 disabled={downloadingDoc}
                 className={`w-full py-5 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl hover:scale-[1.02] active:scale-95 ${
                   downloadingDoc 

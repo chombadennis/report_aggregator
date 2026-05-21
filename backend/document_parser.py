@@ -44,7 +44,7 @@ class DocumentParser:
 
         # 2. Formulate a rich claim and analysis prompt for Gemini
         prompt = """
-        You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Audit AI for high-value housing projects.
+        You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Compliance Review AI for high-value housing projects.
         
         Analyze the attached project document (which could be a letter, formal request, EOT claim, site instruction, warning, or general report/minutes/lab tests) 
         for the Makindu Affordable Housing Project.

@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 import json
 
-class AuditReportGenerator:
+class ProgressReportGenerator:
     def __init__(self):
         pass
 
@@ -22,8 +22,8 @@ class AuditReportGenerator:
         self._add_heading(doc, "1.0 EXECUTIVE SUMMARY", level=1)
         doc.add_paragraph(insights.get("executive_summary", "No summary available."))
         
-        # --- RECALIBRATION EXECUTIVE AUDIT (VERBATIM REQUIREMENT) ---
-        self._add_heading(doc, "1.1 RECALIBRATION EXECUTIVE AUDIT", level=2)
+        # --- RECALIBRATION EXECUTIVE PROGRESS (VERBATIM REQUIREMENT) ---
+        self._add_heading(doc, "1.1 RECALIBRATION PROGRESS EXECUTIVE SUMMARY", level=2)
         
         # Extract months with fallback to last two records
         m_list = financials.get("monthly_financials", []) if financials else []
@@ -60,7 +60,7 @@ class AuditReportGenerator:
                 return f"{last_day}{suffix}"
             except Exception:
                 return "31st"  # safe fallback
-        
+            
         ongoing_month_last_day = _get_month_last_day(ongoing_month.get("month", "Current Month")) if ongoing_month else "31st"
         
         p = doc.add_paragraph()
@@ -134,7 +134,7 @@ class AuditReportGenerator:
 
         # --- RECALIBRATION CHAIN ---
         if financials and financials.get("weekly_financials"):
-            self._add_heading(doc, "3.0 PRODUCTION RECALIBRATION CHAIN (WEEKLY AUDIT)", level=1)
+            self._add_heading(doc, "3.0 PRODUCTION RECALIBRATION CHAIN (WEEKLY PROGRESS)", level=1)
             doc.add_paragraph("Tactical weekly performance variance (k) based on dynamic recalibration.")
             
             w_table = doc.add_table(rows=1, cols=5)
@@ -211,7 +211,7 @@ class AuditReportGenerator:
                         continue
 
         if not docs_list:
-            doc.add_paragraph("No correspondence or communications uploaded for this audit period.")
+            doc.add_paragraph("No correspondence or communications uploaded for this reporting period.")
         else:
             # Sort by date sent descending
             docs_list.sort(key=lambda x: x.get("date_sent", ""), reverse=True)
@@ -286,7 +286,7 @@ class AuditReportGenerator:
         # Center alignment for cover
         for i in range(10): doc.add_paragraph() # Spacer
         
-        title = doc.add_paragraph("PROJECT AUDIT & RISK INTELLIGENCE REPORT")
+        title = doc.add_paragraph("PROJECT PROGRESS REPORT")
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run = title.runs[0]
         run.bold = True
@@ -307,7 +307,6 @@ class AuditReportGenerator:
 
     def _add_heading(self, doc, text, level=1):
         h = doc.add_heading(text, level=level)
-        # Custom styling could be added here
 
     def _calculate_slippage(self, trend):
         try:
