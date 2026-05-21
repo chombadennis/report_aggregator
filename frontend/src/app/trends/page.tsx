@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useAuth, useUser, UserButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
   AlertTriangle,
@@ -15,7 +17,9 @@ import {
   ArrowRight,
   Activity,
   Building2,
-  TrendingDown
+  TrendingDown,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import {
   LineChart,
@@ -29,6 +33,10 @@ import {
 } from 'recharts';
 
 export default function TrendsDashboard() {
+  const router = useRouter();
+  const { isLoaded, userId, getToken } = useAuth();
+  const { user } = useUser();
+
   const [data, setData] = useState<any>(null);
   const [insights, setInsights] = useState<any>(null);
   const [correlations, setCorrelations] = useState<any>(null);
@@ -38,38 +46,106 @@ export default function TrendsDashboard() {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [timeScale, setTimeScale] = useState<'daily' | 'weekly'>('weekly');
+  const [mounted, setMounted] = useState(false);
+
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
+
+  const handleRegenerateInsights = async () => {
+    setIsRegenerating(true);
+    setRegenerateError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch('http://localhost:8000/api/analytics/insights/regenerate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to regenerate AI Insights");
+      }
+      const newInsights = await res.json();
+      setInsights(newInsights);
+    } catch (err: any) {
+      console.error(err);
+      setRegenerateError(err.message || "Failed to contact Gemini AI");
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  // Client-side Role Checking
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
+  const isAdmin = userEmail && adminEmail && userEmail.toLowerCase() === adminEmail.toLowerCase();
+
+  // Handle client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Authentication Guard Redirect
+  useEffect(() => {
+    if (mounted && isLoaded && !userId) {
+      router.replace('/login');
+    }
+  }, [mounted, isLoaded, userId, router]);
 
   useEffect(() => {
+    if (!isLoaded || !userId) return;
+
     async function fetchData() {
-      // 1. Fetch trends first for immediate visual feedback
-      fetch('http://localhost:8000/api/analytics/trends')
-        .then(res => res.json())
-        .then(res => {
-          setData(res);
-          setLoading(false); // Show the charts as soon as we have data!
-        })
-        .catch(err => console.error("Trends fetch failed", err));
+      try {
+        const token = await getToken();
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
 
-      // 2. Fetch insights in the background (slower AI process)
-      fetch('http://localhost:8000/api/analytics/insights')
-        .then(res => res.json())
-        .then(res => setInsights(res))
-        .catch(err => console.error("Insights fetch failed", err));
+        // 1. Fetch trends first for immediate visual feedback
+        fetch('http://localhost:8000/api/analytics/trends', { headers })
+          .then(res => {
+            if (!res.ok) throw new Error("Unauthorized/Error");
+            return res.json();
+          })
+          .then(res => {
+            setData(res);
+            setLoading(false); // Show the charts as soon as we have data!
+          })
+          .catch(err => console.error("Trends fetch failed", err));
 
-      // 3. Fetch correlations in the background
-      fetch('http://localhost:8000/api/analytics/correlations')
-        .then(res => res.json())
-        .then(res => setCorrelations(res))
-        .catch(err => console.error("Correlations fetch failed", err));
+        // 2. Fetch insights in the background (slower AI process)
+        fetch('http://localhost:8000/api/analytics/insights', { headers })
+          .then(res => {
+            if (!res.ok) throw new Error("Unauthorized/Error");
+            return res.json();
+          })
+          .then(res => setInsights(res))
+          .catch(err => console.error("Insights fetch failed", err));
 
-      // 4. Fetch financial trends
-      fetch('http://localhost:8000/api/analytics/financials')
-        .then(res => res.json())
-        .then(res => setFinancials(res))
-        .catch(err => console.error("Financials fetch failed", err));
+        // 3. Fetch correlations in the background
+        fetch('http://localhost:8000/api/analytics/correlations', { headers })
+          .then(res => {
+            if (!res.ok) throw new Error("Unauthorized/Error");
+            return res.json();
+          })
+          .then(res => setCorrelations(res))
+          .catch(err => console.error("Correlations fetch failed", err));
+
+        // 4. Fetch financial trends
+        fetch('http://localhost:8000/api/analytics/financials', { headers })
+          .then(res => {
+            if (!res.ok) throw new Error("Unauthorized/Error");
+            return res.json();
+          })
+          .then(res => setFinancials(res))
+          .catch(err => console.error("Financials fetch failed", err));
+      } catch (err) {
+        console.error("Failed to fetch analytics", err);
+      }
     }
     fetchData();
-  }, []);
+  }, [isLoaded, userId, getToken]);
 
   const activeTrend = useMemo(() => {
     if (!data) return [];
@@ -160,7 +236,12 @@ export default function TrendsDashboard() {
   const downloadProgressReport = async () => {
     try {
       setDownloadingDoc(true);
-      const response = await fetch('http://localhost:8000/api/generate-progress-report');
+      const token = await getToken();
+      const response = await fetch('http://localhost:8000/api/generate-progress-report', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) throw new Error('Download failed');
 
       const blob = await response.blob();
@@ -179,6 +260,17 @@ export default function TrendsDashboard() {
       setDownloadingDoc(false);
     }
   };
+
+  if (!isLoaded || !userId) {
+    return (
+      <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="font-bold text-vivid-tangerine-900 tracking-widest uppercase text-xs">Loading Security Context...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -300,28 +392,49 @@ export default function TrendsDashboard() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-vivid-tangerine-600 transition-colors">
+            <Link href="/" className="text-xs font-bold text-slate-600 uppercase tracking-wider bg-white hover:bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
               Home
             </Link>
             <div className="w-px h-4 bg-slate-200"></div>
-            <Link href="/dashboard" className="flex items-center gap-2 text-vivid-tangerine-600 hover:text-vivid-tangerine-700 transition-colors">
-              <ArrowRight className="rotate-180 w-4 h-4" />
-              <span className="font-bold text-sm">Dashboard</span>
+            <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Dashboard
             </Link>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
-            <button
-              onClick={() => setTimeScale('daily')}
-              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Daily
-            </button>
-            <button
-              onClick={() => setTimeScale('weekly')}
-              className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Weekly
-            </button>
+          <div className="flex items-center gap-4">
+            {!isAdmin ? (
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-3.5 py-2 rounded-xl shadow-sm">
+                Viewer Access
+              </span>
+            ) : (
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-3.5 py-2 rounded-xl shadow-sm">
+                Admin Access
+              </span>
+            )}
+            <UserButton 
+              afterSignOutUrl="/login" 
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
+                }
+              }}
+            />
+            <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+              <button
+                onClick={() => setTimeScale('daily')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => setTimeScale('weekly')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Weekly
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -582,53 +695,129 @@ export default function TrendsDashboard() {
           {/* SWOT Analysis */}
           <section className="bg-slate-900 rounded-[2rem] p-10 text-white overflow-hidden relative">
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-8">
-                <Target className="text-sunflower-gold-500 w-6 h-6" />
-                <h2 className="text-2xl font-bold">SWOT Intelligence</h2>
+              <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <Target className="text-sunflower-gold-500 w-6 h-6" />
+                  <h2 className="text-2xl font-bold">SWOT Analysis</h2>
+                </div>
+                
+                {isAdmin && (
+                  <button
+                    onClick={handleRegenerateInsights}
+                    disabled={isRegenerating}
+                    className="relative group overflow-hidden bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-5 py-3 rounded-2xl transition-all duration-300 transform active:scale-95 flex items-center gap-2.5 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                    {isRegenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 text-slate-900" />
+                    )}
+                    <span className="tracking-wide text-[10px] uppercase">
+                      {isRegenerating ? "Generating..." : "Update AI SWOT Insights"}
+                    </span>
+                  </button>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Strengths</p>
-                  <ul className="space-y-3">
-                    {insights?.swot?.strengths?.map((s: string, i: number) => (
-                      <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-emerald-500 font-bold shrink-0">→</span> {s}</li>
-                    ))}
-                  </ul>
+              {insights?._generated_at && (
+                <div className="text-[10px] font-bold text-slate-400 tracking-wider mb-6 uppercase flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                  <span>Last Analyzed by Gemini AI: {insights._generated_at}</span>
                 </div>
-                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-4">Weaknesses</p>
-                  <ul className="space-y-3">
-                    {insights?.swot?.weaknesses?.map((s: string, i: number) => (
-                      <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-rose-500 font-bold shrink-0">→</span> {s}</li>
-                    ))}
-                  </ul>
+              )}
+
+              {regenerateError && (
+                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-4 py-3 rounded-2xl mb-6">
+                  ⚠️ {regenerateError}
                 </div>
-                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-4">Opportunities</p>
-                  <ul className="space-y-3">
-                    {insights?.swot?.opportunities?.map((s: string, i: number) => (
-                      <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-sunflower-gold-500 font-bold shrink-0">→</span> {s}</li>
-                    ))}
-                  </ul>
+              )}
+
+              {(!insights || insights.is_empty || (insights.swot?.strengths?.length === 0 && insights.swot?.weaknesses?.length === 0)) ? (
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
+                  <div className="absolute -right-20 -top-20 w-60 h-60 bg-sunflower-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
+                  <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+                  
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
+                    <Sparkles className="w-6 h-6 text-sunflower-gold-400 animate-pulse" />
+                  </div>
+                  
+                  <h3 className="text-lg font-bold mb-2 text-white">AI Strategy Engine Uninitialized</h3>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
+                    {isAdmin 
+                      ? "No AI SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to Gemini AI to generate insights."
+                      : "The AI-driven SWOT analysis and strategic recommendations are awaiting administrator generation. Please check back shortly once the administrator compiles the project report."}
+                  </p>
+                  
+                  {isAdmin && (
+                    <button
+                      onClick={handleRegenerateInsights}
+                      disabled={isRegenerating}
+                      className="bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-6 py-3 rounded-2xl transition-all transform active:scale-95 flex items-center gap-2.5 shadow-[0_15px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50"
+                    >
+                      {isRegenerating ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-slate-900" />
+                      )}
+                      <span className="tracking-widest text-[10px] uppercase">
+                        {isRegenerating ? "Running Analysis..." : "Compile AI Insights Now"}
+                      </span>
+                    </button>
+                  )}
                 </div>
-                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Threats</p>
-                  <ul className="space-y-3">
-                    {insights?.swot?.threats?.map((s: string, i: number) => (
-                      <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-blue-500 font-bold shrink-0">→</span> {s}</li>
-                    ))}
-                  </ul>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Strengths</p>
+                    <ul className="space-y-3">
+                      {insights?.swot?.strengths?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-emerald-500 font-bold shrink-0">→</span> {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-4">Weaknesses</p>
+                    <ul className="space-y-3">
+                      {insights?.swot?.weaknesses?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-rose-500 font-bold shrink-0">→</span> {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-4">Opportunities</p>
+                    <ul className="space-y-3">
+                      {insights?.swot?.opportunities?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-sunflower-gold-500 font-bold shrink-0">→</span> {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Threats</p>
+                    <ul className="space-y-3">
+                      {insights?.swot?.threats?.map((s: string, i: number) => (
+                        <li key={i} className="text-sm text-slate-300 flex gap-3 leading-relaxed"><span className="text-blue-500 font-bold shrink-0">→</span> {s}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </section>
 
           {/* Production Velocity & Recalibration */}
           <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-3 mb-8">
-              <Zap className="text-sunflower-gold-600 w-6 h-6" />
-              <h2 className="text-2xl font-bold">Production Velocity & Recalibration</h2>
+            <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <Zap className="text-sunflower-gold-600 w-6 h-6" />
+                <h2 className="text-2xl font-bold">Production Velocity & Recalibration</h2>
+              </div>
+              {!isAdmin && (
+                <div className="bg-amber-50 border border-amber-100 px-4 py-2.5 rounded-2xl flex items-center gap-2.5 text-xs text-amber-700 font-bold uppercase tracking-wider">
+                  <span>🔒</span>
+                  <span>Read-Only View: S-Curve Recalibration Locked</span>
+                </div>
+              )}
             </div>
 
             {(() => {
@@ -854,15 +1043,26 @@ export default function TrendsDashboard() {
               </p>
               <button
                 onClick={handleGenerateProgress}
-                disabled={generatingProgress}
-                className="px-8 py-3 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={generatingProgress || !isAdmin}
+                className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
+                  !isAdmin 
+                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50' 
+                    : 'bg-white text-slate-900 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
               >
-                {generatingProgress ? (
+                {!isAdmin ? (
+                  <>
+                    <span>🔒</span>
+                    <span>Progress Report Generator Locked</span>
+                  </>
+                ) : generatingProgress ? (
                   <>
                     <div className="w-3 h-3 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-                    Generating...
+                    <span>Generating...</span>
                   </>
-                ) : 'Generate Full Progress Report'}
+                ) : (
+                  <span>Generate Full Progress Report</span>
+                )}
               </button>
             </div>
             <div className="relative z-10 flex flex-col items-center">
@@ -1013,13 +1213,17 @@ export default function TrendsDashboard() {
               <button
                 onClick={downloadProgressReport}
                 disabled={downloadingDoc}
-                className={`w-full py-5 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl hover:scale-[1.02] active:scale-95 ${
+                className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl ${
                   downloadingDoc 
-                    ? 'bg-slate-400 cursor-not-allowed shadow-none' 
-                    : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20'
+                    ? 'bg-slate-400 cursor-not-allowed shadow-none text-white' 
+                    : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20 text-white hover:scale-[1.02] active:scale-95'
                 }`}
               >
-                {downloadingDoc ? 'Generating DOCX... Please Wait' : 'Download Full .DOCX Report'}
+                {downloadingDoc ? (
+                  'Generating DOCX... Please Wait'
+                ) : (
+                  'Download Full .DOCX Report'
+                )}
               </button>
             </div>
           </div>
@@ -1074,6 +1278,36 @@ export default function TrendsDashboard() {
           <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
         </div>
       </footer>
+
+      {isRegenerating && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 transition-all duration-300">
+          <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full text-center relative overflow-hidden shadow-2xl">
+            <div className="absolute -right-20 -top-20 w-60 h-60 bg-sunflower-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+            
+            <div className="relative z-10">
+              <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-sunflower-gold-500/20 to-vivid-tangerine-500/20 animate-pulse" />
+                <Loader2 className="w-10 h-10 text-sunflower-gold-400 animate-spin relative z-10" />
+              </div>
+              
+              <h3 className="text-2xl font-black text-white mb-3">AI Engine Processing</h3>
+              <p className="text-xs text-slate-400 leading-relaxed mb-8">
+                Gemini AI is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
+              </p>
+              
+              <div className="flex flex-col gap-2">
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-500 rounded-full w-4/5 animate-pulse" />
+                </div>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                  Synthesizing SWOT & Recommendations
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

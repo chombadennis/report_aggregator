@@ -564,7 +564,7 @@ class AnalyticsEngine:
             # FORCE OVERRIDE: The AI is sometimes stubborn; we overwrite its verdict with our hard-coded logic.
             if isinstance(result, dict):
                 result["claim_verdict"] = calculated_verdict
-                result["_generated_at"] = os.popen("date /t").read().strip() + " " + os.popen("time /t").read().strip()
+                result["_generated_at"] = datetime.now().strftime("%d %B %Y, %I:%M %p")
                 logger.info(f"✅ AI Insights generated with FORCED VERDICT: {calculated_verdict}")
             return result
         except Exception as e:

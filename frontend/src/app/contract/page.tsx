@@ -1,19 +1,50 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth, useUser, UserButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export default function ContractSummary() {
+  const router = useRouter();
+  const { isLoaded, userId, getToken } = useAuth();
+  const { user } = useUser();
+
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  // Client-side Role Checking
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
+  const isAdmin = userEmail && adminEmail && userEmail.toLowerCase() === adminEmail.toLowerCase();
+
+  // Handle client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Authentication Guard Redirect
+  useEffect(() => {
+    if (mounted && isLoaded && !userId) {
+      router.replace('/login');
+    }
+  }, [mounted, isLoaded, userId, router]);
 
   useEffect(() => {
-    fetchSummary();
-  }, []);
+    if (isLoaded && userId) {
+      fetchSummary();
+    }
+  }, [isLoaded, userId]);
 
   const fetchSummary = async () => {
     try {
-      const resp = await fetch('http://localhost:8000/api/contract-summary');
+      const token = await getToken();
+      const resp = await fetch('http://localhost:8000/api/contract-summary', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await resp.json();
       if (data.msg && !data.project_title) {
         setSummary(null);
@@ -27,14 +58,47 @@ export default function ContractSummary() {
     }
   };
 
+  if (!isLoaded || !userId) {
+    return (
+      <div className="min-h-screen bg-vanilla-custard-50 flex flex-col items-center justify-center text-vivid-tangerine-950">
+        <div className="w-16 h-16 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs font-bold text-vivid-tangerine-800 uppercase tracking-widest animate-pulse">Loading Security Context...</p>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/dashboard" className="text-vivid-tangerine-600 hover:underline font-bold text-sm">← Back to Dashboard</Link>
-          <Link href="/" className="text-[10px] font-black text-vivid-tangerine-600 uppercase tracking-widest bg-vivid-tangerine-50 px-3 py-1.5 rounded-full hover:bg-vivid-tangerine-100 transition-colors border border-vivid-tangerine-200">
-            Home
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
+            <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Dashboard
           </Link>
+          <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
+            {!isAdmin ? (
+              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-3.5 py-2 rounded-xl shadow-sm">
+                Viewer Access
+              </span>
+            ) : (
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-3.5 py-2 rounded-xl shadow-sm">
+                Admin Access
+              </span>
+            )}
+            <UserButton 
+              afterSignOutUrl="/login" 
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
+                }
+              }}
+            />
+            <Link href="/" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
+              Home
+            </Link>
+          </div>
         </div>
         
         <h1 className="text-4xl font-bold mb-8 font-serif bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent">
@@ -123,7 +187,7 @@ export default function ContractSummary() {
       </div>
 
       {/* Footer Panel */}
-      <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-4xl mx-auto">
+      <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Depends, Header, status
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
@@ -18,6 +18,7 @@ from analytics import AnalyticsEngine
 from progress_generator import ProgressReportGenerator
 from financial_engine import FinancialEngine
 from document_parser import DocumentParser
+from auth import clerk_verifier
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -30,6 +31,7 @@ app.add_middleware(
 )
 
 TEMP_DIR = "temp_uploads"
+INSIGHTS_CACHE_PATH = os.path.join("cache", "ai_insights.json")
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 parser = ReportParser(cache_dir="cache")
@@ -42,8 +44,81 @@ progress_generator = ProgressReportGenerator()
 financial_engine = FinancialEngine()
 document_parser = DocumentParser(cache_dir="cache")
 
+# --- AUTHENTICATION DEPENDENCIES ---
+async def get_current_user(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authentication token. Please log in."
+        )
+    token = authorization.split(" ")[1]
+    payload = clerk_verifier.verify_token(token)
+    
+    # Debug print to inspect Clerk JWT claims
+    print(f"--- DEBUG AUTH: Decoded Clerk JWT payload keys: {list(payload.keys())} ---")
+    print(f"--- DEBUG AUTH: Decoded Clerk JWT payload claims: {payload} ---")
+    
+    email = payload.get("email") or payload.get("email_address")
+    if not email and "emails" in payload:
+        emails = payload.get("emails")
+        if isinstance(emails, list) and len(emails) > 0:
+            email = emails[0]
+            
+    # Fallback: Query Clerk Backend API if email not in token claims
+    user_id = payload.get("sub")
+    if not email and user_id:
+        clerk_secret_key = os.getenv("CLERK_SECRET_KEY")
+        if clerk_secret_key:
+            try:
+                import httpx
+                headers = {"Authorization": f"Bearer {clerk_secret_key}"}
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(f"https://api.clerk.com/v1/users/{user_id}", headers=headers)
+                    if response.status_code == 200:
+                        user_data = response.json()
+                        email_addresses = user_data.get("email_addresses", [])
+                        primary_email_id = user_data.get("primary_email_address_id")
+                        
+                        # Match primary email ID
+                        for e_addr in email_addresses:
+                            if e_addr.get("id") == primary_email_id:
+                                email = e_addr.get("email_address")
+                                break
+                        
+                        # Fallback to the first email if primary not matched
+                        if not email and email_addresses:
+                            email = email_addresses[0].get("email_address")
+                            
+                        print(f"--- DEBUG AUTH: Resolved email '{email}' from Clerk API for user '{user_id}' ---")
+                    else:
+                        print(f"--- DEBUG AUTH: Failed to fetch user from Clerk API. Status: {response.status_code}, Body: {response.text} ---")
+            except Exception as ex:
+                print(f"--- DEBUG AUTH: Exception when fetching user from Clerk API: {ex} ---")
+            
+    return {
+        "email": email,
+        "user_id": user_id,
+        "claims": payload
+    }
+
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not admin_email:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="ADMIN_EMAIL configuration is missing in the backend server."
+        )
+    
+    user_email = current_user.get("email")
+    if not user_email or user_email.lower() != admin_email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: This account is restricted to read-only access. You do not have permission to execute write or AI generation commands."
+        )
+    return current_user
+
 @app.get("/api/check-duplicate")
-async def check_duplicate(title: str):
+async def check_duplicate(title: str, current_user: dict = Depends(get_current_user)):
     exists = aggregator.check_duplicate(title)
     return {"exists": exists}
 
@@ -54,7 +129,8 @@ async def generate_weekly_stream(
     report_date: str = Form(""),
     time_elapsed: str = Form(""),
     pct_period: str = Form(""),
-    pct_work: str = Form("")
+    pct_work: str = Form(""),
+    current_user: dict = Depends(require_admin)
 ):
     """Weekly generation with Server-Sent Events for real-time progress."""
     session_id = str(uuid.uuid4())
@@ -112,7 +188,8 @@ async def generate_monthly_stream(
     report_date: str = Form(""),
     time_elapsed: str = Form(""),
     pct_period: str = Form(""),
-    pct_work: str = Form("")
+    pct_work: str = Form(""),
+    current_user: dict = Depends(require_admin)
 ):
     """Monthly generation with Server-Sent Events for real-time progress."""
     session_id = str(uuid.uuid4())
@@ -192,7 +269,7 @@ async def download_session(session_id: str, background_tasks: BackgroundTasks):
     return FileResponse(file_path, filename=f"{prefix}_Report_{session_id[:8]}.docx")
 
 @app.get("/api/contract-summary")
-async def get_contract_summary():
+async def get_contract_summary(current_user: dict = Depends(get_current_user)):
     data = contract_parser.get_contract_summary()
     if not data:
         return {"msg": "No contract summary found. Please upload a report to extract details."}
@@ -200,14 +277,14 @@ async def get_contract_summary():
 
 
 @app.get("/api/trends")
-async def get_trends():
+async def get_trends(current_user: dict = Depends(get_current_user)):
     """
     Analyzes historical JSONs chronologically to provide trend data.
     """
     return analytics_engine.get_historical_trends()
 
 @app.get("/api/ai-insights")
-async def get_ai_insights():
+async def get_ai_insights(current_user: dict = Depends(get_current_user)):
     """
     Feeds the historical trend data to Gemini for a management-level executive summary.
     """
@@ -216,7 +293,7 @@ async def get_ai_insights():
     return await analytics_engine.generate_ai_insights(trends, contract)
 
 @app.get("/api/analytics/trends")
-async def get_trends():
+async def get_trends(current_user: dict = Depends(get_current_user)):
     """Returns the comprehensive historical trend data."""
     trends = analytics_engine.get_historical_trends()
     daily = analytics_engine.get_daily_trends()
@@ -226,19 +303,66 @@ async def get_trends():
     }
 
 @app.get("/api/analytics/financials")
-async def get_financials():
+async def get_financials(current_user: dict = Depends(get_current_user)):
     """Serves the materialized financial analysis data. Always computes to ensure real-time accuracy."""
     return financial_engine.compute_and_cache_financials()
 
 @app.get("/api/analytics/correlations")
-async def get_correlations():
+async def get_correlations(current_user: dict = Depends(get_current_user)):
     """Returns data for scatter plots and heatmaps."""
     financials = financial_engine.compute_and_cache_financials()
     return analytics_engine.get_correlations(financials)
 
 @app.get("/api/analytics/insights")
-async def get_insights():
-    """Triggers AI analysis of current trends."""
+async def get_insights(current_user: dict = Depends(get_current_user)):
+    """
+    Returns AI insights from persistent cache, or generates them on-demand if the user is an admin.
+    """
+    if os.path.exists(INSIGHTS_CACHE_PATH):
+        try:
+            with open(INSIGHTS_CACHE_PATH, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            pass
+
+    # Cache does not exist. Check if user is admin
+    admin_email = os.getenv("ADMIN_EMAIL")
+    is_admin = False
+    if current_user and admin_email:
+        user_email = current_user.get("email")
+        if user_email and user_email.lower() == admin_email.lower():
+            is_admin = True
+
+    if is_admin:
+        trends = analytics_engine.get_historical_trends()
+        financials = financial_engine.compute_and_cache_financials()
+        
+        context = {}
+        context_path = "cache/contract_summary.json"
+        if os.path.exists(context_path):
+            with open(context_path, "r") as f:
+                context = json.load(f)
+        
+        insights = await analytics_engine.generate_ai_insights(trends, context, financials)
+        os.makedirs("cache", exist_ok=True)
+        with open(INSIGHTS_CACHE_PATH, "w") as f:
+            json.dump(insights, f, indent=2)
+        return insights
+    else:
+        return {
+            "swot": {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []},
+            "recommendations": {"to_client": [], "to_contractor": []},
+            "executive_summary": "Awaiting administrator to generate AI Insights.",
+            "critical_advice": "",
+            "claim_verdict": "Low",
+            "is_empty": True
+        }
+
+@app.post("/api/analytics/insights/regenerate")
+async def regenerate_insights(current_user: dict = Depends(require_admin)):
+    """
+    Forcefully regenerates and caches AI Insights from the current trends and documents.
+    """
     trends = analytics_engine.get_historical_trends()
     financials = financial_engine.compute_and_cache_financials()
     
@@ -247,12 +371,15 @@ async def get_insights():
     if os.path.exists(context_path):
         with open(context_path, "r") as f:
             context = json.load(f)
-    
+            
     insights = await analytics_engine.generate_ai_insights(trends, context, financials)
+    os.makedirs("cache", exist_ok=True)
+    with open(INSIGHTS_CACHE_PATH, "w") as f:
+        json.dump(insights, f, indent=2)
     return insights
 
 @app.get("/api/generate-progress-report")
-async def generate_progress_report(background_tasks: BackgroundTasks):
+async def generate_progress_report(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     """Generates a full progress report document based on current trends and AI insights."""
     session_id = str(uuid.uuid4())
     session_dir = os.path.join(TEMP_DIR, f"progress_{session_id}")
@@ -269,8 +396,38 @@ async def generate_progress_report(background_tasks: BackgroundTasks):
             with open(context_path, "r") as f:
                 context = json.load(f)
         
-        # 2. Get AI Insights
-        insights = await analytics_engine.generate_ai_insights(trends, context, financials)
+        # 2. Retrieve AI Insights from persistent cache if available
+        insights = None
+        if os.path.exists(INSIGHTS_CACHE_PATH):
+            try:
+                with open(INSIGHTS_CACHE_PATH, "r") as f:
+                    insights = json.load(f)
+            except Exception:
+                pass
+                
+        # If cache is not found, attempt on-demand generation ONLY if the user is an admin
+        if not insights:
+            admin_email = os.getenv("ADMIN_EMAIL")
+            is_admin = False
+            if current_user and admin_email:
+                user_email = current_user.get("email")
+                if user_email and user_email.lower() == admin_email.lower():
+                    is_admin = True
+                    
+            if is_admin:
+                insights = await analytics_engine.generate_ai_insights(trends, context, financials)
+                os.makedirs("cache", exist_ok=True)
+                with open(INSIGHTS_CACHE_PATH, "w") as f:
+                    json.dump(insights, f, indent=2)
+            else:
+                insights = {
+                    "swot": {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []},
+                    "recommendations": {"to_client": [], "to_contractor": []},
+                    "executive_summary": "Awaiting administrator to generate AI Insights.",
+                    "critical_advice": "",
+                    "claim_verdict": "Low",
+                    "is_empty": True
+                }
         
         # 3. Generate Document
         output_docx = os.path.join(session_dir, "Progress_Report.docx")
@@ -295,7 +452,8 @@ async def upload_document(
     date_sent: str = Form(""),
     category: str = Form(""),
     sender: str = Form(""),
-    recipient: str = Form("")
+    recipient: str = Form(""),
+    current_user: dict = Depends(require_admin)
 ):
     try:
         doc_id = str(uuid.uuid4())
@@ -352,7 +510,7 @@ async def upload_document(
         raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
 
 @app.get("/api/project-documents")
-async def get_project_documents():
+async def get_project_documents(current_user: dict = Depends(get_current_user)):
     try:
         docs_dir = os.path.join("cache", "project_documents")
         if not os.path.exists(docs_dir):
@@ -377,7 +535,7 @@ async def get_project_documents():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/project-documents/{doc_id}")
-async def delete_project_document(doc_id: str):
+async def delete_project_document(doc_id: str, current_user: dict = Depends(require_admin)):
     try:
         docs_dir = os.path.join("cache", "project_documents")
         metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
