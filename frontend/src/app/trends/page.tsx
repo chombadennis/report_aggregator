@@ -32,6 +32,8 @@ import {
   Legend
 } from 'recharts';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+
 export default function TrendsDashboard() {
   const router = useRouter();
   const { isLoaded, userId, getToken } = useAuth();
@@ -56,7 +58,7 @@ export default function TrendsDashboard() {
     setRegenerateError(null);
     try {
       const token = await getToken();
-      const res = await fetch('http://localhost:8000/api/analytics/insights/regenerate', {
+      const res = await fetch(`${BACKEND_URL}/api/analytics/insights/regenerate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -103,7 +105,7 @@ export default function TrendsDashboard() {
         };
 
         // 1. Fetch trends first for immediate visual feedback
-        fetch('http://localhost:8000/api/analytics/trends', { headers })
+        fetch(`${BACKEND_URL}/api/analytics/trends`, { headers })
           .then(res => {
             if (!res.ok) throw new Error("Unauthorized/Error");
             return res.json();
@@ -115,7 +117,7 @@ export default function TrendsDashboard() {
           .catch(err => console.error("Trends fetch failed", err));
 
         // 2. Fetch insights in the background (slower AI process)
-        fetch('http://localhost:8000/api/analytics/insights', { headers })
+        fetch(`${BACKEND_URL}/api/analytics/insights`, { headers })
           .then(res => {
             if (!res.ok) throw new Error("Unauthorized/Error");
             return res.json();
@@ -124,7 +126,7 @@ export default function TrendsDashboard() {
           .catch(err => console.error("Insights fetch failed", err));
 
         // 3. Fetch correlations in the background
-        fetch('http://localhost:8000/api/analytics/correlations', { headers })
+        fetch(`${BACKEND_URL}/api/analytics/correlations`, { headers })
           .then(res => {
             if (!res.ok) throw new Error("Unauthorized/Error");
             return res.json();
@@ -133,7 +135,7 @@ export default function TrendsDashboard() {
           .catch(err => console.error("Correlations fetch failed", err));
 
         // 4. Fetch financial trends
-        fetch('http://localhost:8000/api/analytics/financials', { headers })
+        fetch(`${BACKEND_URL}/api/analytics/financials`, { headers })
           .then(res => {
             if (!res.ok) throw new Error("Unauthorized/Error");
             return res.json();
@@ -237,7 +239,7 @@ export default function TrendsDashboard() {
     try {
       setDownloadingDoc(true);
       const token = await getToken();
-      const response = await fetch('http://localhost:8000/api/generate-progress-report', {
+      const response = await fetch(`${BACKEND_URL}/api/generate-progress-report`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

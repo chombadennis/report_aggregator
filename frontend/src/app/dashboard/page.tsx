@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+
 export default function Home() {
   const router = useRouter();
   const { isLoaded, userId, getToken } = useAuth();
@@ -69,7 +71,7 @@ export default function Home() {
   const fetchDocs = async () => {
     try {
       const token = await getToken();
-      const resp = await fetch('http://localhost:8000/api/project-documents', {
+      const resp = await fetch(`${BACKEND_URL}/api/project-documents`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -125,7 +127,7 @@ export default function Home() {
     try {
       setDocStatus('📡 Connecting to Claims Analysis AI Engine...');
       const token = await getToken();
-      const response = await fetch('http://localhost:8000/api/upload-document', {
+      const response = await fetch(`${BACKEND_URL}/api/upload-document`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -162,7 +164,7 @@ export default function Home() {
   const handleDeleteDocument = async (docId: string) => {
     try {
       const token = await getToken();
-      const response = await fetch(`http://localhost:8000/api/project-documents/${docId}`, {
+      const response = await fetch(`${BACKEND_URL}/api/project-documents/${docId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -188,7 +190,7 @@ export default function Home() {
       if (title.length > 3) {
         try {
           const token = await getToken();
-          const resp = await fetch(`http://localhost:8000/api/check-duplicate?title=${encodeURIComponent(title)}`, {
+          const resp = await fetch(`${BACKEND_URL}/api/check-duplicate?title=${encodeURIComponent(title)}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -246,7 +248,7 @@ export default function Home() {
       const endpoint = mode === 'weekly' ? '/api/generate-weekly-stream' : '/api/generate-monthly-stream';
       setStatus('📡 Connecting to AI Vision Engine...');
       
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -290,7 +292,7 @@ export default function Home() {
 
       if (session_id) {
         setStatus('📥 Downloading final document...');
-        window.location.href = `http://localhost:8000/api/download-session/${session_id}`;
+        window.location.href = `${BACKEND_URL}/api/download-session/${session_id}`;
         setTimeout(() => setStatus(`✨ Success! ${mode === 'weekly' ? 'Weekly' : 'Monthly'} Report Ready.`), 2000);
       }
     } catch (err: any) {

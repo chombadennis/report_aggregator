@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+
 export default function ContractSummary() {
   const router = useRouter();
   const { isLoaded, userId, getToken } = useAuth();
@@ -40,7 +42,7 @@ export default function ContractSummary() {
   const fetchSummary = async () => {
     try {
       const token = await getToken();
-      const resp = await fetch('http://localhost:8000/api/contract-summary', {
+      const resp = await fetch(`${BACKEND_URL}/api/contract-summary`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
