@@ -273,8 +273,8 @@ export default function LandingPage() {
             icon={<Icon.Scan />}
             label="Parsing Engine"
             title="AI Vision Log Parsing"
-            desc="Automatically extracts structured data from PDF daily site logs using Gemini Vision OCR. Handles scanned pages with a high-resolution rendering fallback at up to 4× zoom for engineering-grade accuracy."
-            tags={["Daily Logs", "OCR", "Gemini Vision", "Scanned PDFs"]}
+            desc="Automatically extracts structured data from PDF daily site logs using advanced document vision models. Handles scanned pages with a high-resolution rendering fallback at up to 4× zoom for engineering-grade accuracy."
+            tags={["Daily Logs", "OCR", "Vision AI", "Scanned PDFs"]}
             accent="bg-sunflower-gold-300"
           />
           <CapCard
@@ -297,8 +297,8 @@ export default function LandingPage() {
             icon={<Icon.Finance />}
             label="Financial Engine"
             title="S-Curve Production Analytics"
-            desc="Computes cumulative envisaged progress using Hermite smoothstep S-curve interpolation against the KES 2.1B contract sum. Calculates daily and weekly revenue earned, recalibrated required velocities, variance (k), and slippage gap for every reporting period."
-            tags={["S-Curve", "KES 2.1B", "Daily Financials", "Weekly Financials", "Monthly Calibration"]}
+            desc="Computes cumulative envisaged progress using Hermite smoothstep S-curve interpolation against the baseline project contract value. Calculates daily and weekly revenue earned, recalibrated required velocities, variance (k), and slippage gap for every reporting period."
+            tags={["S-Curve", "Contract Value", "Daily Financials", "Weekly Financials", "Monthly Calibration"]}
             accent="bg-deep-space-blue-200"
           />
           <CapCard
@@ -320,25 +320,25 @@ export default function LandingPage() {
           <CapCard
             icon={<Icon.ProgressReport />}
             label="Progress Reports"
-            title="Project Progress &amp; Risk Intelligence"
-            desc="Generates a full Project Progress &amp; Risk Intelligence Report in Word format. Includes a recalibration executive summary, monthly production calibration table, weekly recalibration chain, SWOT analysis, strategic recommendations to both Client and Contractor, and a full correspondence register."
-            tags={["SWOT Analysis", "Recalibration Chain", "Risk Verdict", "Word Export", "Correspondence Register"]}
+            title="Project Progress &amp; Site Analysis"
+            desc="Generates a full Project Progress &amp; Site Analysis Report in Word format. Includes a recalibration executive summary, monthly production calibration table, weekly recalibration chain, SWOT analysis, strategic recommendations, and a full correspondence register."
+            tags={["SWOT Analysis", "Recalibration Chain", "Progress Summary", "Word Export", "Correspondence Register"]}
             accent="bg-vivid-tangerine-200"
           />
           <CapCard
             icon={<Icon.Claim />}
             label="Document Intelligence"
-            title="Claims, EOT &amp; Correspondence Analysis"
-            desc="Upload any project document — contractor letters, extension of time (EOT) claims, site instructions, payment requests, concrete cube test lab reports, or minutes of meetings. Gemini analyses each document for requests made, action items, and contractual implications, including concrete crush strength evaluation against BS 1881 / KS EAS 18-1 standards."
-            tags={["EOT Claims", "Lab Cube Tests", "Contractual Risk", "AI Analysis", "Action Items"]}
+            title="Correspondence &amp; Document Analysis"
+            desc="Upload any project communication or document. Advanced document intelligence models analyse each file to extract key requests, action items, and relevant project implications automatically."
+            tags={["Documents", "Correspondence", "Site Records", "AI Analysis", "Action Items"]}
             accent="bg-flag-red-200"
           />
           <CapCard
             icon={<Icon.AI />}
             label="AI Insights"
-            title="Management-Level AI Executive Summary"
-            desc="Feeds the full trend history, financial recalibration data, and uploaded project correspondence into Gemini to produce a management-level executive insight package — including SWOT, stakeholder recommendations, claim risk verdict (Low / Moderate / High), and a critical advice brief."
-            tags={["Executive Brief", "Gemini AI", "Claim Verdict", "Slippage Levels", "SWOT"]}
+            title="Management-Level Executive Summary"
+            desc="Feeds the full trend history, financial recalibration data, and uploaded project correspondence into our proprietary AI analysis engine to produce a management-level executive insight package — including SWOT, stakeholder recommendations, and critical advice summaries."
+            tags={["Executive Brief", "Secure AI Engine", "Recommendations", "Slippage Levels", "SWOT"]}
             accent="bg-vanilla-custard-200"
           />
           <CapCard
@@ -362,19 +362,17 @@ export default function LandingPage() {
                 Every project document. Fully analysed.
               </h2>
               <p className="text-sm text-vivid-tangerine-700 leading-relaxed mb-8">
-                Upload any PDF — scanned or digital. The system classifies the document, extracts all requests and action items,
-                identifies contractual implications, and flags concrete strength risks using civil engineering standards.
-                Every document feeds directly into the Progress Report's correspondence register.
+                Upload any project communication or document in PDF format. The system automatically classifies the file,
+                extracts key action items, and aggregates critical information to help streamline project administration
+                and maintain comprehensive correspondence records.
               </p>
               <div className="flex flex-wrap gap-3">
-                <DocPill icon={<Icon.Claim />} label="EOT Claims" />
-                <DocPill icon={<Icon.Document />} label="Site Instructions" />
-                <DocPill icon={<Icon.Finance />} label="Payment Requests" />
-                <DocPill icon={<Icon.Shield />} label="Lab Cube Tests" />
-                <DocPill icon={<Icon.Document />} label="Minutes of Meetings" />
-                <DocPill icon={<Icon.Claim />} label="Contractor Letters" />
-                <DocPill icon={<Icon.Contract />} label="Program of Works" />
-                <DocPill icon={<Icon.AI />} label="Client Instructions" />
+                <DocPill icon={<Icon.Document />} label="Project Documents" />
+                <DocPill icon={<Icon.Claim />} label="Official Correspondence" />
+                <DocPill icon={<Icon.Shield />} label="Technical Reports" />
+                <DocPill icon={<Icon.Contract />} label="Site Records" />
+                <DocPill icon={<Icon.Finance />} label="Financial Summaries" />
+                <DocPill icon={<Icon.AI />} label="Administrative Records" />
               </div>
             </div>
 
@@ -384,16 +382,16 @@ export default function LandingPage() {
               <div className="relative rounded-3xl border border-vanilla-custard-200 overflow-hidden shadow-2xl shadow-vanilla-custard-300/50 bg-white/90 backdrop-blur p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">EOT Claim — Contractor</p>
-                    <p className="text-sm font-bold text-vivid-tangerine-950 mt-0.5">Request for Extension of Time No. 4</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Project Correspondence</p>
+                    <p className="text-sm font-bold text-vivid-tangerine-950 mt-0.5">Communication Log Summary</p>
                   </div>
-                  <span className="text-[10px] font-black bg-flag-red-50 text-flag-red-600 border border-flag-red-100 px-2.5 py-1 rounded-full uppercase tracking-wide">High Risk</span>
+                  <span className="text-[10px] font-black bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-full uppercase tracking-wide">Processed</span>
                 </div>
                 <div className="h-px bg-vanilla-custard-100" />
                 {[
-                  { label: "Requests Made", val: "21-day time extension citing weather disruptions" },
-                  { label: "Action Required", val: "PM to review site diary entries and issue formal response" },
-                  { label: "Contractual Risk", val: "Potential LD exposure if claim not timeously addressed" },
+                  { label: "Requests Made", val: "Clarification requested regarding site deliverables" },
+                  { label: "Action Required", val: "Project team to review milestones and verify progress" },
+                  { label: "Contractual Risk", val: "Associated deliverables and key milestones successfully logged" },
                 ].map((r) => (
                   <div key={r.label}>
                     <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-0.5">{r.label}</p>
@@ -401,7 +399,7 @@ export default function LandingPage() {
                   </div>
                 ))}
                 <div className="flex items-center justify-between pt-2 border-t border-vanilla-custard-100">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">AI-analysed by Gemini Vision</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">AI-analysed by Document Intelligence</span>
                   <span className="text-[10px] font-bold text-vivid-tangerine-700 bg-vanilla-custard-100 px-3 py-1 rounded-full">May 2026</span>
                 </div>
               </div>
@@ -420,12 +418,12 @@ export default function LandingPage() {
         </div>
         <div className="grid md:grid-cols-2 gap-10">
           {[
-            { n: "1", t: "Upload site logs or project documents", d: "Drop PDF daily logs, weekly reports, contractor letters, EOT claims, or lab test results into the dashboard. The system auto-detects the document type." },
-            { n: "2", t: "AI Vision extraction and parsing", d: "Gemini Vision OCR extracts structured data from each page — labour by trade, materials delivered, work progress, weather conditions, requests made, and contractual implications." },
+            { n: "1", t: "Upload site logs or project documents", d: "Drop PDF daily logs, progress reports, or project documentation into the dashboard. The system auto-detects the document type." },
+            { n: "2", t: "AI Vision extraction and parsing", d: "Advanced Vision OCR models extract structured data from each page — including labor statistics, material tracking, progress narrative, and key metrics." },
             { n: "3", t: "Aggregation and chronology validation", d: "The aggregation engine compiles logs into weekly and monthly summaries, deduplicates by date, validates chronological alignment, and flags out-of-sequence or mismatched submissions." },
-            { n: "4", t: "Financial engine and S-curve calibration", d: "The financial engine computes daily and weekly revenue against the KES 2.1B contract sum, calculates S-curve envisaged progress, variance (k), slippage gap, and recalibrated weekly target velocity." },
-            { n: "5", t: "AI insights and risk verdict", d: "Gemini produces a management executive brief — SWOT analysis, stakeholder recommendations, and a Claim Risk Verdict (Low/Moderate/High) based on the slippage gap severity scale." },
-            { n: "6", t: "Generate and download professional reports", d: "Export a fully formatted Weekly Report, Monthly Report, or Project Progress & Risk Intelligence Report in branded Word format — ready for stakeholder review and sign-off." },
+            { n: "4", t: "Financial engine and S-curve calibration", d: "The financial engine computes daily and weekly revenue against the project contract value, calculates S-curve envisaged progress, variance (k), slippage gap, and recalibrated weekly target velocity." },
+            { n: "5", t: "AI insights and strategic recommendations", d: "The advanced intelligence engine produces a management executive brief — SWOT analysis, stakeholder insights, and strategic guidance based on project parameters." },
+            { n: "6", t: "Generate and download professional reports", d: "Export a fully formatted Weekly Report, Monthly Report, or Project Progress & Site Analysis Report in branded Word format — ready for stakeholder review and sign-off." },
           ].map((s) => (
             <Step key={s.n} num={s.n} title={s.t} desc={s.d} />
           ))}
@@ -483,7 +481,7 @@ export default function LandingPage() {
               </p>
               <ul className="space-y-2">
                 {[
-                  "Daily &amp; weekly revenue earned against KES 2.1B contract sum",
+                  "Daily &amp; weekly revenue earned against project contract value",
                   "Slippage gap (time elapsed % minus work completed %)",
                   "Variance (k) — actual vs S-curve envisaged per reporting period",
                   "Monthly production calibration: fixed baseline vs rolling recalibration",
@@ -508,7 +506,7 @@ export default function LandingPage() {
             What goes into a full progress report?
           </h2>
           <p className="text-sm text-vivid-tangerine-700 max-w-xl mx-auto">
-            One click generates a multi-section Project Progress &amp; Risk Intelligence Report in Word format — pulling from all data sources automatically.
+            One click generates a multi-section Project Progress &amp; Site Analysis Report in Word format — pulling from all data sources automatically.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-4">
@@ -517,9 +515,9 @@ export default function LandingPage() {
             { icon: <Icon.Finance />, t: "1.1 Recalibration Progress Summary", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
             { icon: <Icon.Trend />, t: "2.0 Monthly Production Table", d: "Completed months comparison: actual vs envisaged production and cumulative variance (k) per month." },
             { icon: <Icon.Calendar />, t: "3.0 Weekly Recalibration Chain", d: "Tactical week-by-week variance table showing where momentum was gained or lost throughout the project." },
-            { icon: <Icon.Shield />, t: "4.0 SWOT &amp; Risk Intelligence", d: "AI-generated SWOT analysis referencing weather disruptions, site instructions, production recovery, and correspondence." },
-            { icon: <Icon.AI />, t: "5.0 Strategic Recommendations", d: "Separate actionable recommendations issued to the Client (PM) and to the Contractor based on current data." },
-            { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded letters, EOT claims, lab tests, and instructions with AI summaries and contractual implications." },
+            { icon: <Icon.Shield />, t: "4.0 SWOT &amp; Progress Insights", d: "AI-generated SWOT analysis referencing site progress, production recovery, and overall correspondence." },
+            { icon: <Icon.AI />, t: "5.0 Strategic Recommendations", d: "Separate actionable recommendations issued to project leads and administrators based on current data." },
+            { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded documents and correspondence with AI summaries and key implications." },
           ].map((item) => (
             <div key={item.t} className="bg-white border border-vanilla-custard-100 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-2">
