@@ -32,7 +32,7 @@ export default function PrivacyPage() {
           <div>
             <p className="text-xs text-vivid-tangerine-500 font-bold uppercase tracking-wider mb-2">Effective Date: May 20, 2026</p>
             <p className="text-sm text-vivid-tangerine-800 leading-relaxed font-medium">
-              NeuralAxis Labs developed the Makindu Affordable Housing Project Report Aggregator to provide professional, visual, and AI-enabled construction reporting tools. We take data security and privacy seriously. This Privacy Policy details how we handle, process, and secure project documents, logs, and sensitive information.
+              The Makindu Affordable Housing Project Report Aggregator is an internal platform developed for knowledge sharing, site progress tracking, checking, and internal analysis. This is not an official reporting service, nor does it constitute any consultancy service or formal contract with the client, project contractors, or consultants. This Privacy Policy details how we handle, process, and secure project documents, logs, and internal site information.
             </p>
           </div>
 
@@ -44,12 +44,12 @@ export default function PrivacyPage() {
               <span className="text-sunflower-gold-500">1.</span> Types of Data We Process
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              We process only standard project documents uploaded directly by authorized site managers and consultants:
+              We process standard project documents uploaded solely for internal tracking and analysis purposes:
             </p>
             <ul className="list-disc list-inside text-xs text-vivid-tangerine-800 space-y-1.5 pl-2">
-              <li>Site Daily and Weekly Reports (e.g. materials lists, labor statistics, weather comments).</li>
-              <li>Official Project Correspondence (e.g. contractor letters, client instructions, meeting minutes).</li>
-              <li>Contract Summaries (e.g. commencement dates, contract periods, planned milestones).</li>
+              <li>Site Daily and Weekly Logs (e.g. materials lists, labor statistics, weather comments) to monitor site progress.</li>
+              <li>Project correspondence (e.g. contractor letters, client instructions, meeting minutes) uploaded solely for internal awareness and action checking.</li>
+              <li>Contract summaries (e.g. commencement dates, contract periods, planned milestones) for internal alignment.</li>
             </ul>
           </div>
 
@@ -59,10 +59,10 @@ export default function PrivacyPage() {
               <span className="text-sunflower-gold-500">2.</span> How Data is Processed & AI Processing
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              When a document is uploaded, it is sent securely to the NeuralAxis Labs integrated AI engine, which calls the Vertex AI API (Gemini 2.5 Flash and Pro models).
+              When a document is uploaded, it is processed securely using our integrated AI and analytics engine to extract key updates and tracking points.
             </p>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed font-bold bg-vanilla-custard-50 p-3.5 rounded-xl border border-vanilla-custard-150">
-              🔒 Zero Data Training Guarantee: All Vertex AI calls are securely routed under enterprise data privacy terms. Respective LLM models DO NOT train on, retain, or store your project correspondence, site logs, or financial data for public model improvements.
+              🔒 Zero Data Training Guarantee: All processing is conducted securely under enterprise data privacy standards. The AI models used do not train on, retain, or store your uploaded project files, site logs, or financial tracking data for public or external model improvements.
             </p>
           </div>
 
@@ -72,10 +72,10 @@ export default function PrivacyPage() {
               <span className="text-sunflower-gold-500">3.</span> Storage and Cache Integrity
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              Uploaded files are stored locally in the secure project environment inside the `cache` directory. These files are processed locally on the project server and are not shared with any third-party websites or marketing vendors.
+              Uploaded files are temporarily stored and processed within a secure project environment. These files are processed solely for internal tracking purposes and are not shared with any third-party websites or marketing vendors.
             </p>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              As a user, you retain complete authority over your cached data. Using the <strong>Delete Document</strong> button on the dashboard register completely removes all files, OCR metadata, and analysis JSONs from our systems.
+              As a user, you retain complete control over your uploaded data. Using the <strong>Delete Document</strong> button on the dashboard register completely removes all files and related processed records from the platform.
             </p>
           </div>
 
@@ -85,12 +85,12 @@ export default function PrivacyPage() {
               <span className="text-sunflower-gold-500">4.</span> Security Safeguards
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              NeuralAxis Labs implements advanced logical security practices to safeguard project records:
+              Advanced logical security practices are implemented to safeguard all internal records:
             </p>
             <ul className="list-disc list-inside text-xs text-vivid-tangerine-800 space-y-1.5 pl-2">
-              <li>Encrypted transit of API communication between the frontend, backend, and GCP model endpoints.</li>
-              <li>Secure sandboxed cache folders for storing temporary uploads and processing page visual slices.</li>
-              <li>Regular maintenance sweeps to ensure that no orphan files or un-cleared mock assets reside on disk.</li>
+              <li>Encrypted transit of all data communication within the platform environment.</li>
+              <li>Secure sandboxed environments for storing and processing temporary uploads.</li>
+              <li>Regular system maintenance to ensure prompt removal of temporary files.</li>
             </ul>
           </div>
 
@@ -100,22 +100,41 @@ export default function PrivacyPage() {
               <span className="text-sunflower-gold-500">5.</span> Policy Modifications
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              NeuralAxis Labs reserves the right to update this policy as technical modules, API versions, and safety frameworks are upgraded. We will always date revisions at the top of the policy page.
+              We reserve the right to update this policy as technical and analytical modules are upgraded. We will always date revisions at the top of the policy page.
             </p>
           </div>
 
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 border-t border-vanilla-custard-200 pt-8 pb-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-left text-xs font-semibold text-vivid-tangerine-400 uppercase tracking-wider">
-            &copy; 2026 Makindu Affordable Housing Project
+        <footer className="border-t border-vanilla-custard-200 pt-12 pb-8 mt-16 w-full text-left">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+            <div>
+              <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+              <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Intelligence &amp; Reporting</p>
+              <div className="flex items-center gap-2.5">
+                <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
+                <img src="/neuralaxis-logo.png" alt="NeuralAxis Labs Logo" className="h-7 w-7 rounded-full aspect-square object-cover shadow-sm" />
+                <span className="text-xs font-black text-vivid-tangerine-950 tracking-tight">NeuralAxis Labs</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-start md:items-end gap-4">
+              <div className="flex gap-5 flex-wrap">
+                <Link href="/" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Home</Link>
+                <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Contract</Link>
+                <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Trends</Link>
+                <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Dashboard</Link>
+              </div>
+              <div className="flex gap-3">
+                <Link href="/terms" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-white border border-vanilla-custard-200 px-3 py-1 rounded-full">Terms</Link>
+                <Link href="/privacy" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-white border border-vanilla-custard-200 px-3 py-1 rounded-full">Privacy</Link>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2.5">
-            <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
-            <img src="/neuralaxis-logo.png" alt="NeuralAxis Labs Logo" className="h-7 w-7 rounded-full aspect-square object-cover shadow-sm" />
-            <span className="text-xs font-black text-vivid-tangerine-950 tracking-tight">NeuralAxis Labs</span>
+          <div className="mt-8 border-t border-vanilla-custard-100 pt-6 text-center">
+            <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">
+              &copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.
+            </p>
           </div>
         </footer>
       </div>
