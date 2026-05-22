@@ -341,14 +341,7 @@ export default function LandingPage() {
             tags={["Executive Brief", "Secure AI Engine", "Recommendations", "Slippage Levels", "SWOT"]}
             accent="bg-vanilla-custard-200"
           />
-          <CapCard
-            icon={<Icon.Contract />}
-            label="Contract Intelligence"
-            title="Contract Details Extraction"
-            desc="Scans the cover pages of any construction progress report to extract and persist permanent contract details — employer, contractor, consultant, contract sum, contract period, date of possession, and scope of works."
-            tags={["Contract Sum", "Employer", "Scope of Works", "Auto-Extraction"]}
-            accent="bg-deep-space-blue-100"
-          />
+
         </div>
       </section>
 
