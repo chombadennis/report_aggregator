@@ -39,7 +39,8 @@ In the **Environment** tab of your Render Web Service, add the following variabl
 
 | Variable Name | Description | Example / Recommended Value |
 | :--- | :--- | :--- |
-| `GEMINI_API_KEY` | Google Gemini API Key for vision and synthesis | `AIzaSy...` |
+| `GOOGLE_CREDENTIALS_JSON` | Primary Google Service Account JSON string (Vertex AI access) | `{"type": "service_account", ...}` |
+| `GOOGLE_CREDENTIALS_JSON_2` | Secondary Google Service Account JSON string (Optional, for load balancing) | `{"type": "service_account", ...}` |
 | `ADMIN_EMAIL` | The designated administrator email address | `dennis.cmuhnene@gmail.com` |
 | `CLERK_SECRET_KEY` | Clerk backend API key for fetching user info | `sk_test_...` |
 | `CLERK_JWKS_URL` | Clerk JWKS endpoint to retrieve signature verification keys | `https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json` |
