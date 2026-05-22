@@ -111,8 +111,8 @@ export default function ContractSummary() {
   }
 
   return (
-    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900 p-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900 p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
             <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -144,7 +144,7 @@ export default function ContractSummary() {
           </div>
         </div>
 
-        <h1 className="text-4xl font-bold mb-8 font-serif bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-6 sm:mb-8 font-serif bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent break-words">
           Project Contract Details
         </h1>
 
@@ -163,13 +163,13 @@ export default function ContractSummary() {
             <p className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-wider animate-pulse">Fetching contract details...</p>
           </div>
         ) : summary ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1 sm:gap-6">
+            <div className="md:col-span-2 bg-white p-4 sm:p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-2">Project Title</h2>
-              <p className="text-2xl font-bold text-vivid-tangerine-950">{summary.project_title}</p>
+              <p className="text-lg sm:text-2xl font-bold text-vivid-tangerine-950 break-words">{summary.project_title}</p>
             </div>
 
-            {[
+            {([
               { label: 'Contract No', value: summary.contract_no },
               { label: 'Employer', value: summary.employer },
               { label: 'Contractor', value: summary.contractor },
@@ -181,13 +181,13 @@ export default function ContractSummary() {
               { label: 'Completion Date', value: summary.completion_date },
               { label: 'Location', value: summary.location },
             ].map((item, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-2xl shadow-md border border-vanilla-custard-50">
+              <div key={idx} className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-vanilla-custard-50">
                 <h3 className="text-[10px] font-bold text-vivid-tangerine-400 uppercase tracking-tighter mb-1">{item.label}</h3>
-                <p className="font-semibold text-vivid-tangerine-900">{item.value || 'N/A'}</p>
+                <p className="text-sm sm:text-base font-semibold text-vivid-tangerine-900 break-words">{item.value || 'N/A'}</p>
               </div>
-            ))}
+            )))}
 
-            <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
+            <div className="md:col-span-2 bg-white p-4 sm:p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4">Scope of Works</h2>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {summary.scope_of_works?.map((work: string, i: number) => (
@@ -198,28 +198,28 @@ export default function ContractSummary() {
               </ul>
             </div>
 
-            <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
+            <div className="md:col-span-2 bg-white p-4 sm:p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4">Socio-Economic Impact</h2>
-              <p className="text-sm text-vivid-tangerine-800 leading-relaxed italic">
+              <p className="text-xs sm:text-sm text-vivid-tangerine-800 leading-relaxed italic break-words">
                 "{summary.socio_economic_impact}"
               </p>
             </div>
 
-            <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
+            <div className="md:col-span-2 bg-white p-4 sm:p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4">Insurance Policies</h2>
               <div className="overflow-hidden rounded-2xl border border-vanilla-custard-100">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-vanilla-custard-50">
-                      <th className="p-4 text-xs font-bold text-vivid-tangerine-800 uppercase">Policy Description</th>
-                      <th className="p-4 text-xs font-bold text-vivid-tangerine-800 uppercase">Expiry Date</th>
+                      <th className="p-2 sm:p-4 text-[10px] sm:text-xs font-bold text-vivid-tangerine-800 uppercase">Policy Description</th>
+                      <th className="p-2 sm:p-4 text-[10px] sm:text-xs font-bold text-vivid-tangerine-800 uppercase">Expiry Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {summary.insurances?.map((ins: any, i: number) => (
                       <tr key={i} className="border-t border-vanilla-custard-100 hover:bg-vanilla-custard-50/50 transition-colors">
-                        <td className="p-4 text-sm font-medium text-vivid-tangerine-900">{ins.policy}</td>
-                        <td className="p-4 text-sm font-bold text-vivid-tangerine-700">{ins.expiry}</td>
+                        <td className="p-2 sm:p-4 text-xs sm:text-sm font-medium text-vivid-tangerine-900 break-words">{ins.policy}</td>
+                        <td className="p-2 sm:p-4 text-xs sm:text-sm font-bold text-vivid-tangerine-700 break-words">{ins.expiry}</td>
                       </tr>
                     ))}
                   </tbody>

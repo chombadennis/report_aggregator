@@ -357,7 +357,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-950 p-8 font-sans">
+    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-955 p-4 sm:p-8 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
@@ -391,22 +391,22 @@ export default function Home() {
         </div>
 
         {/* Dashboard Navigation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          <Link href="/contract" className="group bg-white p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-4 mb-6 sm:mb-10">
+          <Link href="/contract" className="group bg-white p-4 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-3xl">📝</span>
+              <span className="text-2xl sm:text-3xl">📝</span>
               <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
             </div>
-            <h3 className="font-bold text-vivid-tangerine-950">Contract Summary</h3>
-            <p className="text-xs text-vivid-tangerine-600">Project details and scope of works</p>
+            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Contract Summary</h3>
+            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600">Project details and scope of works</p>
           </Link>
-          <Link href="/trends" className="group bg-white p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all">
+          <Link href="/trends" className="group bg-white p-4 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-3xl">📈</span>
+              <span className="text-2xl sm:text-3xl">📈</span>
               <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
             </div>
-            <h3 className="font-bold text-vivid-tangerine-950">Trends & Risks</h3>
-            <p className="text-xs text-vivid-tangerine-600">Visual performance & risk analysis</p>
+            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Trends & Risks</h3>
+            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600">Visual performance & risk analysis</p>
           </Link>
         </div>
 
@@ -427,7 +427,7 @@ export default function Home() {
         </div>
 
         {/* Manual Input Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-white p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 mb-8 bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
           <div className="md:col-span-2">
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
             <input
@@ -478,7 +478,7 @@ export default function Home() {
 
         {/* Upload Zone */}
         <div className="space-y-4">
-          <div className={`bg-white border-2 border-dashed rounded-3xl p-10 text-center transition-all shadow-lg ${isAdmin
+          <div className={`bg-white border-2 border-dashed rounded-3xl p-4 sm:p-10 text-center transition-all shadow-lg ${isAdmin
               ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group'
               : 'border-slate-200 bg-slate-50/50 cursor-not-allowed'
             }`}>
@@ -590,7 +590,7 @@ export default function Home() {
 
         {/* Correspondence Ingestion Form Card */}
         {isAdmin ? (
-          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
+          <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
             {/* Doc Category Selector */}
             <div className="flex gap-2 mb-6 p-1 bg-vanilla-custard-50 rounded-xl border border-vanilla-custard-200">
               {(['contractor', 'client', 'general'] as const).map((cat) => (
@@ -616,7 +616,7 @@ export default function Home() {
             </div>
 
             {/* Form Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6">
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Document Title / Subject</label>
                 <input
@@ -681,7 +681,7 @@ export default function Home() {
 
             {/* File Dropzone */}
             <div className="mt-6">
-              <div className="bg-vanilla-custard-50/50 border-2 border-dashed border-vanilla-custard-200 rounded-2xl p-6 text-center hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 transition-all cursor-pointer relative">
+              <div className="bg-vanilla-custard-50/50 border-2 border-dashed border-vanilla-custard-200 rounded-2xl p-4 sm:p-6 text-center hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 transition-all cursor-pointer relative">
                 <input
                   type="file"
                   accept=".pdf"
@@ -740,11 +740,11 @@ export default function Home() {
         {uploadedDocs.length > 0 && (
           <div className="space-y-4 mb-16 text-left">
             <h3 className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-widest mb-4">Ingested Correspondence Register</h3>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-1 sm:gap-4">
               {uploadedDocs.map((doc) => (
-                <div key={doc.id} className="bg-white p-6 rounded-2xl border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-4 transition-all hover:shadow-lg text-left">
+                <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-2xl border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
                       <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
                           ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
                           : doc.category === 'client'
@@ -761,8 +761,8 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <h4 className="font-bold text-vivid-tangerine-950 text-base mb-1">{doc.title}</h4>
-                    <p className="text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2">
+                    <h4 className="font-bold text-vivid-tangerine-955 text-sm sm:text-base mb-1 break-words">{doc.title}</h4>
+                    <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words">
                       From: <span className="text-vivid-tangerine-900">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900">{doc.recipient}</span>
                     </p>
                     <p className="text-xs text-vivid-tangerine-750 line-clamp-2">{doc.summary}</p>

@@ -48,6 +48,7 @@ export default function TrendsDashboard() {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [timeScale, setTimeScale] = useState<'daily' | 'weekly'>('weekly');
+  const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -110,6 +111,14 @@ export default function TrendsDashboard() {
   // Handle client-side mount
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 640);
+      };
+      handleResize();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
   }, []);
 
   // Authentication Guard Redirect
@@ -316,10 +325,10 @@ export default function TrendsDashboard() {
 
   return (
     <main className="min-h-screen bg-[#FDFCFB] text-slate-900 font-sans pb-20">
-      <div className="max-w-7xl mx-auto px-8 pt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-12">
         {/* Financial Command Center */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mb-12">
+          <div className="bg-white rounded-[2.5rem] p-5 sm:p-10 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4">Revenue Accrued</p>
             <div className="text-xl font-black text-slate-900 tracking-tight">
@@ -332,7 +341,7 @@ export default function TrendsDashboard() {
           </div>
 
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-            <div className="p-8 flex-1">
+            <div className="p-5 sm:p-8 flex-1">
               <div className="flex justify-between items-start mb-6">
                 {(() => {
                   const slippage = globalProgress.time - globalProgress.work;
@@ -399,7 +408,7 @@ export default function TrendsDashboard() {
           </div>
 
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-            <div className="p-8 flex-1">
+            <div className="p-5 sm:p-8 flex-1 flex flex-col justify-between">
               <div className="flex justify-between items-start mb-6">
                 <div className="p-3 bg-blue-50 rounded-2xl group-hover:scale-110 transition-transform">
                   <Building2 className="w-5 h-5 text-blue-500" />
@@ -420,9 +429,9 @@ export default function TrendsDashboard() {
       </div>
 
       {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 sm:px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/" className="text-xs font-bold text-slate-600 uppercase tracking-wider bg-white hover:bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
               Home
             </Link>
@@ -434,7 +443,7 @@ export default function TrendsDashboard() {
               Dashboard
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {!isAdmin ? (
               <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-3.5 py-2 rounded-xl shadow-sm">
                 Viewer Access
@@ -470,7 +479,7 @@ export default function TrendsDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-8 pt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-12">
         {/* Hero Section */}
         <header className="mb-12">
           <div className="flex items-center gap-3 mb-4">
@@ -500,9 +509,9 @@ export default function TrendsDashboard() {
             </div>
           </div>
         ) : financials ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 mb-6 lg:mb-12">
             {/* Revenue Trend Line Chart */}
-            <section className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+            <section className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
               <div className="mb-8">
                 <h2 className="text-xl font-bold mb-1">Financial Progress S-Curve</h2>
                 <p className="text-xs text-slate-400 font-medium italic">Revenue earned (KES) vs. Time over {timeScale} reporting</p>
@@ -537,7 +546,7 @@ export default function TrendsDashboard() {
             </section>
 
             {/* Slippage Trend Line Chart */}
-            <section className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+            <section className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
               <div className="mb-8">
                 <h2 className="text-xl font-bold mb-1">Schedule Slippage Gap</h2>
                 <p className="text-xs text-slate-400 font-medium italic">% Time Elapsed minus % Work Done over {timeScale} periods</p>
@@ -583,8 +592,8 @@ export default function TrendsDashboard() {
           </section>
         ) : (
           <section className="mb-12">
-            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
-              <div className="flex justify-between items-end mb-10">
+            <div className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 sm:mb-10">
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Labour Force Momentum</h2>
                   <p className="text-sm text-slate-400 font-medium italic">Showing {timeScale} personnel trends</p>
@@ -606,29 +615,31 @@ export default function TrendsDashboard() {
               </div>
 
               {/* SVG Chart with Y-Axis */}
-              <div className="relative h-96 w-full flex mt-4">
+              <div className={`relative ${isMobile ? 'h-64' : 'h-96'} w-full flex mt-4`}>
                 {/* Y-Axis Labels - Sticky on left */}
-                <div className="w-14 h-72 flex flex-col justify-between text-[10px] font-bold text-slate-400 pb-8 pr-3 text-right bg-white z-30 sticky left-0">
+                <div className={`w-14 ${isMobile ? 'h-48 pb-6' : 'h-72 pb-8'} flex flex-col justify-between text-[10px] font-bold text-slate-400 pr-3 text-right bg-white z-30 sticky left-0`}>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) * 1.1)}</span>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) / 2)}</span>
                   <span>0</span>
                 </div>
 
                 {/* Scrollable Chart Viewport */}
-                <div className="flex-1 h-80 overflow-x-auto overflow-y-visible custom-scrollbar pb-12">
+                <div className={`flex-1 ${isMobile ? 'h-56' : 'h-80'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
                   <div
-                    className="h-72 relative flex items-end gap-2 px-32 pb-8 border-b border-l border-slate-100 group/chart transition-all"
-                    style={{ minWidth: `${activeTrend.length * (timeScale === 'daily' ? 48 : 88) + 256}px` }}
+                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? 'h-48 gap-1 px-6 pb-6' : 'h-72 gap-2 px-32 pb-8'}`}
+                    style={{
+                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 32 : 56) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 48 : 256)}px`
+                    }}
                   >
                     {/* Grid Lines */}
-                    <div className="absolute inset-0 flex flex-col justify-between pb-8 pointer-events-none">
+                    <div className={`absolute inset-0 flex flex-col justify-between ${isMobile ? 'pb-6' : 'pb-8'} pointer-events-none`}>
                       <div className="w-full border-t border-slate-50"></div>
                       <div className="w-full border-t border-slate-100/50"></div>
                       <div className="w-full border-t border-slate-50 invisible"></div>
                     </div>
 
                     {/* Advanced Momentum Line Overlay */}
-                    <svg className="absolute inset-0 w-full h-full pb-8 pointer-events-none z-10 overflow-visible" preserveAspectRatio="none">
+                    <svg className={`absolute inset-0 w-full h-full ${isMobile ? 'pb-6' : 'pb-8'} pointer-events-none z-10 overflow-visible`} preserveAspectRatio="none">
                       <defs>
                         <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
@@ -641,8 +652,16 @@ export default function TrendsDashboard() {
                           const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
                           const val = p.value ?? p.labour ?? 0;
                           const y = 100 - ((val / max) * 100);
-                          const pxX = i * (timeScale === 'daily' ? 48 : 88) + (timeScale === 'daily' ? 148 : 168);
-                          return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * 256}`;
+                          
+                          const W = isMobile 
+                            ? (timeScale === 'daily' ? 24 : 40)
+                            : (timeScale === 'daily' ? 40 : 80);
+                          const G = isMobile ? 4 : 8;
+                          const P = isMobile ? 24 : 128;
+                          const pxX = i * (W + G) + P + W / 2;
+                          const chartHeight = isMobile ? 168 : 256;
+                          
+                          return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * chartHeight}`;
                         }).join(' ')}
                         fill="none"
                         stroke="url(#lineGrad)"
@@ -661,7 +680,7 @@ export default function TrendsDashboard() {
                       const label = point.label || point.date;
 
                       return (
-                        <div key={i} className={`flex-none ${timeScale === 'daily' ? 'w-10' : 'w-20'} group relative flex flex-col items-center h-full justify-end hover:z-[60]`}>
+                        <div key={i} className={`flex-none ${isMobile ? (timeScale === 'daily' ? 'w-6' : 'w-10') : (timeScale === 'daily' ? 'w-10' : 'w-20')} group relative flex flex-col items-center h-full justify-end hover:z-[60]`}>
                           {/* Bar */}
                           <div
                             className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
@@ -744,7 +763,7 @@ export default function TrendsDashboard() {
 
         <div className="flex flex-col gap-12 mb-12">
           {/* SWOT Analysis */}
-          <section className="bg-slate-900 rounded-[2rem] p-10 text-white overflow-hidden relative">
+          <section className="bg-slate-900 rounded-[2rem] p-5 sm:p-10 text-white overflow-hidden relative">
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
                 <div className="flex items-center gap-3">
@@ -818,8 +837,8 @@ export default function TrendsDashboard() {
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Strengths</p>
                     <ul className="space-y-3">
                       {insights?.swot?.strengths?.map((s: string, i: number) => (
@@ -827,7 +846,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-4">Weaknesses</p>
                     <ul className="space-y-3">
                       {insights?.swot?.weaknesses?.map((s: string, i: number) => (
@@ -835,7 +854,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-4">Opportunities</p>
                     <ul className="space-y-3">
                       {insights?.swot?.opportunities?.map((s: string, i: number) => (
@@ -843,7 +862,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Threats</p>
                     <ul className="space-y-3">
                       {insights?.swot?.threats?.map((s: string, i: number) => (
@@ -857,7 +876,7 @@ export default function TrendsDashboard() {
           </section>
 
           {/* Production Velocity & Recalibration */}
-          <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+          <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <Zap className="text-sunflower-gold-600 w-6 h-6" />
@@ -889,22 +908,22 @@ export default function TrendsDashboard() {
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Last Completed Month: {completedMonth.month}</h3>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-6">
+                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-3xl border border-slate-100">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month Start</p>
-                          <p className="text-2xl font-black text-slate-900">{completedMonth.start_pct?.toFixed(2)}%</p>
+                          <p className="text-lg sm:text-2xl font-black text-slate-900">{completedMonth.start_pct?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-3xl border border-slate-100">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month End</p>
-                          <p className="text-2xl font-black text-slate-900">{completedMonth.end_pct?.toFixed(2)}%</p>
+                          <p className="text-lg sm:text-2xl font-black text-slate-900">{completedMonth.end_pct?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
+                        <div className="bg-emerald-50 p-3.5 sm:p-6 rounded-3xl border border-emerald-100">
                           <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">Actual Production</p>
-                          <p className="text-2xl font-black text-emerald-600">+{completedMonth.actual_production?.toFixed(2)}%</p>
+                          <p className="text-lg sm:text-2xl font-black text-emerald-600">+{completedMonth.actual_production?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
+                        <div className="bg-indigo-50 p-3.5 sm:p-6 rounded-3xl border border-indigo-100">
                           <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-2">Envisaged Production</p>
-                          <p className="text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
+                          <p className="text-lg sm:text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
                         </div>
                       </div>
                     </div>
@@ -917,35 +936,35 @@ export default function TrendsDashboard() {
                         <div className="w-2 h-2 bg-sunflower-gold-500 rounded-full animate-bounce" />
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Ongoing Calibration: {ongoingMonth.month}</h3>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-white shadow-2xl">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-6">
+                        <div className="bg-slate-900 p-3.5 sm:p-6 rounded-3xl border border-slate-800 text-white shadow-2xl">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Total Progress</p>
-                          <p className="text-3xl font-black text-sunflower-gold-400">{ongoingMonth.end_pct?.toFixed(2)}%</p>
+                          <p className="text-xl sm:text-3xl font-black text-sunflower-gold-400 break-words">{ongoingMonth.end_pct?.toFixed(2)}%</p>
                           <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest report</p>
                         </div>
 
-                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
+                        <div className="bg-white p-3.5 sm:p-6 rounded-3xl border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Baseline Month Target</p>
-                          <p className="text-3xl font-black text-slate-900">{ongoingMonth.target_fixed_month_end?.toFixed(2)}%</p>
-                          <p className="text-[10px] font-bold text-vivid-tangerine-500 mt-2">+{ongoingMonth.production_planned_fixed?.toFixed(2)}% Required</p>
+                          <p className="text-xl sm:text-3xl font-black text-slate-900 break-words">{ongoingMonth.target_fixed_month_end?.toFixed(2)}%</p>
+                          <p className="text-[10px] font-bold text-vivid-tangerine-50 mt-2">+{ongoingMonth.production_planned_fixed?.toFixed(2)}% Required</p>
                         </div>
 
-                        <div className="bg-indigo-600 p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl group hover:scale-105 transition-all">
+                        <div className="bg-indigo-600 p-3.5 sm:p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl group hover:scale-105 transition-all">
                           <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Recalibrated Target (Rolling)</p>
-                          <p className="text-3xl font-black text-white">{ongoingMonth.target_rolling_month_end?.toFixed(2)}%</p>
+                          <p className="text-xl sm:text-3xl font-black text-white break-words">{ongoingMonth.target_rolling_month_end?.toFixed(2)}%</p>
                           <p className="text-[10px] font-bold text-indigo-200 mt-2">+{ongoingMonth.production_required_rolling?.toFixed(2)}% New Pace</p>
                         </div>
 
-                        <div className="bg-sunflower-gold-500 p-6 rounded-3xl border border-sunflower-gold-400 text-slate-900 shadow-2xl">
+                        <div className="bg-sunflower-gold-500 p-3.5 sm:p-6 rounded-3xl border border-sunflower-gold-400 text-slate-900 shadow-2xl">
                           <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Required Weekly Rate</p>
-                          <p className="text-3xl font-black text-white">{ongoingMonth.required_weekly?.toFixed(2)}% <span className="text-sm font-bold">/ week</span></p>
+                          <p className="text-xl sm:text-3xl font-black text-white break-words">{ongoingMonth.required_weekly?.toFixed(2)}% <span className="text-xs sm:text-sm font-bold">/ week</span></p>
                           <p className="text-[10px] font-black text-slate-800 mt-2">RECALIBRATED VELOCITY</p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl border border-white/5">
+                  <div className="bg-slate-900 rounded-[2.5rem] p-4 sm:p-8 text-white relative overflow-hidden shadow-2xl border border-white/5">
                     <div className="absolute top-0 right-0 p-6 opacity-10">
                       <TrendingUp className="w-20 h-20 text-sunflower-gold-500" />
                     </div>
@@ -982,7 +1001,7 @@ export default function TrendsDashboard() {
           </section>
 
           {/* Production Recalibration Chain Table */}
-          <section className="bg-white rounded-[2rem] p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+          <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex items-center gap-3 mb-8">
               <Layers className="text-vivid-tangerine-600 w-6 h-6" />
               <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
@@ -992,39 +1011,39 @@ export default function TrendsDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporting Week</th>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start %</th>
-                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End %</th>
-                    <th className="p-4 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-right">Actual (x)</th>
-                    <th className="p-4 text-[10px] font-black text-indigo-600 uppercase tracking-widest text-right">Envisaged (y)</th>
-                    <th className="p-4 text-[10px] font-black text-slate-900 uppercase tracking-widest text-right">Variance (k)</th>
-                    <th className="p-4 text-[10px] font-black text-sunflower-gold-600 uppercase tracking-widest text-right">Recalibrated (New y)</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporting Week</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-right">Actual (x)</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-indigo-600 uppercase tracking-widest text-right">Envisaged (y)</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-900 uppercase tracking-widest text-right">Variance (k)</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-sunflower-gold-600 uppercase tracking-widest text-right">Recalibrated (New y)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(financials?.weekly_financials || []).map((w: any, i: number) => (
                     <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                      <td className="p-4">
+                      <td className="p-2 sm:p-4">
                         <p className="text-xs font-bold text-slate-700">{w.label}</p>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-2 sm:p-4 text-right">
                         <p className="text-xs font-medium text-slate-400">{w.start_pct?.toFixed(2)}%</p>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-2 sm:p-4 text-right">
                         <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
                       </td>
-                      <td className="p-4 text-right bg-emerald-50/20">
+                      <td className="p-2 sm:p-4 text-right bg-emerald-50/20">
                         <p className="text-xs font-black text-emerald-600">{w.weekly_actual?.toFixed(2)}%</p>
                       </td>
-                      <td className="p-4 text-right bg-indigo-50/20">
+                      <td className="p-2 sm:p-4 text-right bg-indigo-50/20">
                         <p className="text-xs font-black text-indigo-600">{w.weekly_envisaged?.toFixed(2)}%</p>
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-2 sm:p-4 text-right">
                         <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                           {w.weekly_variance >= 0 ? '+' : ''}{w.weekly_variance?.toFixed(2)}%
                         </span>
                       </td>
-                      <td className="p-4 text-right bg-sunflower-gold-50/30">
+                      <td className="p-2 sm:p-4 text-right bg-sunflower-gold-50/30">
                         <p className="text-xs font-black text-sunflower-gold-600">{w.required_future_rate?.toFixed(2)}%</p>
                       </td>
                     </tr>
@@ -1040,13 +1059,13 @@ export default function TrendsDashboard() {
         </div>
 
         {/* Stakeholder Recommendations */}
-        <section className="bg-white rounded-[2rem] p-12 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+        <section className="bg-white rounded-[2rem] p-5 sm:p-12 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
           <div className="flex items-center gap-3 mb-10">
             <Users className="text-vivid-tangerine-600 w-7 h-7" />
             <h2 className="text-2xl font-extrabold">Strategic Recommendations</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-12">
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-lg">PM</div>
@@ -1054,7 +1073,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="space-y-4">
                 {insights?.recommendations?.to_client?.map((r: string, i: number) => (
-                  <div key={i} className="flex gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 items-start group hover:border-vivid-tangerine-200 transition-colors">
+                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-100 items-start group hover:border-vivid-tangerine-200 transition-colors">
                     <span className="text-vivid-tangerine-500 font-black text-lg">0{i + 1}</span>
                     <p className="text-sm text-slate-600 font-medium leading-relaxed">{r}</p>
                   </div>
@@ -1069,7 +1088,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="space-y-4">
                 {insights?.recommendations?.to_contractor?.map((r: string, i: number) => (
-                  <div key={i} className="flex gap-4 p-5 bg-vivid-tangerine-50/30 rounded-2xl border border-vivid-tangerine-100/50 items-start group hover:border-vivid-tangerine-300 transition-colors">
+                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-vivid-tangerine-50/30 rounded-2xl border border-vivid-tangerine-100/50 items-start group hover:border-vivid-tangerine-300 transition-colors">
                     <span className="text-vivid-tangerine-600 font-black text-lg">0{i + 1}</span>
                     <p className="text-sm text-slate-600 font-medium leading-relaxed">{r}</p>
                   </div>
@@ -1081,7 +1100,7 @@ export default function TrendsDashboard() {
 
         {/* Global Verdict Card */}
         <section className="mt-12">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] p-12 text-white flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] p-5 sm:p-12 text-white flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-vivid-tangerine-500/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
             <div className="relative z-10 max-w-xl">
               <div className="flex items-center gap-3 mb-6">
