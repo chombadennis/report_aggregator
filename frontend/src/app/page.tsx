@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 /* ─── SVG icon library ───────────────────────────────── */
@@ -150,6 +150,19 @@ const DocPill = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
 /* ═══════════════════════════════════════════════════════ */
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'not-allowed') {
+        setShowError(true);
+        // Clean up the URL search params so they do not persist on refresh
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -572,6 +585,34 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {showError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-white/90 backdrop-blur-xl border border-vanilla-custard-200 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowError(false)}
+              className="absolute top-4 right-4 p-1.5 bg-vanilla-custard-50 hover:bg-vanilla-custard-100 rounded-full border border-vanilla-custard-200 text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100 text-2xl animate-bounce">
+              🔒
+            </div>
+            <h3 className="text-lg font-bold text-red-950 font-serif mb-2">Access Restricted</h3>
+            <p className="text-xs text-vivid-tangerine-800 leading-relaxed mb-6 font-medium">
+              This account is not allowed to access this reporting portal. Please contact the administrator to request access.
+            </p>
+            <button
+              onClick={() => setShowError(false)}
+              className="w-full py-3 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-vivid-tangerine-500/20 hover:opacity-95 transition-all"
+            >
+              Acknowledge
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

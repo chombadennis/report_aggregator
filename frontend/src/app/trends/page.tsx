@@ -36,7 +36,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
 
 export default function TrendsDashboard() {
   const router = useRouter();
-  const { isLoaded, userId, getToken } = useAuth();
+  const { isLoaded, userId, getToken, signOut } = useAuth();
   const { user } = useUser();
 
   const [data, setData] = useState<any>(null);
@@ -106,7 +106,11 @@ export default function TrendsDashboard() {
 
         // 1. Fetch trends first for immediate visual feedback
         fetch(`${BACKEND_URL}/api/analytics/trends`, { headers })
-          .then(res => {
+          .then(async res => {
+            if (res.status === 403) {
+              await signOut({ redirectUrl: '/?error=not-allowed' });
+              throw new Error("Access Restricted");
+            }
             if (!res.ok) throw new Error("Unauthorized/Error");
             return res.json();
           })
@@ -263,23 +267,12 @@ export default function TrendsDashboard() {
     }
   };
 
-  if (!isLoaded || !userId) {
+  if (!isLoaded || !userId || loading) {
     return (
       <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="font-bold text-vivid-tangerine-900 tracking-widest uppercase text-xs">Loading Security Context...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-bold text-vivid-tangerine-900 tracking-widest uppercase text-xs">Synchronizing Intelligence...</p>
         </div>
       </div>
     );
@@ -1047,8 +1040,8 @@ export default function TrendsDashboard() {
                 onClick={handleGenerateProgress}
                 disabled={generatingProgress || !isAdmin}
                 className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${!isAdmin
-                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
-                    : 'bg-white text-slate-900 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                  : 'bg-white text-slate-900 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
                   }`}
               >
                 {!isAdmin ? (
@@ -1215,8 +1208,8 @@ export default function TrendsDashboard() {
                 onClick={downloadProgressReport}
                 disabled={downloadingDoc}
                 className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl ${downloadingDoc
-                    ? 'bg-slate-400 cursor-not-allowed shadow-none text-white'
-                    : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20 text-white hover:scale-[1.02] active:scale-95'
+                  ? 'bg-slate-400 cursor-not-allowed shadow-none text-white'
+                  : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20 text-white hover:scale-[1.02] active:scale-95'
                   }`}
               >
                 {downloadingDoc ? (

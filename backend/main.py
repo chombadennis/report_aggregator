@@ -94,12 +94,12 @@ async def get_current_user(authorization: str = Header(None)):
                         print(f"--- DEBUG AUTH: Failed to fetch user from Clerk API. Status: {response.status_code}, Body: {response.text} ---")
             except Exception as ex:
                 print(f"--- DEBUG AUTH: Exception when fetching user from Clerk API: {ex} ---")
-    # --- ALLOWED EMAILS WHITELIST CHECK (LAYER 2) ---
+    # --- ALLOWED EMAILS CHECK (LAYER 2) ---
     allowed_emails_env = os.getenv("ALLOWED_EMAILS", "")
     if allowed_emails_env:
         allowed_list = [e.strip().lower() for e in allowed_emails_env.split(",") if e.strip()]
         
-        # Automatically whitelist the admin email
+        # Automatically allow the admin email
         admin_email = os.getenv("ADMIN_EMAIL")
         if admin_email:
             allowed_list.append(admin_email.strip().lower())
@@ -107,7 +107,7 @@ async def get_current_user(authorization: str = Header(None)):
         if not email or email.lower() not in allowed_list:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access Denied: Your email is not whitelisted to view this project's dashboard. Please contact the administrator."
+                detail="Access Denied: Your email is not allowed to view this project's dashboard. Please contact the administrator."
             )
             
     return {

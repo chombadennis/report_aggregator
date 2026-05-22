@@ -8,7 +8,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
 
 export default function ContractSummary() {
   const router = useRouter();
-  const { isLoaded, userId, getToken } = useAuth();
+  const { isLoaded, userId, getToken, signOut } = useAuth();
   const { user } = useUser();
 
   const [summary, setSummary] = useState<any>(null);
@@ -47,6 +47,10 @@ export default function ContractSummary() {
           'Authorization': `Bearer ${token}`
         }
       });
+      if (resp.status === 403) {
+        await signOut({ redirectUrl: '/?error=not-allowed' });
+        return;
+      }
       const data = await resp.json();
       if (data.msg && !data.project_title) {
         setSummary(null);
@@ -60,7 +64,7 @@ export default function ContractSummary() {
     }
   };
 
-  if (!isLoaded || !userId) {
+  if (!isLoaded || !userId || loading) {
     return (
       <div className="min-h-screen bg-vanilla-custard-50 flex flex-col items-center justify-center text-vivid-tangerine-950">
         <div className="w-16 h-16 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -89,8 +93,8 @@ export default function ContractSummary() {
                 Admin Access
               </span>
             )}
-            <UserButton 
-              afterSignOutUrl="/login" 
+            <UserButton
+              afterSignOutUrl="/login"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
@@ -102,16 +106,12 @@ export default function ContractSummary() {
             </Link>
           </div>
         </div>
-        
+
         <h1 className="text-4xl font-bold mb-8 font-serif bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent">
           Project Contract Details
         </h1>
 
-        {loading && (
-          <div className="text-center p-12">
-            <p className="text-vivid-tangerine-600 animate-pulse font-bold">Loading project data...</p>
-          </div>
-        )}
+
 
         {error && (
           <div className="bg-vivid-tangerine-50 p-6 rounded-2xl border border-vivid-tangerine-200 text-vivid-tangerine-900 mb-8">
@@ -155,7 +155,7 @@ export default function ContractSummary() {
                 ))}
               </ul>
             </div>
-            
+
             <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4">Socio-Economic Impact</h2>
               <p className="text-sm text-vivid-tangerine-800 leading-relaxed italic">
@@ -194,7 +194,7 @@ export default function ContractSummary() {
           <div className="text-left">
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
             <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
-            
+
             {/* NeuralAxis Labs Branding Logo */}
             <div className="flex items-center gap-2.5 mt-4">
               <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>

@@ -8,7 +8,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
 
 export default function Home() {
   const router = useRouter();
-  const { isLoaded, userId, getToken } = useAuth();
+  const { isLoaded, userId, getToken, signOut } = useAuth();
   const { user } = useUser();
 
   const [mode, setMode] = useState('weekly');
@@ -33,7 +33,7 @@ export default function Home() {
   const [docSender, setDocSender] = useState('');
   const [docRecipient, setDocRecipient] = useState('');
   const [docFile, setDocFile] = useState<File | null>(null);
-  
+
   const [docLoading, setDocLoading] = useState(false);
   const [docStatus, setDocStatus] = useState('');
   const [docError, setDocError] = useState('');
@@ -43,6 +43,7 @@ export default function Home() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [mounted, setMounted] = useState(false);
+  const [isVerifyingAccess, setIsVerifyingAccess] = useState(true);
 
   // Client-side Role Checking
   const userEmail = user?.primaryEmailAddress?.emailAddress;
@@ -76,12 +77,20 @@ export default function Home() {
           'Authorization': `Bearer ${token}`
         }
       });
+      if (resp.status === 403) {
+        await signOut({ redirectUrl: '/?error=not-allowed' });
+        return;
+      }
       if (resp.ok) {
         const data = await resp.json();
         setUploadedDocs(data);
+        setIsVerifyingAccess(false);
+      } else {
+        setIsVerifyingAccess(false);
       }
     } catch (e) {
       console.error("Failed to fetch documents list", e);
+      setIsVerifyingAccess(false);
     }
   };
 
@@ -107,14 +116,14 @@ export default function Home() {
     formData.append('summary', docSummary);
     formData.append('date_sent', docDateSent);
     formData.append('category', docCategory);
-    
+
     // Smart auto-fill
-    const finalSender = docCategory === 'contractor' 
-      ? 'Contractor' 
-      : docCategory === 'client' 
-        ? 'Client / Project Manager' 
+    const finalSender = docCategory === 'contractor'
+      ? 'Contractor'
+      : docCategory === 'client'
+        ? 'Client / Project Manager'
         : docSender;
-        
+
     const finalRecipient = docCategory === 'contractor' && !docRecipient
       ? 'Client / Project Manager'
       : docCategory === 'client' && !docRecipient
@@ -147,10 +156,10 @@ export default function Home() {
       setDocDateSent('');
       setDocSender('');
       setDocRecipient('');
-      
+
       // Refresh documents list
       await fetchDocs();
-      
+
       setDocStatus('');
       setShowSuccessModal(true);
     } catch (err: any) {
@@ -247,7 +256,7 @@ export default function Home() {
       const token = await getToken();
       const endpoint = mode === 'weekly' ? '/api/generate-weekly-stream' : '/api/generate-monthly-stream';
       setStatus('📡 Connecting to AI Vision Engine...');
-      
+
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -257,8 +266,8 @@ export default function Home() {
       });
 
       if (!response.ok) {
-         const errorData = await response.json();
-         throw new Error(errorData.detail || "Server Error");
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Server Error");
       }
 
       const reader = response.body?.getReader();
@@ -271,7 +280,7 @@ export default function Home() {
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split('\n');
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
@@ -307,7 +316,7 @@ export default function Home() {
     }
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || isVerifyingAccess) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
         <div className="w-16 h-16 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -336,8 +345,8 @@ export default function Home() {
                 Admin Access
               </span>
             )}
-            <UserButton 
-              afterSignOutUrl="/login" 
+            <UserButton
+              afterSignOutUrl="/login"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
@@ -438,11 +447,10 @@ export default function Home() {
 
         {/* Upload Zone */}
         <div className="space-y-4">
-          <div className={`bg-white border-2 border-dashed rounded-3xl p-10 text-center transition-all shadow-lg ${
-            isAdmin 
-              ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group' 
+          <div className={`bg-white border-2 border-dashed rounded-3xl p-10 text-center transition-all shadow-lg ${isAdmin
+              ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group'
               : 'border-slate-200 bg-slate-50/50 cursor-not-allowed'
-          }`}>
+            }`}>
             <input
               type="file" multiple accept=".pdf"
               onChange={(e) => isAdmin && handleFileChange(e.target.files)}
@@ -512,27 +520,26 @@ export default function Home() {
               {mode === 'weekly' ? `Missing ${7 - files.length} more reports...` : `Upload 4-6 weekly reports`}
             </div>
           )}
-          
+
           <button
             onClick={handleUpload}
             disabled={loading || !isReady || !isAdmin}
-            className={`w-full max-w-md py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${
-              !isAdmin
+            className={`w-full max-w-md py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${!isAdmin
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
-                : isReady && !loading 
-                  ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95' 
+                : isReady && !loading
+                  ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95'
                   : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
-            }`}
+              }`}
           >
-            {!isAdmin 
-              ? '🔒 Execution & Generation Locked' 
-              : loading 
-                ? 'Processing Vision Data...' 
-                : isReady 
-                  ? '🚀 Execute & Generate' 
+            {!isAdmin
+              ? '🔒 Execution & Generation Locked'
+              : loading
+                ? 'Processing Vision Data...'
+                : isReady
+                  ? '🚀 Execute & Generate'
                   : 'Waiting for Files'}
           </button>
-          
+
           {isReady && !loading && isAdmin && (
             <p className="text-vivid-tangerine-400 text-xs font-semibold uppercase tracking-widest">Document Integrity Verified</p>
           )}
@@ -567,11 +574,10 @@ export default function Home() {
                     setDocSender(cat === 'general' ? '' : '');
                     setDocRecipient(cat === 'contractor' ? 'Client / Project Manager' : cat === 'client' ? 'Contractor' : '');
                   }}
-                  className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
-                    docCategory === cat 
-                      ? 'bg-vivid-tangerine-600 text-white shadow-md' 
+                  className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${docCategory === cat
+                      ? 'bg-vivid-tangerine-600 text-white shadow-md'
                       : 'text-vivid-tangerine-700 hover:bg-vanilla-custard-100'
-                  }`}
+                    }`}
                 >
                   {cat === 'contractor' ? '👷 Contractor' : cat === 'client' ? '🏢 Client / PM' : '📚 General / Info'}
                 </button>
@@ -678,11 +684,10 @@ export default function Home() {
               type="button"
               onClick={handleUploadDocument}
               disabled={docLoading || !docFile}
-              className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all shadow-md ${
-                docFile && !docLoading 
-                  ? 'bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 hover:scale-[1.01] active:scale-95 text-white' 
+              className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all shadow-md ${docFile && !docLoading
+                  ? 'bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 hover:scale-[1.01] active:scale-95 text-white'
                   : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
-              }`}
+                }`}
             >
               {docLoading ? '🔄 AI Claims Analysis Active...' : '🚀 Ingest Correspondence & Run AI'}
             </button>
@@ -709,13 +714,12 @@ export default function Home() {
                 <div key={doc.id} className="bg-white p-6 rounded-2xl border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-4 transition-all hover:shadow-lg text-left">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                        doc.category === 'contractor' 
-                          ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700' 
-                          : doc.category === 'client' 
-                            ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700' 
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
+                          ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
+                          : doc.category === 'client'
+                            ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700'
                             : 'bg-vanilla-custard-50 border-vanilla-custard-200 text-vanilla-custard-700'
-                      }`}>
+                        }`}>
                         {doc.category === 'contractor' ? '👷 Contractor' : doc.category === 'client' ? '🏢 Client / PM' : '📚 General'}
                       </span>
                       <span className="text-[10px] text-vivid-tangerine-400 font-bold bg-vanilla-custard-50 px-2 py-0.5 rounded-full">
@@ -759,7 +763,7 @@ export default function Home() {
         {activeDocDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
             <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-vanilla-custard-200 shadow-2xl relative flex flex-col text-left">
-              
+
               {/* Header */}
               <div className="p-6 border-b border-vanilla-custard-150 flex justify-between items-start">
                 <div>
@@ -771,8 +775,8 @@ export default function Home() {
                     Sent: {activeDocDetail.date_sent} | From: {activeDocDetail.sender} to {activeDocDetail.recipient}
                   </p>
                 </div>
-                <button 
-                  onClick={() => setActiveDocDetail(null)} 
+                <button
+                  onClick={() => setActiveDocDetail(null)}
                   className="p-1.5 bg-vanilla-custard-50 hover:bg-vanilla-custard-100 rounded-xl border border-vanilla-custard-200 text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors text-lg font-black leading-none"
                 >
                   ✕
@@ -781,7 +785,7 @@ export default function Home() {
 
               {/* Content */}
               <div className="p-6 space-y-6 flex-1 text-sm text-vivid-tangerine-900 leading-relaxed overflow-y-auto">
-                
+
                 <div>
                   <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">📜 Document Summary</h4>
                   <div className="bg-vanilla-custard-50 p-4 rounded-2xl border border-vanilla-custard-100 font-medium">
@@ -848,7 +852,7 @@ export default function Home() {
         {docToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-md transition-all duration-300">
             <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden border border-vivid-tangerine-200/50 shadow-2xl relative flex flex-col text-left animate-in fade-in zoom-in duration-200">
-              
+
               {/* Alert Header Banner */}
               <div className="bg-gradient-to-r from-red-600 to-vivid-tangerine-600 p-6 text-white flex items-center gap-4">
                 <span className="text-4xl">⚠️</span>
@@ -867,7 +871,7 @@ export default function Home() {
                   "{docToDelete.title}"
                 </div>
                 <p className="text-xs text-vivid-tangerine-600 font-medium leading-relaxed">
-                  This action is **irreversible**. Deleting this document will permanently purge its parsed text content, contractor EOT requests, action items, and contractual delay risks from the cache. 
+                  This action is **irreversible**. Deleting this document will permanently purge its parsed text content, contractor EOT requests, action items, and contractual delay risks from the cache.
                 </p>
                 <p className="text-xs text-red-600 font-black uppercase tracking-wider bg-red-50 p-3 rounded-lg border border-red-100 text-center">
                   ⚠️ This document's AI insights will no longer be included in weekly/monthly report aggregation.
@@ -917,14 +921,14 @@ export default function Home() {
           </div>
         )}
       </div>
-      
+
       {/* Footer Panel */}
       <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
             <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
-            
+
             {/* NeuralAxis Labs Branding Logo */}
             <div className="flex items-center gap-2.5 mt-4">
               <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
