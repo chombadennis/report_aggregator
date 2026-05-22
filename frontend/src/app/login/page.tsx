@@ -1,9 +1,21 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const [redirectUrl, setRedirectUrl] = useState("/dashboard");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const redir = params.get("redirect") || params.get("redirect_url");
+      if (redir) {
+        setRedirectUrl(redir);
+      }
+    }
+  }, []);
+
   return (
     <main className="relative min-h-screen flex flex-col justify-center items-center px-4 overflow-hidden bg-slate-950">
       {/* Background Glowing Orbs */}
@@ -34,8 +46,8 @@ export default function LoginPage() {
         <div className="bg-slate-900/60 rounded-[22px] overflow-hidden flex flex-col justify-center items-center py-6 px-4">
           <SignIn
             routing="hash"
-            afterSignInUrl="/dashboard"
-            afterSignUpUrl="/dashboard"
+            afterSignInUrl={redirectUrl}
+            afterSignUpUrl={redirectUrl}
             appearance={{
               variables: {
                 colorPrimary: "#ff8400", // vivid-tangerine-500

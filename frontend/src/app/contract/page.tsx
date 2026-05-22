@@ -15,11 +15,36 @@ export default function ContractSummary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('allowed_user');
+    }
+    return true;
+  });
 
   // Client-side Role Checking
   const userEmail = user?.primaryEmailAddress?.emailAddress;
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
   const isAdmin = userEmail && adminEmail && userEmail.toLowerCase() === adminEmail.toLowerCase();
+
+  // Validate cached user matches current logged-in Clerk user
+  useEffect(() => {
+    if (isLoaded) {
+      if (!userId) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('allowed_user');
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          const cached = sessionStorage.getItem('allowed_user');
+          if (cached && cached !== userId) {
+            sessionStorage.removeItem('allowed_user');
+            setIsVerifyingAccess(true);
+          }
+        }
+      }
+    }
+  }, [isLoaded, userId]);
 
   // Handle client-side mount
   useEffect(() => {
@@ -29,7 +54,7 @@ export default function ContractSummary() {
   // Authentication Guard Redirect
   useEffect(() => {
     if (mounted && isLoaded && !userId) {
-      router.replace('/login');
+      router.replace('/login?redirect=/contract');
     }
   }, [mounted, isLoaded, userId, router]);
 
@@ -48,27 +73,39 @@ export default function ContractSummary() {
         }
       });
       if (resp.status === 403) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('allowed_user');
+        }
         await signOut({ redirectUrl: '/?error=not-allowed' });
         return;
       }
-      const data = await resp.json();
-      if (data.msg && !data.project_title) {
-        setSummary(null);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.msg && !data.project_title) {
+          setSummary(null);
+        } else {
+          setSummary(data);
+        }
+        if (typeof window !== 'undefined' && userId) {
+          sessionStorage.setItem('allowed_user', userId);
+        }
+        setIsVerifyingAccess(false);
       } else {
-        setSummary(data);
+        setIsVerifyingAccess(false);
       }
     } catch (e) {
       setError('Failed to fetch contract summary.');
+      setIsVerifyingAccess(false);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isLoaded || !userId || loading) {
+  if (!mounted || !isLoaded || isVerifyingAccess) {
     return (
-      <div className="min-h-screen bg-vanilla-custard-50 flex flex-col items-center justify-center text-vivid-tangerine-950">
-        <div className="w-16 h-16 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xs font-bold text-vivid-tangerine-800 uppercase tracking-widest animate-pulse">Loading Security Context...</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <div className="w-16 h-16 border-4 border-vivid-tangerine-50 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Security Context...</p>
       </div>
     );
   }
@@ -94,7 +131,7 @@ export default function ContractSummary() {
               </span>
             )}
             <UserButton
-              afterSignOutUrl="/login"
+              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
@@ -120,7 +157,12 @@ export default function ContractSummary() {
           </div>
         )}
 
-        {summary && (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-lg border border-vanilla-custard-100">
+            <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-wider animate-pulse">Fetching contract details...</p>
+          </div>
+        ) : summary ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2 bg-white p-8 rounded-3xl shadow-lg border border-vanilla-custard-100">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-2">Project Title</h2>
@@ -185,7 +227,7 @@ export default function ContractSummary() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Footer Panel */}

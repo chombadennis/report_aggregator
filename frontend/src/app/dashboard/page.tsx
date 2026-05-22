@@ -43,12 +43,36 @@ export default function Home() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [mounted, setMounted] = useState(false);
-  const [isVerifyingAccess, setIsVerifyingAccess] = useState(true);
+  const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('allowed_user');
+    }
+    return true;
+  });
 
   // Client-side Role Checking
   const userEmail = user?.primaryEmailAddress?.emailAddress;
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
   const isAdmin = userEmail && adminEmail && userEmail.toLowerCase() === adminEmail.toLowerCase();
+
+  // Validate cached user matches current logged-in Clerk user
+  useEffect(() => {
+    if (isLoaded) {
+      if (!userId) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('allowed_user');
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          const cached = sessionStorage.getItem('allowed_user');
+          if (cached && cached !== userId) {
+            sessionStorage.removeItem('allowed_user');
+            setIsVerifyingAccess(true);
+          }
+        }
+      }
+    }
+  }, [isLoaded, userId]);
 
   // Handle client-side mount
   useEffect(() => {
@@ -58,7 +82,7 @@ export default function Home() {
   // Authentication Guard Redirect
   useEffect(() => {
     if (mounted && isLoaded && !userId) {
-      router.replace('/login');
+      router.replace('/login?redirect=/dashboard');
     }
   }, [mounted, isLoaded, userId, router]);
 
@@ -78,12 +102,19 @@ export default function Home() {
         }
       });
       if (resp.status === 403) {
+        // Clear cached allowed status on sign-out
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('allowed_user');
+        }
         await signOut({ redirectUrl: '/?error=not-allowed' });
         return;
       }
       if (resp.ok) {
         const data = await resp.json();
         setUploadedDocs(data);
+        if (typeof window !== 'undefined' && userId) {
+          sessionStorage.setItem('allowed_user', userId);
+        }
         setIsVerifyingAccess(false);
       } else {
         setIsVerifyingAccess(false);
@@ -316,7 +347,7 @@ export default function Home() {
     }
   };
 
-  if (!isLoaded || isVerifyingAccess) {
+  if (!mounted || !isLoaded || isVerifyingAccess) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
         <div className="w-16 h-16 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -346,7 +377,7 @@ export default function Home() {
               </span>
             )}
             <UserButton
-              afterSignOutUrl="/login"
+              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",

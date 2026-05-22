@@ -49,6 +49,12 @@ export default function TrendsDashboard() {
   const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [timeScale, setTimeScale] = useState<'daily' | 'weekly'>('weekly');
   const [mounted, setMounted] = useState(false);
+  const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('allowed_user');
+    }
+    return true;
+  });
 
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
@@ -82,6 +88,25 @@ export default function TrendsDashboard() {
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || '';
   const isAdmin = userEmail && adminEmail && userEmail.toLowerCase() === adminEmail.toLowerCase();
 
+  // Validate cached user matches current logged-in Clerk user
+  useEffect(() => {
+    if (isLoaded) {
+      if (!userId) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('allowed_user');
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          const cached = sessionStorage.getItem('allowed_user');
+          if (cached && cached !== userId) {
+            sessionStorage.removeItem('allowed_user');
+            setIsVerifyingAccess(true);
+          }
+        }
+      }
+    }
+  }, [isLoaded, userId]);
+
   // Handle client-side mount
   useEffect(() => {
     setMounted(true);
@@ -90,7 +115,7 @@ export default function TrendsDashboard() {
   // Authentication Guard Redirect
   useEffect(() => {
     if (mounted && isLoaded && !userId) {
-      router.replace('/login');
+      router.replace('/login?redirect=/trends');
     }
   }, [mounted, isLoaded, userId, router]);
 
@@ -108,6 +133,9 @@ export default function TrendsDashboard() {
         fetch(`${BACKEND_URL}/api/analytics/trends`, { headers })
           .then(async res => {
             if (res.status === 403) {
+              if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('allowed_user');
+              }
               await signOut({ redirectUrl: '/?error=not-allowed' });
               throw new Error("Access Restricted");
             }
@@ -116,9 +144,17 @@ export default function TrendsDashboard() {
           })
           .then(res => {
             setData(res);
+            if (typeof window !== 'undefined' && userId) {
+              sessionStorage.setItem('allowed_user', userId);
+            }
+            setIsVerifyingAccess(false);
             setLoading(false); // Show the charts as soon as we have data!
           })
-          .catch(err => console.error("Trends fetch failed", err));
+          .catch(err => {
+            console.error("Trends fetch failed", err);
+            setIsVerifyingAccess(false);
+            setLoading(false);
+          });
 
         // 2. Fetch insights in the background (slower AI process)
         fetch(`${BACKEND_URL}/api/analytics/insights`, { headers })
@@ -148,6 +184,8 @@ export default function TrendsDashboard() {
           .catch(err => console.error("Financials fetch failed", err));
       } catch (err) {
         console.error("Failed to fetch analytics", err);
+        setIsVerifyingAccess(false);
+        setLoading(false);
       }
     }
     fetchData();
@@ -267,13 +305,11 @@ export default function TrendsDashboard() {
     }
   };
 
-  if (!isLoaded || !userId || loading) {
+  if (!mounted || !isLoaded || isVerifyingAccess) {
     return (
-      <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="font-bold text-vivid-tangerine-900 tracking-widest uppercase text-xs">Loading Security Context...</p>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <div className="w-16 h-16 border-4 border-vivid-tangerine-50 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Security Context...</p>
       </div>
     );
   }
@@ -409,7 +445,7 @@ export default function TrendsDashboard() {
               </span>
             )}
             <UserButton
-              afterSignOutUrl="/login"
+              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
@@ -452,7 +488,18 @@ export default function TrendsDashboard() {
         </header>
 
         {/* Financials & Progress Trend Charts */}
-        {financials && (
+        {loading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center justify-center h-80">
+              <div className="w-10 h-10 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Analyzing Financial S-Curve...</p>
+            </div>
+            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center justify-center h-80">
+              <div className="w-10 h-10 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Calculating Schedule Slippage...</p>
+            </div>
+          </div>
+        ) : financials ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Revenue Trend Line Chart */}
             <section className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
@@ -524,167 +571,176 @@ export default function TrendsDashboard() {
               </div>
             </section>
           </div>
-        )}
+        ) : null}
 
         {/* Main Performance Chart */}
-        <section className="mb-12">
-          <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
-            <div className="flex justify-between items-end mb-10">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Labour Force Momentum</h2>
-                <p className="text-sm text-slate-400 font-medium italic">Showing {timeScale} personnel trends</p>
-              </div>
-              <div className="flex gap-8">
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Peak Site Presence</p>
-                  <p className="text-2xl font-black text-slate-900">
-                    {activeTrend.length > 0 ? Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) : 0}
-                  </p>
-                </div>
-                <div className="text-right border-l border-slate-100 pl-8">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg Deployment</p>
-                  <p className="text-2xl font-black text-vivid-tangerine-500">
-                    {activeTrend.length > 0 ? Math.round(activeTrend.reduce((acc: number, p: any) => acc + (p.value ?? p.labour ?? 0), 0) / activeTrend.length) : 0}
-                  </p>
-                </div>
-              </div>
+        {loading ? (
+          <section className="mb-12">
+            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center justify-center h-[32rem]">
+              <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Aggregating Labour Force Momentum...</p>
             </div>
-
-            {/* SVG Chart with Y-Axis */}
-            <div className="relative h-96 w-full flex mt-4">
-              {/* Y-Axis Labels - Sticky on left */}
-              <div className="w-14 h-72 flex flex-col justify-between text-[10px] font-bold text-slate-400 pb-8 pr-3 text-right bg-white z-30 sticky left-0">
-                <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) * 1.1)}</span>
-                <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) / 2)}</span>
-                <span>0</span>
+          </section>
+        ) : (
+          <section className="mb-12">
+            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+              <div className="flex justify-between items-end mb-10">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Labour Force Momentum</h2>
+                  <p className="text-sm text-slate-400 font-medium italic">Showing {timeScale} personnel trends</p>
+                </div>
+                <div className="flex gap-8">
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Peak Site Presence</p>
+                    <p className="text-2xl font-black text-slate-900">
+                      {activeTrend.length > 0 ? Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) : 0}
+                    </p>
+                  </div>
+                  <div className="text-right border-l border-slate-100 pl-8">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg Deployment</p>
+                    <p className="text-2xl font-black text-vivid-tangerine-500">
+                      {activeTrend.length > 0 ? Math.round(activeTrend.reduce((acc: number, p: any) => acc + (p.value ?? p.labour ?? 0), 0) / activeTrend.length) : 0}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Scrollable Chart Viewport */}
-              <div className="flex-1 h-80 overflow-x-auto overflow-y-visible custom-scrollbar pb-12">
-                <div
-                  className="h-72 relative flex items-end gap-2 px-32 pb-8 border-b border-l border-slate-100 group/chart transition-all"
-                  style={{ minWidth: `${activeTrend.length * (timeScale === 'daily' ? 48 : 88) + 256}px` }}
-                >
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between pb-8 pointer-events-none">
-                    <div className="w-full border-t border-slate-50"></div>
-                    <div className="w-full border-t border-slate-100/50"></div>
-                    <div className="w-full border-t border-slate-50 invisible"></div>
-                  </div>
+              {/* SVG Chart with Y-Axis */}
+              <div className="relative h-96 w-full flex mt-4">
+                {/* Y-Axis Labels - Sticky on left */}
+                <div className="w-14 h-72 flex flex-col justify-between text-[10px] font-bold text-slate-400 pb-8 pr-3 text-right bg-white z-30 sticky left-0">
+                  <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) * 1.1)}</span>
+                  <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) / 2)}</span>
+                  <span>0</span>
+                </div>
 
-                  {/* Advanced Momentum Line Overlay */}
-                  <svg className="absolute inset-0 w-full h-full pb-8 pointer-events-none z-10 overflow-visible" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
-                        <stop offset="50%" stopColor="#f97316" stopOpacity="0.5" />
-                        <stop offset="100%" stopColor="#f97316" stopOpacity="0.1" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d={activeTrend.map((p: any, i: number) => {
-                        const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
-                        const val = p.value ?? p.labour ?? 0;
-                        const y = 100 - ((val / max) * 100);
-                        const pxX = i * (timeScale === 'daily' ? 48 : 88) + (timeScale === 'daily' ? 148 : 168);
-                        return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * 256}`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="url(#lineGrad)"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      className="transition-all duration-1000"
-                    />
-                  </svg>
+                {/* Scrollable Chart Viewport */}
+                <div className="flex-1 h-80 overflow-x-auto overflow-y-visible custom-scrollbar pb-12">
+                  <div
+                    className="h-72 relative flex items-end gap-2 px-32 pb-8 border-b border-l border-slate-100 group/chart transition-all"
+                    style={{ minWidth: `${activeTrend.length * (timeScale === 'daily' ? 48 : 88) + 256}px` }}
+                  >
+                    {/* Grid Lines */}
+                    <div className="absolute inset-0 flex flex-col justify-between pb-8 pointer-events-none">
+                      <div className="w-full border-t border-slate-50"></div>
+                      <div className="w-full border-t border-slate-100/50"></div>
+                      <div className="w-full border-t border-slate-50 invisible"></div>
+                    </div>
 
-                  {activeTrend.map((point: any, i: number) => {
-                    const val = point.value ?? point.labour ?? 0;
-                    const max = (Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 1) * 1.1;
-                    const height = (val / max) * 100;
-                    const isDisrupted = point.weather_disrupted;
-                    const isWeekend = point.is_weekend;
-                    const label = point.label || point.date;
+                    {/* Advanced Momentum Line Overlay */}
+                    <svg className="absolute inset-0 w-full h-full pb-8 pointer-events-none z-10 overflow-visible" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity="0.5" />
+                          <stop offset="100%" stopColor="#f97316" stopOpacity="0.1" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d={activeTrend.map((p: any, i: number) => {
+                          const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
+                          const val = p.value ?? p.labour ?? 0;
+                          const y = 100 - ((val / max) * 100);
+                          const pxX = i * (timeScale === 'daily' ? 48 : 88) + (timeScale === 'daily' ? 148 : 168);
+                          return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * 256}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke="url(#lineGrad)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
 
-                    return (
-                      <div key={i} className={`flex-none ${timeScale === 'daily' ? 'w-10' : 'w-20'} group relative flex flex-col items-center h-full justify-end hover:z-[60]`}>
-                        {/* Bar */}
-                        <div
-                          className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
-                          style={{ height: `${Math.max(height, 5)}%` }}
-                        >
-                          {/* Improved Tooltip (Doodle) */}
-                          <div className={`absolute bottom-4 
-                          ${i < 2 ? 'left-0 translate-x-0' : i > activeTrend.length - 3 ? 'right-0 translate-x-0' : 'left-1/2 -translate-x-1/2'} 
-                          bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-5 py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
+                    {activeTrend.map((point: any, i: number) => {
+                      const val = point.value ?? point.labour ?? 0;
+                      const max = (Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 1) * 1.1;
+                      const height = (val / max) * 100;
+                      const isDisrupted = point.weather_disrupted;
+                      const isWeekend = point.is_weekend;
+                      const label = point.label || point.date;
 
-                            <div className="flex justify-between items-center mb-3">
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
-                                <span className="font-black uppercase tracking-widest text-[8px] text-white/60">Intelligence Report</span>
-                              </div>
-                              <span className="text-[8px] font-bold text-white/30 uppercase">{label}</span>
-                            </div>
+                      return (
+                        <div key={i} className={`flex-none ${timeScale === 'daily' ? 'w-10' : 'w-20'} group relative flex flex-col items-center h-full justify-end hover:z-[60]`}>
+                          {/* Bar */}
+                          <div
+                            className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
+                            style={{ height: `${Math.max(height, 5)}%` }}
+                          >
+                            {/* Improved Tooltip (Doodle) */}
+                            <div className={`absolute bottom-4 
+                            ${i < 2 ? 'left-0 translate-x-0' : i > activeTrend.length - 3 ? 'right-0 translate-x-0' : 'left-1/2 -translate-x-1/2'} 
+                            bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-5 py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
 
-                            <div className="flex justify-between items-end mb-4">
-                              <div>
-                                <p className="text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
-                                <p className="font-black text-3xl text-white leading-none">{val}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                  {isDisrupted ? '⚠️ Disrupted' : '✅ Optimal'}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="bg-white/5 rounded-2xl p-3 mb-3 border border-white/5">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1 bg-blue-500/20 rounded-md">
-                                  <Layers className="w-3 h-3 text-blue-400" />
+                              <div className="flex justify-between items-center mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
+                                  <span className="font-black uppercase tracking-widest text-[8px] text-white/60">Intelligence Report</span>
                                 </div>
-                                <span className="text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
+                                <span className="text-[8px] font-bold text-white/30 uppercase">{label}</span>
                               </div>
-                              <p className="text-[9px] text-white/80 leading-relaxed font-medium">
-                                {typeof point.materials === 'string' ? point.materials : `📦 ${point.materials} categories delivered this period.`}
-                              </p>
-                            </div>
 
-                            {/* Executive Commentary */}
-                            {point.prose_summary && (
-                              <div className="space-y-1">
-                                <span className="text-[7px] text-white/30 uppercase tracking-widest">Executive Verdict</span>
-                                <p className="text-[8px] text-white/50 leading-relaxed italic line-clamp-3">
-                                  "{point.prose_summary.substring(0, 100)}..."
+                              <div className="flex justify-between items-end mb-4">
+                                <div>
+                                  <p className="text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
+                                  <p className="font-black text-3xl text-white leading-none">{val}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
+                                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                    {isDisrupted ? '⚠️ Disrupted' : '✅ Optimal'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="bg-white/5 rounded-2xl p-3 mb-3 border border-white/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1 bg-blue-500/20 rounded-md">
+                                    <Layers className="w-3 h-3 text-blue-400" />
+                                  </div>
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
+                                </div>
+                                <p className="text-[9px] text-white/80 leading-relaxed font-medium">
+                                  {typeof point.materials === 'string' ? point.materials : `📦 ${point.materials} categories delivered this period.`}
                                 </p>
                               </div>
-                            )}
 
-                            {/* Arrow Alignment - Points Down to Bar Bottom */}
-                            <div className={`absolute top-full 
-                              ${i < 2 ? 'left-6' : i > activeTrend.length - 3 ? 'right-6' : 'left-1/2 -translate-x-1/2'} 
-                              border-8 border-transparent border-t-slate-900`}></div>
+                              {/* Executive Commentary */}
+                              {point.prose_summary && (
+                                <div className="space-y-1">
+                                  <span className="text-[7px] text-white/30 uppercase tracking-widest">Executive Verdict</span>
+                                  <p className="text-[8px] text-white/50 leading-relaxed italic line-clamp-3">
+                                    "{point.prose_summary.substring(0, 100)}..."
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Arrow Alignment - Points Down to Bar Bottom */}
+                              <div className={`absolute top-full 
+                                ${i < 2 ? 'left-6' : i > activeTrend.length - 3 ? 'right-6' : 'left-1/2 -translate-x-1/2'} 
+                                border-8 border-transparent border-t-slate-900`}></div>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* X-Axis Date */}
-                        <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
-                          {formatXAxis(label)}
-                        </span>
-                      </div>
-                    );
-                  })}
+                          {/* X-Axis Date */}
+                          <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
+                            {formatXAxis(label)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-16 flex gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-vivid-tangerine-500 rounded-sm"></div> Normal Progress</div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-500 rounded-sm"></div> Weather Impacted</div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Site Closed / Weekend</div>
+              <div className="mt-16 flex gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-vivid-tangerine-500 rounded-sm"></div> Normal Progress</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-500 rounded-sm"></div> Weather Impacted</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Site Closed / Weekend</div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <div className="flex flex-col gap-12 mb-12">
           {/* SWOT Analysis */}
