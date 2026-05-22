@@ -96,7 +96,7 @@ const CapCard = ({
   tags: string[];
   accent: string;
 }) => (
-  <div className={`group relative bg-white border border-vanilla-custard-100 rounded-3xl p-7 shadow-sm hover:shadow-2xl hover:shadow-vivid-tangerine-100 hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
+  <div className={`group relative bg-white border border-vanilla-custard-100 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm hover:shadow-2xl hover:shadow-vivid-tangerine-100 hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
     <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 group-hover:opacity-15 transition-opacity duration-500 ${accent}`} />
     <div className="flex items-start gap-4 mb-4">
       <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-2xl ${accent} bg-opacity-10 text-vivid-tangerine-600`}>
@@ -268,7 +268,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 md:gap-6">
           <CapCard
             icon={<Icon.Scan />}
             label="Parsing Engine"
@@ -511,7 +511,7 @@ export default function LandingPage() {
             One click generates a multi-section Project Progress &amp; Risk Intelligence Report in Word format — pulling from all data sources automatically.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-4">
           {[
             { icon: <Icon.Document />, t: "1.0 Executive Summary", d: "AI-generated management brief reflecting current slippage level, tone-calibrated from constructive to urgent." },
             { icon: <Icon.Finance />, t: "1.1 Recalibration Progress Summary", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
@@ -521,7 +521,7 @@ export default function LandingPage() {
             { icon: <Icon.AI />, t: "5.0 Strategic Recommendations", d: "Separate actionable recommendations issued to the Client (PM) and to the Contractor based on current data." },
             { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded letters, EOT claims, lab tests, and instructions with AI summaries and contractual implications." },
           ].map((item) => (
-            <div key={item.t} className="bg-white border border-vanilla-custard-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div key={item.t} className="bg-white border border-vanilla-custard-100 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-vivid-tangerine-500">{item.icon}</span>
                 <h4 className="text-sm font-bold text-vivid-tangerine-950">{item.t}</h4>
