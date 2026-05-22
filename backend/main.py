@@ -561,6 +561,37 @@ async def delete_project_document(doc_id: str, current_user: dict = Depends(requ
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/admin/restore-cache")
+async def restore_cache(file: UploadFile = File(...), current_user: dict = Depends(require_admin)):
+    """Allows the administrator to upload a ZIP archive of their local cache folder and extract it directly on the persistent disk."""
+    import zipfile
+    import io
+    try:
+        # Read the uploaded zip file bytes
+        file_bytes = await file.read()
+        
+        # Open the zip archive in memory
+        zip_archive = zipfile.ZipFile(io.BytesIO(file_bytes))
+        
+        # Verify it is a valid zip archive
+        namelist = zip_archive.namelist()
+        if not namelist:
+            raise HTTPException(status_code=400, detail="The uploaded ZIP file is empty.")
+            
+        # Target extraction directory is the persistent "cache" directory
+        target_dir = "cache"
+        os.makedirs(target_dir, exist_ok=True)
+        
+        # Extract all files safely
+        zip_archive.extractall(target_dir)
+        
+        return {
+            "status": "success",
+            "msg": f"Successfully restored cache! Extracted {len(namelist)} items directly onto the persistent disk."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to extract and restore cache: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
