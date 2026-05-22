@@ -429,27 +429,27 @@ export default function TrendsDashboard() {
       </div>
 
       {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 sm:px-8 py-4">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-3 sm:px-8 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/" className="text-xs font-bold text-slate-600 uppercase tracking-wider bg-white hover:bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
+          <div className="flex items-center gap-1.5 sm:gap-4">
+            <Link href="/" className="text-xs font-bold text-slate-600 uppercase tracking-wider bg-white hover:bg-slate-50 border border-slate-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
               Home
             </Link>
             <div className="w-px h-4 bg-slate-200"></div>
-            <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
+            <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
               <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
               Dashboard
             </Link>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             {!isAdmin ? (
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-3.5 py-2 rounded-xl shadow-sm">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
                 Viewer Access
               </span>
             ) : (
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-3.5 py-2 rounded-xl shadow-sm">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
                 Admin Access
               </span>
             )}
@@ -457,20 +457,20 @@ export default function TrendsDashboard() {
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
+                  avatarBox: "w-8 h-8 sm:w-9 sm:h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
                 }
               }}
             />
-            <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+            <div className="flex bg-slate-100 p-0.5 sm:p-1 rounded-xl shadow-inner">
               <button
                 onClick={() => setTimeScale('daily')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Daily
               </button>
               <button
                 onClick={() => setTimeScale('weekly')}
-                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Weekly
               </button>

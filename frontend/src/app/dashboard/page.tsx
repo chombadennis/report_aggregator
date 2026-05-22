@@ -361,18 +361,18 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold py-2 bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif leading-none">
+            <h1 className="text-2xl sm:text-3xl font-bold py-2 bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif leading-none">
               Makindu Affordable Housing Project
             </h1>
             <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Industrial AI reporting for professional site managers.</p>
           </div>
-          <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between sm:justify-start">
+          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
             {!isAdmin ? (
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-3.5 py-2 rounded-xl shadow-sm">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
                 Viewer Access
               </span>
             ) : (
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-3.5 py-2 rounded-xl shadow-sm">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
                 Admin Access
               </span>
             )}
@@ -380,33 +380,37 @@ export default function Home() {
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
+                  avatarBox: "w-8 h-8 sm:w-9 sm:h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
                 }
               }}
             />
-            <Link href="/" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
+            <Link href="/" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
               Exit Portal
             </Link>
           </div>
         </div>
 
         {/* Dashboard Navigation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-4 mb-6 sm:mb-10">
-          <Link href="/contract" className="group bg-white p-4 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl sm:text-3xl">📝</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-10">
+          <Link href="/contract" className="group bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-sunflower-gold-50 text-sunflower-gold-700 px-3 py-1.5 rounded-xl border border-sunflower-gold-200 shadow-sm">
+                Contract Summary
+              </span>
               <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
             </div>
             <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Contract Summary</h3>
-            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600">Project details and scope of works</p>
+            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 mt-1">Project details and scope of works</p>
           </Link>
-          <Link href="/trends" className="group bg-white p-4 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl sm:text-3xl">📈</span>
+          <Link href="/trends" className="group bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-vivid-tangerine-50 text-vivid-tangerine-700 px-3 py-1.5 rounded-xl border border-vivid-tangerine-200 shadow-sm">
+                Trend Analysis
+              </span>
               <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
             </div>
-            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Trends & Risks</h3>
-            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600">Visual performance & risk analysis</p>
+            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Trend Analysis</h3>
+            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 mt-1">Visual performance & risk analysis</p>
           </Link>
         </div>
 
@@ -479,8 +483,8 @@ export default function Home() {
         {/* Upload Zone */}
         <div className="space-y-4">
           <div className={`bg-white border-2 border-dashed rounded-3xl p-4 sm:p-10 text-center transition-all shadow-lg ${isAdmin
-              ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group'
-              : 'border-slate-200 bg-slate-50/50 cursor-not-allowed'
+            ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group'
+            : 'border-slate-200 bg-slate-50/50 cursor-not-allowed'
             }`}>
             <input
               type="file" multiple accept=".pdf"
@@ -556,10 +560,10 @@ export default function Home() {
             onClick={handleUpload}
             disabled={loading || !isReady || !isAdmin}
             className={`w-full max-w-md py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${!isAdmin
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
-                : isReady && !loading
-                  ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95'
-                  : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
+              ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+              : isReady && !loading
+                ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95'
+                : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
               }`}
           >
             {!isAdmin
@@ -606,8 +610,8 @@ export default function Home() {
                     setDocRecipient(cat === 'contractor' ? 'Client / Project Manager' : cat === 'client' ? 'Contractor' : '');
                   }}
                   className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${docCategory === cat
-                      ? 'bg-vivid-tangerine-600 text-white shadow-md'
-                      : 'text-vivid-tangerine-700 hover:bg-vanilla-custard-100'
+                    ? 'bg-vivid-tangerine-600 text-white shadow-md'
+                    : 'text-vivid-tangerine-700 hover:bg-vanilla-custard-100'
                     }`}
                 >
                   {cat === 'contractor' ? '👷 Contractor' : cat === 'client' ? '🏢 Client / PM' : '📚 General / Info'}
@@ -716,8 +720,8 @@ export default function Home() {
               onClick={handleUploadDocument}
               disabled={docLoading || !docFile}
               className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all shadow-md ${docFile && !docLoading
-                  ? 'bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 hover:scale-[1.01] active:scale-95 text-white'
-                  : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 hover:scale-[1.01] active:scale-95 text-white'
+                : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
                 }`}
             >
               {docLoading ? '🔄 AI Claims Analysis Active...' : '🚀 Ingest Correspondence & Run AI'}
@@ -746,10 +750,10 @@ export default function Home() {
                   <div className="flex-1">
                     <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
                       <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
-                          ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
-                          : doc.category === 'client'
-                            ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700'
-                            : 'bg-vanilla-custard-50 border-vanilla-custard-200 text-vanilla-custard-700'
+                        ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
+                        : doc.category === 'client'
+                          ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700'
+                          : 'bg-vanilla-custard-50 border-vanilla-custard-200 text-vanilla-custard-700'
                         }`}>
                         {doc.category === 'contractor' ? '👷 Contractor' : doc.category === 'client' ? '🏢 Client / PM' : '📚 General'}
                       </span>
