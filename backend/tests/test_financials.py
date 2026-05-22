@@ -10,13 +10,13 @@ from financial_engine import FinancialEngine
 def test_financial_engine():
     print("Testing FinancialEngine computations...")
     try:
-        engine = FinancialEngine(analysis_dir="analysis")
+        engine = FinancialEngine(analysis_dir="cache/analysis")
         data = engine.compute_and_cache_financials()
         
         print("\n--- Financial Engine Output ---")
-        with open("analysis/financial_test_output.json", "w") as f:
+        with open("cache/analysis/financial_test_output.json", "w") as f:
             json.dump(data, f, indent=2)
-        print("Test output saved to analysis/financial_test_output.json")
+        print("Test output saved to cache/analysis/financial_test_output.json")
         
     except Exception as e:
         import traceback

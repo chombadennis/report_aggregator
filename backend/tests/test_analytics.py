@@ -4,6 +4,10 @@ import json
 import asyncio
 from datetime import datetime
 
+# Ensure UTF-8 output encoding for Windows command line compatibility
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 # Add the parent directory to sys.path so we can import from backend
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -15,7 +19,7 @@ async def run_analytics_test():
     
     # Initialize Engine
     # Ensure we use the correct history directory relative to the backend folder
-    history_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "history")
+    history_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "history")
     engine = AnalyticsEngine(history_dir=history_dir)
     contract_parser = ContractParser()
     

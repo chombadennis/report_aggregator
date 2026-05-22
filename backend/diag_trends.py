@@ -11,7 +11,7 @@ def diag_dashboard_data():
     
     # 1. Initialize Engine
     try:
-        engine = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
+        engine = AnalyticsEngine(history_dir="cache/history", monthly_dir="cache/history_monthly")
         print("OK: AnalyticsEngine initialized.")
     except Exception as e:
         print(f"ERR: Initialization Failed: {e}")

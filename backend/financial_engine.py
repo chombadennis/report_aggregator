@@ -5,11 +5,11 @@ import math
 from analytics import AnalyticsEngine
 
 class FinancialEngine:
-    def __init__(self, analysis_dir="analysis", contract_sum=2127050827.72):
+    def __init__(self, analysis_dir="cache/analysis", contract_sum=2127050827.72):
         self.analysis_dir = analysis_dir
         self.contract_sum = contract_sum
         os.makedirs(self.analysis_dir, exist_ok=True)
-        self.analytics = AnalyticsEngine(history_dir="history", monthly_dir="cache/history_monthly")
+        self.analytics = AnalyticsEngine(history_dir="cache/history", monthly_dir="cache/history_monthly")
 
     def _parse_percent(self, val):
         """Converts '8.04%' or '8.04' to 0.0804 float"""
