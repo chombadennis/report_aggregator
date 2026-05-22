@@ -39,6 +39,7 @@ In the **Environment** tab of your Render Web Service, add the following variabl
 
 | Variable Name | Description | Example / Recommended Value |
 | :--- | :--- | :--- |
+| `PYTHON_VERSION` | Forces Render to use a stable Python environment (avoids build errors) | `3.11.9` |
 | `GOOGLE_CREDENTIALS_JSON` | Primary Google Service Account JSON string (Vertex AI access) | `{"type": "service_account", ...}` |
 | `GOOGLE_CREDENTIALS_JSON_2` | Secondary Google Service Account JSON string (Optional, for load balancing) | `{"type": "service_account", ...}` |
 | `ADMIN_EMAIL` | The designated administrator email address | `dennis.cmuhnene@gmail.com` |
