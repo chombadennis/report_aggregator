@@ -45,7 +45,7 @@ In the **Environment** tab of your Render Web Service, add the following variabl
 | `CLERK_JWKS_URL` | Clerk JWKS endpoint to retrieve signature verification keys | `https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json` |
 
 > [!NOTE]
-> Ensure **no** local `GOOGLE_CREDENTIALS_JSON` variable is needed in production unless you are explicitly writing to Google Cloud services. The application relies on direct `GEMINI_API_KEY` auth.
+> Ensure that `GOOGLE_CREDENTIALS_JSON` (and optionally `GOOGLE_CREDENTIALS_JSON_2` for load balancing) are properly configured as environment variables in Render production. The backend application authenticates to Google Vertex AI via Service Account OAuth2 credentials, and does not use direct `GEMINI_API_KEY` developer keys.
 
 ### Step 3: Attach Persistent Storage (Recommended)
 Since the backend compiles reports, summaries, and correspondence into files under `backend/cache` and `backend/temp_uploads`, deploying on a standard ephemeral server means files are deleted on restarts.

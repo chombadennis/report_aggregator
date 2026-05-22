@@ -117,6 +117,11 @@ async def require_admin(current_user: dict = Depends(get_current_user)):
         )
     return current_user
 
+@app.get("/api/ping")
+async def ping():
+    """Lightweight public keep-alive endpoint for UptimeRobot pings."""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 @app.get("/api/check-duplicate")
 async def check_duplicate(title: str, current_user: dict = Depends(get_current_user)):
     exists = aggregator.check_duplicate(title)

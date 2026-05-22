@@ -215,7 +215,7 @@ export default function TrendsDashboard() {
   const getMonthLastDay = (monthKey: string): string => {
     try {
       const [monthName, yearStr] = monthKey.split(' ');
-      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
       const monthIdx = months.indexOf(monthName);
       if (monthIdx === -1) return '31st';
       const year = parseInt(yearStr, 10);
@@ -314,7 +314,7 @@ export default function TrendsDashboard() {
                     return { label: '🔴 Critical Progress Delay', color: 'rose', bg: 'bg-rose-50', text: 'text-rose-600' };
                   };
                   const status = getStatus(slippage);
-                  
+
                   return (
                     <>
                       <div className={`p-3 ${status.bg} rounded-2xl group-hover:scale-110 transition-transform`}>
@@ -415,8 +415,8 @@ export default function TrendsDashboard() {
                 Admin Access
               </span>
             )}
-            <UserButton 
-              afterSignOutUrl="/login" 
+            <UserButton
+              afterSignOutUrl="/login"
               appearance={{
                 elements: {
                   avatarBox: "w-9 h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
@@ -471,26 +471,26 @@ export default function TrendsDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey={timeScale === 'weekly' ? "label" : "date"} 
+                    <XAxis
+                      dataKey={timeScale === 'weekly' ? "label" : "date"}
                       tickFormatter={formatXAxis}
-                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       tickFormatter={(value: any) => `K ${(value / 1000000).toFixed(0)}M`}
-                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
                       axisLine={false}
                       tickLine={false}
                       width={80}
                     />
-                    <RechartsTooltip 
-                      formatter={(value: any) => [`KES ${value.toLocaleString(undefined, {maximumFractionDigits: 0})}`, "Revenue"]}
+                    <RechartsTooltip
+                      formatter={(value: any) => [`KES ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, "Revenue"]}
                       labelFormatter={(label: any) => `Period: ${label}`}
-                      contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)'}}
+                      contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}
                     />
-                    <Line type="monotone" dataKey="revenue_earned" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line type="monotone" dataKey="revenue_earned" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -506,26 +506,26 @@ export default function TrendsDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey={timeScale === 'weekly' ? "label" : "date"} 
+                    <XAxis
+                      dataKey={timeScale === 'weekly' ? "label" : "date"}
                       tickFormatter={formatXAxis}
-                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
                       axisLine={false}
                       tickLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       tickFormatter={(value: any) => `${value}%`}
-                      tick={{fontSize: 10, fill: '#94a3b8'}}
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
                       axisLine={false}
                       tickLine={false}
                       width={40}
                     />
-                    <RechartsTooltip 
+                    <RechartsTooltip
                       formatter={(value: any) => [`${value}% Gap`, "Slippage"]}
                       labelFormatter={(label: any) => `Period: ${label}`}
-                      contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)'}}
+                      contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}
                     />
-                    <Line type="monotone" dataKey="slippage_gap" stroke="#f43f5e" strokeWidth={3} dot={{r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6}} />
+                    <Line type="monotone" dataKey="slippage_gap" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: '#f43f5e', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -702,7 +702,7 @@ export default function TrendsDashboard() {
                   <Target className="text-sunflower-gold-500 w-6 h-6" />
                   <h2 className="text-2xl font-bold">SWOT Analysis</h2>
                 </div>
-                
+
                 {isAdmin && (
                   <button
                     onClick={handleRegenerateInsights}
@@ -739,18 +739,18 @@ export default function TrendsDashboard() {
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
                   <div className="absolute -right-20 -top-20 w-60 h-60 bg-sunflower-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
                   <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-                  
+
                   <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
                     <Sparkles className="w-6 h-6 text-sunflower-gold-400 animate-pulse" />
                   </div>
-                  
+
                   <h3 className="text-lg font-bold mb-2 text-white">AI Strategy Engine Uninitialized</h3>
                   <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
-                    {isAdmin 
+                    {isAdmin
                       ? "No AI SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to Gemini AI to generate insights."
                       : "The AI-driven SWOT analysis and strategic recommendations are awaiting administrator generation. Please check back shortly once the administrator compiles the project report."}
                   </p>
-                  
+
                   {isAdmin && (
                     <button
                       onClick={handleRegenerateInsights}
@@ -823,9 +823,9 @@ export default function TrendsDashboard() {
             </div>
 
             {(() => {
-              if (!financials || !financials.monthly_financials || financials.monthly_financials.length === 0) 
+              if (!financials || !financials.monthly_financials || financials.monthly_financials.length === 0)
                 return <p className="text-slate-400 text-sm italic">Initializing monthly calibration data...</p>;
-              
+
               const completedMonth = financials.monthly_financials.filter((m: any) => !m.is_ongoing).slice(-1)[0];
               const ongoingMonth = financials.monthly_financials.find((m: any) => m.is_ongoing);
               const latestWeek = (financials.weekly_financials || []).slice(-1)[0];
@@ -874,7 +874,7 @@ export default function TrendsDashboard() {
                           <p className="text-3xl font-black text-sunflower-gold-400">{ongoingMonth.end_pct?.toFixed(2)}%</p>
                           <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest report</p>
                         </div>
-                        
+
                         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Baseline Month Target</p>
                           <p className="text-3xl font-black text-slate-900">{ongoingMonth.target_fixed_month_end?.toFixed(2)}%</p>
@@ -907,20 +907,20 @@ export default function TrendsDashboard() {
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-2">Recalibration Executive Summary</p>
                         <p className="text-base leading-relaxed text-white/90 font-medium max-w-4xl">
-                          Analysis of the last completed month (<strong>{completedMonth?.month}</strong>) shows the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged S-curve target of <strong>{completedMonth?.envisaged_production}%</strong>. 
-                          <br/><br/>
-                          As of the latest live report in mid-{ongoingMonth?.month.split(' ')[0]}, the cumulative variance has widened to <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline S-curve. 
-                          To hit the newly recalibrated milestone of <strong>{ongoingMonth?.target_rolling_month_end}%</strong> by {ongoingMonth?.month} {ongoingMonth?.month ? getMonthLastDay(ongoingMonth.month) : '31st'}, the contractor must maintain a strict velocity of 
+                          Analysis of the last completed month (<strong>{completedMonth?.month}</strong>) shows the project achieved <strong>{completedMonth?.actual_production}%</strong> production against an envisaged S-curve target of <strong>{completedMonth?.envisaged_production}%</strong>.
+                          <br /><br />
+                          As of the latest live report in mid-{ongoingMonth?.month.split(' ')[0]}, the cumulative variance has widened to <span className="text-sunflower-gold-400 font-black">{Math.abs(variance).toFixed(2)}%</span> behind the project baseline S-curve.
+                          To hit the newly recalibrated milestone of <strong>{ongoingMonth?.target_rolling_month_end}%</strong> by {ongoingMonth?.month} {ongoingMonth?.month ? getMonthLastDay(ongoingMonth.month) : '31st'}, the contractor must maintain a strict velocity of
                           <span className="text-sunflower-gold-400 font-black"> {ongoingMonth?.required_weekly}% per week</span> for the remainder of {ongoingMonth?.month}.
                         </p>
-                        
+
                         <div className="mt-6 pt-6 border-t border-white/10">
                           <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-2">P.S. Mathematical Logic & S-Curve Forgiveness</p>
                           <p className="text-[11px] text-white/60 leading-relaxed italic">
-                            The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> represents the true cumulative S-curve progress deficit. The S-curve expected progress to be at <strong>{latestWeek?.envisaged_pct_work?.toFixed(2)}%</strong>, but actual progress is <strong>{latestWeek?.pct_work?.toFixed(2)}%</strong>. 
-                            <br/><br/>
-                            This is fundamentally distinct from the pure calendar <span className="text-white font-bold">Slippage Gap of {latestWeek?.slippage_gap?.toFixed(2)}%</span> (which is the elapsed project time of <strong>{latestWeek?.pct_time?.toFixed(2)}%</strong> minus work completed). If the system used a straight linear mathematical baseline, the contractor would be heavily penalized for the naturally slow site mobilization phase, and the deficit would incorrectly match the massive {latestWeek?.slippage_gap?.toFixed(2)}% slippage gap. 
-                            <br/><br/>
+                            The <span className="text-white font-bold">{Math.abs(variance).toFixed(2)}% variance</span> represents the true cumulative S-curve progress deficit. The S-curve expected progress to be at <strong>{latestWeek?.envisaged_pct_work?.toFixed(2)}%</strong>, but actual progress is <strong>{latestWeek?.pct_work?.toFixed(2)}%</strong>.
+                            <br /><br />
+                            This is fundamentally distinct from the pure calendar <span className="text-white font-bold">Slippage Gap of {latestWeek?.slippage_gap?.toFixed(2)}%</span> (which is the elapsed project time of <strong>{latestWeek?.pct_time?.toFixed(2)}%</strong> minus work completed). If the system used a straight linear mathematical baseline, the contractor would be heavily penalized for the naturally slow site mobilization phase, and the deficit would incorrectly match the massive {latestWeek?.slippage_gap?.toFixed(2)}% slippage gap.
+                            <br /><br />
                             Instead, the mathematical S-Curve mathematically forgives the slow start. It calculates that the project was only ever expected to be at {latestWeek?.envisaged_pct_work?.toFixed(2)}% by this date. This true, realistic {Math.abs(variance).toFixed(2)}% backlog is the exact mathematical deficit that forced the required weekly velocity to shift from the original baseline up to the current <strong>{ongoingMonth?.required_weekly}%</strong> in order to recover the timeline.
                           </p>
                         </div>
@@ -1046,11 +1046,10 @@ export default function TrendsDashboard() {
               <button
                 onClick={handleGenerateProgress}
                 disabled={generatingProgress || !isAdmin}
-                className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
-                  !isAdmin 
-                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50' 
+                className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${!isAdmin
+                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
                     : 'bg-white text-slate-900 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
+                  }`}
               >
                 {!isAdmin ? (
                   <>
@@ -1215,11 +1214,10 @@ export default function TrendsDashboard() {
               <button
                 onClick={downloadProgressReport}
                 disabled={downloadingDoc}
-                className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl ${
-                  downloadingDoc 
-                    ? 'bg-slate-400 cursor-not-allowed shadow-none text-white' 
+                className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl ${downloadingDoc
+                    ? 'bg-slate-400 cursor-not-allowed shadow-none text-white'
                     : 'bg-vivid-tangerine-500 hover:bg-vivid-tangerine-600 shadow-vivid-tangerine-500/20 text-white hover:scale-[1.02] active:scale-95'
-                }`}
+                  }`}
               >
                 {downloadingDoc ? (
                   'Generating DOCX... Please Wait'
@@ -1256,7 +1254,7 @@ export default function TrendsDashboard() {
           <div className="text-left">
             <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
-            
+
             {/* NeuralAxis Labs Branding Logo */}
             <div className="flex items-center gap-2.5 mt-4">
               <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
@@ -1286,18 +1284,18 @@ export default function TrendsDashboard() {
           <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full text-center relative overflow-hidden shadow-2xl">
             <div className="absolute -right-20 -top-20 w-60 h-60 bg-sunflower-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-            
+
             <div className="relative z-10">
               <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-sunflower-gold-500/20 to-vivid-tangerine-500/20 animate-pulse" />
                 <Loader2 className="w-10 h-10 text-sunflower-gold-400 animate-spin relative z-10" />
               </div>
-              
+
               <h3 className="text-2xl font-black text-white mb-3">AI Engine Processing</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-8">
                 Gemini AI is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
               </p>
-              
+
               <div className="flex flex-col gap-2">
                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-500 rounded-full w-4/5 animate-pulse" />
