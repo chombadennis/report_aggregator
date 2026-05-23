@@ -233,7 +233,7 @@ class AnalyticsEngine:
                 
                 # Use date string as key for absolute uniqueness
                 date_key = w_start.strftime("%Y-%m-%d")
-                if date_key in unique_trends: continue
+                if date_key in unique_trends and unique_trends[date_key].get("value", 0) > 0: continue
                 
                 # Extract Contractual/Financial context from Master
                 # Schema: pct_work, instructions, challenges, health_safety, security
@@ -335,7 +335,7 @@ class AnalyticsEngine:
                 w_start = ReportParser()._parse_weekly_start_date(period) or datetime.min
             
             date_key = w_start.strftime("%Y-%m-%d")
-            if date_key in unique_trends or date_key in consumed_weekly_dates: continue
+            if date_key in unique_trends and unique_trends[date_key].get("value", 0) > 0: continue
             
             # Detect schema
             labour_data = d.get("labour_daily") or d.get("labour") or {}
