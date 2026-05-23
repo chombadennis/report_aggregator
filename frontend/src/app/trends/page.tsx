@@ -152,10 +152,6 @@ export default function TrendsDashboard() {
             return res.json();
           })
           .then(res => {
-            console.log("--- [FRONTEND DEBUG] Trends API response received:", res);
-            console.log("Weekly Trends Count:", res?.weekly?.length);
-            console.log("Weekly Trends List:", res?.weekly);
-            console.log("Daily Trends Count:", res?.daily?.length);
             setData(res);
             if (typeof window !== 'undefined' && userId) {
               sessionStorage.setItem('allowed_user', userId);
@@ -194,9 +190,6 @@ export default function TrendsDashboard() {
             return res.json();
           })
           .then(res => {
-            console.log("--- [FRONTEND DEBUG] Financials API response received:", res);
-            console.log("Weekly Financials Count:", res?.weekly_financials?.length);
-            console.log("Weekly Financials List:", res?.weekly_financials);
             setFinancials(res);
           })
           .catch(err => console.error("Financials fetch failed", err));

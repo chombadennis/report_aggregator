@@ -770,15 +770,15 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <h4 className="font-bold text-vivid-tangerine-955 text-sm sm:text-base mb-1 break-words">
+                    <h4 className="font-bold text-vivid-tangerine-955 text-sm sm:text-base mb-1 break-words select-text">
                       {doc.title || doc.ai_analysis?.title || "Untitled Document"}
                     </h4>
-                    <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words">
-                      From: <span className="text-vivid-tangerine-900">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900">{doc.recipient}</span>
+                    <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words select-text">
+                      From: <span className="text-vivid-tangerine-900 select-text">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900 select-text">{doc.recipient}</span>
                     </p>
                     <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-xl border border-vanilla-custard-100 shadow-inner">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mb-2 pb-2 border-b border-vanilla-custard-200/60">
-                        <span className="text-[10px] font-bold text-vivid-tangerine-955 font-serif truncate max-w-[85%]">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2 pb-2 border-b border-vanilla-custard-200/60">
+                        <span className="text-xs font-bold text-slate-800 font-serif select-text break-words">
                           Document: {doc.title || doc.ai_analysis?.title || "Untitled Document"}
                         </span>
                         <span className="text-[8px] font-black uppercase text-vivid-tangerine-600 tracking-widest whitespace-nowrap">
