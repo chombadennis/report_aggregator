@@ -597,12 +597,31 @@ async def restore_cache(file: UploadFile = File(...), current_user: dict = Depen
         target_dir = "cache"
         os.makedirs(target_dir, exist_ok=True)
         
-        # Extract all files safely
-        zip_archive.extractall(target_dir)
+        # Extract all files safely, stripping any 'cache/' or 'backend/cache/' prefix to avoid nested directories (like cache/cache)
+        extracted_count = 0
+        for member in zip_archive.infolist():
+            filename = member.filename.replace("\\", "/").lstrip("/")
+            
+            if filename.startswith("backend/cache/"):
+                cleaned_path = filename[len("backend/cache/"):]
+            elif filename.startswith("cache/"):
+                cleaned_path = filename[len("cache/"):]
+            else:
+                cleaned_path = filename
+                
+            if not cleaned_path or cleaned_path.endswith("/"):
+                continue
+                
+            target_path = os.path.join(target_dir, cleaned_path)
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            
+            with zip_archive.open(member) as source, open(target_path, "wb") as target:
+                shutil.copyfileobj(source, target)
+            extracted_count += 1
         
         return {
             "status": "success",
-            "msg": f"Successfully restored cache! Extracted {len(namelist)} items directly onto the persistent disk."
+            "msg": f"Successfully restored cache! Extracted {extracted_count} items directly onto the persistent disk."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to extract and restore cache: {str(e)}")
