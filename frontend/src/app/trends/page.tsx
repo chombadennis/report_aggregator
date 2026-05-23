@@ -495,7 +495,7 @@ export default function TrendsDashboard() {
             <div className="bg-vivid-tangerine-100 p-2 rounded-xl">
               <TrendingUp className="text-vivid-tangerine-600 w-6 h-6" />
             </div>
-            <h1 className="text-4xl font-black tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900">
               Project Performance <span className="text-vivid-tangerine-600">Analytics</span>
             </h1>
           </div>
@@ -751,7 +751,7 @@ export default function TrendsDashboard() {
                           </div>
 
                           {/* X-Axis Date */}
-                          <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
+                          <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${isMobile || timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
                             {formatXAxis(label)}
                           </span>
                         </div>
@@ -1116,7 +1116,7 @@ export default function TrendsDashboard() {
                 <ShieldCheck className="text-emerald-400 w-8 h-8" />
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Claims & Risk Verdict</span>
               </div>
-              <h2 className="text-3xl font-bold mb-4">Contractual Exposure Level: <span className={insights?.claim_verdict === 'High' ? 'text-rose-500' : 'text-sunflower-gold-500'}>{insights?.claim_verdict}</span></h2>
+              <h2 className="text-xl sm:text-3xl font-bold mb-4">Contractual Exposure Level: <span className={insights?.claim_verdict === 'High' ? 'text-rose-500' : 'text-sunflower-gold-500'}>{insights?.claim_verdict}</span></h2>
               <p className="text-slate-400 text-sm leading-relaxed mb-8">
                 {insights?.executive_summary.substring(0, 200)}...
               </p>

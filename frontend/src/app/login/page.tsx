@@ -17,7 +17,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen flex flex-col justify-center items-center px-4 overflow-hidden bg-slate-950">
+    <main className="relative min-h-screen flex flex-col justify-center items-center px-4 py-8 sm:py-0 overflow-y-auto bg-slate-950">
       {/* Background Glowing Orbs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-sunflower-gold-500/10 blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-vivid-tangerine-500/10 blur-3xl pointer-events-none" />
@@ -26,7 +26,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       {/* Branded Logo and Title Header */}
-      <div className="relative z-10 text-center mb-8 max-w-md animate-fade-in">
+      <div className="relative z-10 text-center mb-4 sm:mb-8 max-w-md animate-fade-in">
         <Link href="/" className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all mb-4">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 text-vivid-tangerine-400">
             <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       {/* Glassmorphic Container for Clerk SignIn */}
       <div className="relative z-10 w-full max-w-[440px] rounded-3xl p-1 bg-gradient-to-br from-white/10 via-white/5 to-white/0 shadow-2xl backdrop-blur-xl border border-white/10">
-        <div className="bg-slate-900/60 rounded-[22px] overflow-hidden flex flex-col justify-center items-center py-6 px-4">
+        <div className="bg-slate-900/60 rounded-[22px] overflow-hidden flex flex-col justify-center items-center py-4 sm:py-6 px-3 sm:px-4">
           <SignIn
             routing="hash"
             afterSignInUrl={redirectUrl}
@@ -76,7 +76,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="relative z-10 mt-8 text-center">
+      <div className="relative z-10 mt-4 sm:mt-8 text-center">
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
           Secured with Clerk &amp; Cryptographic Signatures
         </p>
