@@ -169,9 +169,13 @@ class AnalyticsEngine:
                                 # USE GLOBAL ReportParser() DIRECTLY
                                 data["_sort_date"] = ReportParser()._parse_weekly_start_date(data["reporting_period"])
                                 all_data.append(data)
+                                print(f"--- [DIAGNOSTIC SUCCESS] Successfully read cache file {cf} (Period: {data['reporting_period']})", flush=True)
                             elif source == "daily" and "date" in data:
                                 all_data.append(data)
-                    except: continue
+                                print(f"--- [DIAGNOSTIC SUCCESS] Successfully read cache file {cf} (Daily Date: {data['date']})", flush=True)
+                    except Exception as e:
+                        print(f"--- [DIAGNOSTIC ERROR] Failed to read cache file {cf}: {e}", flush=True)
+                        continue
 
         for f_name in history_files:
             file_path = os.path.join(target_dir, f_name)
@@ -198,8 +202,10 @@ class AnalyticsEngine:
                         data["_sort_date"] = start_dt
                         data["_display_date"] = period
                         all_data.append(data)
+                        print(f"--- [DIAGNOSTIC SUCCESS] Successfully read history file {file_path} (Period: {period})", flush=True)
             except Exception as e:
-                logger.error(f"Error reading {f}: {e}")
+                logger.error(f"Error reading {f_name}: {e}")
+                print(f"--- [DIAGNOSTIC ERROR] Failed to read history file {file_path}: {e}", flush=True)
         
         all_data.sort(key=lambda x: x.get("_sort_date", datetime.min) if isinstance(x.get("_sort_date"), datetime) else datetime.min)
         return all_data

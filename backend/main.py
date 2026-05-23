@@ -626,6 +626,25 @@ async def restore_cache(file: UploadFile = File(...), current_user: dict = Depen
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to extract and restore cache: {str(e)}")
 
+@app.get("/api/admin/debug-cache")
+async def debug_cache(current_user: dict = Depends(require_admin)):
+    """A diagnostic endpoint to inspect the files present on the persistent disk."""
+    import os
+    results = {}
+    directories = [
+        "cache",
+        "cache/history",
+        "cache/history_monthly",
+        "cache/cache",
+        "cache/cache/history"
+    ]
+    for folder in directories:
+        if os.path.exists(folder):
+            results[folder] = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+        else:
+            results[folder] = "DIRECTORY_DOES_NOT_EXIST"
+    return results
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
