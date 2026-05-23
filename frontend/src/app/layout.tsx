@@ -9,6 +9,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Construction Report Aggregator",
   description: "Professional aggregation system",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

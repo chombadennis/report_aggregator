@@ -78,7 +78,7 @@ export default function TrendsDashboard() {
       setInsights(newInsights);
     } catch (err: any) {
       console.error(err);
-      setRegenerateError(err.message || "Failed to contact Gemini AI");
+      setRegenerateError(err.message || "Failed to contact AI Engine");
     } finally {
       setIsRegenerating(false);
     }
@@ -695,47 +695,47 @@ export default function TrendsDashboard() {
                             className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
                             style={{ height: `${Math.max(height, 5)}%` }}
                           >
-                            {/* Improved Tooltip (Doodle) */}
+                            {/* Improved Tooltip (Doodle) - Responsive & Compact on Mobile */}
                             <div className={`absolute bottom-4 
                             ${i < 2 ? 'left-0 translate-x-0' : i > activeTrend.length - 3 ? 'right-0 translate-x-0' : 'left-1/2 -translate-x-1/2'} 
-                            bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-5 py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
+                            bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-3.5 sm:px-5 py-3 sm:py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-52 sm:w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
 
-                              <div className="flex justify-between items-center mb-3">
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-2 h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
-                                  <span className="font-black uppercase tracking-widest text-[8px] text-white/60">Intelligence Report</span>
+                              <div className="flex justify-between items-center mb-2 sm:mb-3">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
+                                  <span className="font-black uppercase tracking-widest text-[7px] sm:text-[8px] text-white/60">Intelligence Report</span>
                                 </div>
-                                <span className="text-[8px] font-bold text-white/30 uppercase">{label}</span>
+                                <span className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase">{label}</span>
                               </div>
 
-                              <div className="flex justify-between items-end mb-4">
+                              <div className="flex justify-between items-end mb-3 sm:mb-4">
                                 <div>
-                                  <p className="text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
-                                  <p className="font-black text-3xl text-white leading-none">{val}</p>
+                                  <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
+                                  <p className="font-black text-2xl sm:text-3xl text-white leading-none">{val}</p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
-                                  <span className={`text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                  <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
+                                  <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
                                     {isDisrupted ? '⚠️ Disrupted' : '✅ Optimal'}
                                   </span>
                                 </div>
                               </div>
 
-                              <div className="bg-white/5 rounded-2xl p-3 mb-3 border border-white/5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="p-1 bg-blue-500/20 rounded-md">
-                                    <Layers className="w-3 h-3 text-blue-400" />
+                              <div className="bg-white/5 rounded-2xl p-2 sm:p-3 mb-2 sm:mb-3 border border-white/5">
+                                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                  <div className="p-0.5 sm:p-1 bg-blue-500/20 rounded-md">
+                                    <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
                                   </div>
-                                  <span className="text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
+                                  <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
                                 </div>
-                                <p className="text-[9px] text-white/80 leading-relaxed font-medium">
+                                <p className="text-[8px] sm:text-[9px] text-white/80 leading-relaxed font-medium line-clamp-2 sm:line-clamp-none">
                                   {typeof point.materials === 'string' ? point.materials : `📦 ${point.materials} categories delivered this period.`}
                                 </p>
                               </div>
 
                               {/* Executive Commentary */}
                               {point.prose_summary && (
-                                <div className="space-y-1">
+                                <div className="space-y-1 hidden sm:block">
                                   <span className="text-[7px] text-white/30 uppercase tracking-widest">Executive Verdict</span>
                                   <p className="text-[8px] text-white/50 leading-relaxed italic line-clamp-3">
                                     "{point.prose_summary.substring(0, 100)}..."
@@ -802,7 +802,7 @@ export default function TrendsDashboard() {
               {insights?._generated_at && (
                 <div className="text-[10px] font-bold text-slate-400 tracking-wider mb-6 uppercase flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                  <span>Last Analyzed by Gemini AI: {insights._generated_at}</span>
+                  <span>Last Analyzed by AI Engine: {insights._generated_at}</span>
                 </div>
               )}
 
@@ -824,7 +824,7 @@ export default function TrendsDashboard() {
                   <h3 className="text-lg font-bold mb-2 text-white">AI Strategy Engine Uninitialized</h3>
                   <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
                     {isAdmin
-                      ? "No AI SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to Gemini AI to generate insights."
+                      ? "No AI SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to AI Engine to generate insights."
                       : "The AI-driven SWOT analysis and strategic recommendations are awaiting administrator generation. Please check back shortly once the administrator compiles the project report."}
                   </p>
 
@@ -977,8 +977,8 @@ export default function TrendsDashboard() {
                     <div className="absolute top-0 right-0 p-6 opacity-10">
                       <TrendingUp className="w-20 h-20 text-sunflower-gold-500" />
                     </div>
-                    <div className="flex items-start gap-6 relative z-10">
-                      <div className="p-3 bg-sunflower-gold-500/20 rounded-2xl">
+                    <div className="flex items-start gap-0 sm:gap-6 relative z-10">
+                      <div className="p-3 bg-sunflower-gold-500/20 rounded-2xl hidden sm:block">
                         <AlertTriangle className="w-6 h-6 text-sunflower-gold-400" />
                       </div>
                       <div>
@@ -1370,7 +1370,7 @@ export default function TrendsDashboard() {
 
               <h3 className="text-2xl font-black text-white mb-3">AI Engine Processing</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-8">
-                Gemini AI is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
+                AI Engine is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
               </p>
 
               <div className="flex flex-col gap-2">

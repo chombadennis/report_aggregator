@@ -436,7 +436,8 @@ export default function Home() {
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
             <input
               value={title} onChange={(e) => setTitle(e.target.value)}
-              className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
+              disabled={!isAdmin}
+              className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
               placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "e.g. MONTHLY REPORT (APRIL 2026)"}
             />
             {isDuplicate && (
@@ -450,7 +451,8 @@ export default function Home() {
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Reporting Period</label>
             <input
               value={dates} onChange={(e) => setDates(e.target.value)}
-              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+              disabled={!isAdmin}
+              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
               placeholder={mode === 'weekly' ? "e.g. 6TH – 12TH APRIL 2026" : "e.g. APRIL 2026"}
             />
           </div>
@@ -458,7 +460,8 @@ export default function Home() {
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Time Lapsed (Weeks)</label>
             <input
               value={timeLapsed} onChange={(e) => setTimeLapsed(e.target.value)}
-              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+              disabled={!isAdmin}
+              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
               placeholder="e.g. 20 Weeks"
             />
           </div>
@@ -466,7 +469,8 @@ export default function Home() {
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Period Elapsed</label>
             <input
               value={pctPeriod} onChange={(e) => setPctPeriod(e.target.value)}
-              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+              disabled={!isAdmin}
+              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
               placeholder="e.g. 19.43%"
             />
           </div>
@@ -474,7 +478,8 @@ export default function Home() {
             <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Work Done</label>
             <input
               value={pctWork} onChange={(e) => setPctWork(e.target.value)}
-              className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+              disabled={!isAdmin}
+              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
               placeholder="e.g. 7.29%"
             />
           </div>
@@ -588,7 +593,7 @@ export default function Home() {
             Project Correspondence & Claims Ingestion
           </h2>
           <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">
-            Upload contractor letters, client instructions, EOT requests, or meeting minutes. Gemini AI will extract key claims and EOT risks to enrich your final reports.
+            Upload contractor letters, client instructions, EOT requests, or meeting minutes. AI Engine will extract key claims and EOT risks to enrich your final reports.
           </p>
         </div>
 
@@ -678,7 +683,7 @@ export default function Home() {
                   onChange={(e) => setDocSummary(e.target.value)}
                   rows={3}
                   className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 text-sm resize-none"
-                  placeholder="Leave blank to let Gemini scan the PDF and automatically summarize and analyze all key requests and EOT impacts."
+                  placeholder="Leave blank to let AI Engine scan the PDF and automatically summarize and analyze all key requests and EOT impacts."
                 />
               </div>
             </div>
@@ -769,7 +774,12 @@ export default function Home() {
                     <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words">
                       From: <span className="text-vivid-tangerine-900">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900">{doc.recipient}</span>
                     </p>
-                    <p className="text-xs text-vivid-tangerine-750 line-clamp-2">{doc.summary}</p>
+                    <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-xl border border-vanilla-custard-100 shadow-inner">
+                      <span className="text-[9px] font-black uppercase text-vivid-tangerine-600 tracking-widest block mb-1">📜 AI Summary Preview</span>
+                      <p className="text-xs text-vivid-tangerine-900 leading-relaxed font-medium line-clamp-3 md:line-clamp-4">
+                        {doc.summary || "No summary preview available."}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex md:flex-col justify-end items-stretch gap-2 min-w-[150px]">
