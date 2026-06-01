@@ -594,7 +594,7 @@ export default function TrendsDashboard() {
           </section>
         ) : (
           <section className="mb-12">
-            <div className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+            <div className="bg-white rounded-[2rem] p-4 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 sm:mb-10">
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Labour Force Momentum</h2>
@@ -628,9 +628,9 @@ export default function TrendsDashboard() {
                 {/* Scrollable Chart Viewport */}
                 <div className={`flex-1 ${isMobile ? 'h-56' : 'h-80'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
                   <div
-                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-6 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-32 pb-8'}`}
+                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-4 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-8 pb-8'}`}
                     style={{
-                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 44 : 76) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 48 : 256)}px`
+                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 44 : 76) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 32 : 64)}px`
                     }}
                   >
                     {/* Grid Lines */}
@@ -659,7 +659,7 @@ export default function TrendsDashboard() {
                             ? (timeScale === 'daily' ? 24 : 40)
                             : (timeScale === 'daily' ? 40 : 80);
                           const G = isMobile ? (timeScale === 'daily' ? 16 : 32) : 8;
-                          const P = isMobile ? 24 : 128;
+                          const P = isMobile ? 16 : 32;
                           const pxX = i * (W + G) + P + W / 2;
                           const chartHeight = isMobile ? 168 : 256;
 
