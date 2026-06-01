@@ -20,7 +20,7 @@ Thumbs.db
 *.log
 *.docx
 !backend/weekly_template.docx
-!backend/monthly_template.docx
+!backend/monthly_report_template.docx
 *.pdf
 extracted_images/
 screenshots/
