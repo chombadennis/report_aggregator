@@ -628,9 +628,9 @@ export default function TrendsDashboard() {
                 {/* Scrollable Chart Viewport */}
                 <div className={`flex-1 ${isMobile ? 'h-56' : 'h-80'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
                   <div
-                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? 'h-48 gap-1 px-6 pb-6' : 'h-72 gap-2 px-32 pb-8'}`}
+                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-6 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-32 pb-8'}`}
                     style={{
-                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 32 : 56) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 48 : 256)}px`
+                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 44 : 76) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 48 : 256)}px`
                     }}
                   >
                     {/* Grid Lines */}
@@ -654,15 +654,15 @@ export default function TrendsDashboard() {
                           const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
                           const val = p.value ?? p.labour ?? 0;
                           const y = 100 - ((val / max) * 100);
-                          
+
                           const W = isMobile 
                             ? (timeScale === 'daily' ? 24 : 40)
                             : (timeScale === 'daily' ? 40 : 80);
-                          const G = isMobile ? 4 : 8;
+                          const G = isMobile ? (timeScale === 'daily' ? 16 : 32) : 8;
                           const P = isMobile ? 24 : 128;
                           const pxX = i * (W + G) + P + W / 2;
                           const chartHeight = isMobile ? 168 : 256;
-                          
+
                           return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * chartHeight}`;
                         }).join(' ')}
                         fill="none"
