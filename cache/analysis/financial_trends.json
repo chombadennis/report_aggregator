@@ -3,5 +3,22 @@
   "last_updated": "",
   "daily_financials": [],
   "weekly_financials": [],
-  "monthly_financials": []
+  "monthly_financials": [
+    {
+      "month": "June 2026",
+      "start_pct": 0.0,
+      "end_pct": 0.0,
+      "actual_production": 0.0,
+      "envisaged_production": 5.54,
+      "variance": -5.54,
+      "is_ongoing": true,
+      "required_weekly": 1.29,
+      "target_fixed_month_end": 5.54,
+      "production_planned_fixed": 5.54,
+      "target_rolling_month_end": 5.54,
+      "production_required_rolling": 5.54,
+      "revenue_earned": 0.0,
+      "slippage_gap": 0.0
+    }
+  ]
 }

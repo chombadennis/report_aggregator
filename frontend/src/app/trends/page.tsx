@@ -59,6 +59,7 @@ export default function TrendsDashboard() {
 
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const [recalScale, setRecalScale] = useState<'weekly' | 'monthly'>('weekly');
 
   const handleRegenerateInsights = async () => {
     setIsRegenerating(true);
@@ -204,7 +205,8 @@ export default function TrendsDashboard() {
 
   const activeTrend = useMemo(() => {
     if (!data) return [];
-    return timeScale === 'weekly' ? data.weekly : data.daily;
+    // Fallback to weekly for Labour chart on monthly scale as we don't have monthly presence data points
+    return timeScale === 'daily' ? data.daily : data.weekly;
   }, [data, timeScale]);
 
   const activeFinancials = useMemo(() => {
@@ -520,7 +522,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
+                  <LineChart data={activeFinancials}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
                       dataKey={timeScale === 'weekly' ? "label" : "date"}
@@ -555,7 +557,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={timeScale === 'weekly' ? financials.weekly_financials : financials.daily_financials}>
+                  <LineChart data={activeFinancials}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
                       dataKey={timeScale === 'weekly' ? "label" : "date"}
@@ -911,6 +913,10 @@ export default function TrendsDashboard() {
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Last Completed Month: {completedMonth.month}</h3>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-6">
+                        <div className="bg-indigo-50 p-3.5 sm:p-6 rounded-3xl border border-indigo-100">
+                          <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-2">Envisaged Production</p>
+                          <p className="text-lg sm:text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
+                        </div>
                         <div className="bg-slate-50 p-3.5 sm:p-6 rounded-3xl border border-slate-100">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month Start</p>
                           <p className="text-lg sm:text-2xl font-black text-slate-900">{completedMonth.start_pct?.toFixed(2)}%</p>
@@ -922,10 +928,6 @@ export default function TrendsDashboard() {
                         <div className="bg-emerald-50 p-3.5 sm:p-6 rounded-3xl border border-emerald-100">
                           <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">Actual Production</p>
                           <p className="text-lg sm:text-2xl font-black text-emerald-600">+{completedMonth.actual_production?.toFixed(2)}%</p>
-                        </div>
-                        <div className="bg-indigo-50 p-3.5 sm:p-6 rounded-3xl border border-indigo-100">
-                          <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-2">Envisaged Production</p>
-                          <p className="text-lg sm:text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
                         </div>
                       </div>
                     </div>
@@ -1004,16 +1006,34 @@ export default function TrendsDashboard() {
 
           {/* Production Recalibration Chain Table */}
           <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-3 mb-8">
-              <Layers className="text-vivid-tangerine-600 w-6 h-6" />
-              <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
+            <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <Layers className="text-vivid-tangerine-600 w-6 h-6" />
+                <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
+              </div>
+              <div className="flex bg-slate-100 p-0.5 rounded-lg shadow-inner">
+                <button
+                  onClick={() => setRecalScale('weekly')}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Weekly
+                </button>
+                <button
+                  onClick={() => setRecalScale('monthly')}
+                  className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Monthly
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto rounded-[2rem] border border-slate-100">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reporting Week</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      {recalScale === 'weekly' ? 'Reporting Week' : 'Reporting Month'}
+                    </th>
                     <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start %</th>
                     <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End %</th>
                     <th className="p-2 sm:p-4 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-right">Actual (x)</th>
@@ -1023,38 +1043,76 @@ export default function TrendsDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(financials?.weekly_financials || []).map((w: any, i: number) => (
-                    <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                      <td className="p-2 sm:p-4">
-                        <p className="text-xs font-bold text-slate-700">{w.label}</p>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right">
-                        <p className="text-xs font-medium text-slate-400">{w.start_pct?.toFixed(2)}%</p>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right">
-                        <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right bg-emerald-50/20">
-                        <p className="text-xs font-black text-emerald-600">{w.weekly_actual?.toFixed(2)}%</p>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right bg-indigo-50/20">
-                        <p className="text-xs font-black text-indigo-600">{w.weekly_envisaged?.toFixed(2)}%</p>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right">
-                        <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                          {w.weekly_variance >= 0 ? '+' : ''}{w.weekly_variance?.toFixed(2)}%
-                        </span>
-                      </td>
-                      <td className="p-2 sm:p-4 text-right bg-sunflower-gold-50/30">
-                        <p className="text-xs font-black text-sunflower-gold-600">{w.required_future_rate?.toFixed(2)}%</p>
-                      </td>
-                    </tr>
-                  ))}
+                  {recalScale === 'weekly' ? (
+                    (financials?.weekly_financials || []).map((w: any, i: number) => (
+                      <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                        <td className="p-2 sm:p-4">
+                          <p className="text-xs font-bold text-slate-700">{w.label}</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <p className="text-xs font-medium text-slate-400">{w.start_pct?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-emerald-50/20">
+                          <p className="text-xs font-black text-emerald-600">{w.weekly_actual?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-indigo-50/20">
+                          <p className="text-xs font-black text-indigo-600">{w.weekly_envisaged?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                            {w.weekly_variance >= 0 ? '+' : ''}{w.weekly_variance?.toFixed(2)}%
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-sunflower-gold-50/30">
+                          <p className="text-xs font-black text-sunflower-gold-600">{w.required_future_rate?.toFixed(2)}%</p>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    (financials?.monthly_financials || []).map((m: any, i: number) => (
+                      <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                        <td className="p-2 sm:p-4">
+                          <p className="text-xs font-bold text-slate-700">{m.month}</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <p className="text-xs font-medium text-slate-400">{m.start_pct?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <p className="text-xs font-black text-slate-900">{m.end_pct?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-emerald-50/20">
+                          <p className="text-xs font-black text-emerald-600">{m.actual_production?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-indigo-50/20">
+                          <p className="text-xs font-black text-indigo-600">{m.envisaged_production?.toFixed(2)}%</p>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right">
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-md ${m.variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                            {m.variance >= 0 ? '+' : ''}{m.variance?.toFixed(2)}%
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-4 text-right bg-sunflower-gold-50/30">
+                          <p className="text-xs font-black text-sunflower-gold-600">{m.required_weekly?.toFixed(2)}%</p>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
             <div className="mt-6 p-4 bg-slate-900 rounded-2xl text-[10px] text-white/60 font-medium">
-              <span className="text-sunflower-gold-400 font-black">LOGIC:</span> Actual (x) is current production. Envisaged (y) is the required rate for that week based on remaining balance. Variance (k) = x - y. Recalibrated is the new target rate for the following week.
+              {recalScale === 'weekly' ? (
+                <span>
+                  <span className="text-sunflower-gold-400 font-black">LOGIC:</span> Actual (x) is current production. Envisaged (y) is the required rate for that week based on remaining balance. Variance (k) = x - y. Recalibrated is the new target rate for the following week.
+                </span>
+              ) : (
+                <span>
+                  <span className="text-sunflower-gold-400 font-black">LOGIC:</span> Actual (x) is current monthly production. Envisaged (y) is the required rate for that month based on the baseline S-curve. Variance (k) = x - y. Recalibrated is the new required weekly velocity calculated at month end.
+                </span>
+              )}
             </div>
           </section>
 

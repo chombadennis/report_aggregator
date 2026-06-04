@@ -185,72 +185,116 @@ class FinancialEngine:
                 m_key = f"{m_name} {m_year}"
                 month_groups[m_key].append(w)
         
+        import datetime
+        current_date = datetime.datetime.now()
+        current_m_key = current_date.strftime("%B %Y")
+        
         sorted_months = sorted(month_groups.keys(), key=lambda k: datetime.datetime.strptime(k, "%B %Y"))
+        if current_m_key not in sorted_months:
+            sorted_months.append(current_m_key)
+            sorted_months.sort(key=lambda k: datetime.datetime.strptime(k, "%B %Y"))
+            
+        contract_start = datetime.datetime(2025, 11, 24)
+        total_contract_days = 731.0
         
         for m_key in sorted_months:
             group = month_groups[m_key]
             
-            # Start of month: End % of previous month OR start of first week
-            # To be accurate: start_pct of first week of the month
-            m_start_pct = group[0]["start_pct"]
-            m_end_pct = group[-1]["end_pct"]
+            # Start of month: end % of previous month OR start of first week
+            m_idx = sorted_months.index(m_key)
+            prev_m_key = sorted_months[m_idx-1] if m_idx > 0 else None
+            
+            if prev_m_key and prev_m_key in month_groups and len(month_groups[prev_m_key]) > 0:
+                prev_fin = next((m for m in monthly_financials if m["month"] == prev_m_key), None)
+                m_start_pct = prev_fin["end_pct"] if prev_fin else month_groups[prev_m_key][-1]["end_pct"]
+            elif len(group) > 0:
+                m_start_pct = group[0]["start_pct"]
+            else:
+                m_start_pct = 0.0
+                
+            if len(group) > 0:
+                m_end_pct = group[-1]["end_pct"]
+            else:
+                m_end_pct = m_start_pct
+                
             m_actual = round(m_end_pct - m_start_pct, 2)
             
-            # Envisaged for the month
-            # Average linear target is ~0.96% per week. Month is ~4.345 weeks.
-            # So month envisaged is ~4.17%.
-            # Let's use the cumulative envisaged delta from the S-curve
-            m_envisaged_start = group[0]["start_envisaged_pct"]
-            m_envisaged_end = group[-1]["envisaged_pct_work"]
-            m_envisaged_total = round(m_envisaged_end - m_envisaged_start, 2)
+            # Days in month
+            import calendar
+            month_name, year_str = m_key.split()
+            year = int(year_str)
+            month_names = ["January", "February", "March", "April", "May", "June", 
+                           "July", "August", "September", "October", "November", "December"]
+            month_num = month_names.index(month_name.capitalize()) + 1
+            _, last_day_of_month = calendar.monthrange(year, month_num)
+            days_in_month = last_day_of_month
+
+            # Custom start-of-month daily target math
+            from parser import ReportParser
+            if len(group) > 0:
+                start_dt = ReportParser()._parse_weekly_start_date(group[0]["label"])
+            else:
+                start_dt = datetime.datetime(year, month_num, 1)
+                
+            if not start_dt:
+                start_dt = datetime.datetime(year, month_num, 1)
             
-            # The month is dynamically marked as 'ongoing' if it is the very latest month in the dataset
-            is_ongoing = (m_key == sorted_months[-1])
+            days_elapsed_at_start = (start_dt - contract_start).days
+            remaining_days_at_start = max(1.0, total_contract_days - days_elapsed_at_start)
+            t_pct = (100.0 - m_start_pct) / remaining_days_at_start
+            m_envisaged_total = round(t_pct * days_in_month, 2)
             
-            # Recalibrated required rate (using the last week of this month)
-            req_weekly = group[-1]["required_future_rate"]
+            # Determine is_ongoing with calendar-aware logic
+            is_ongoing = (year == current_date.year and month_num == current_date.month)
+            
+            # End of latest weekly report in/before this month
+            if len(group) > 0:
+                last_week_start_dt = ReportParser()._parse_weekly_start_date(group[-1]["label"])
+                if not last_week_start_dt:
+                    last_week_start_dt = datetime.datetime(year, month_num, last_day_of_month) - datetime.timedelta(days=6)
+                end_dt = last_week_start_dt + datetime.timedelta(days=6)
+            else:
+                if len(weekly_financials) > 0:
+                    latest_report = weekly_financials[-1]
+                    last_week_start_dt = ReportParser()._parse_weekly_start_date(latest_report["label"])
+                    if not last_week_start_dt:
+                        last_week_start_dt = datetime.datetime(year, month_num, 1) - datetime.timedelta(days=7)
+                    end_dt = last_week_start_dt + datetime.timedelta(days=6)
+                else:
+                    end_dt = datetime.datetime(year, month_num, 1) - datetime.timedelta(days=1)
+            
+            # Recalibrated required weekly velocity calculated at the end of the month
+            days_elapsed_at_end = (end_dt - contract_start).days + 1
+            remaining_days_at_end = max(1.0, total_contract_days - days_elapsed_at_end)
+            k_rate = (100.0 - m_end_pct) / remaining_days_at_end
+            required_weekly = round(k_rate * 7.0, 2)
             
             # --- RECALIBRATION LOGIC ---
             # 1. Target set at the VERY BEGINNING of the month (Static Milestone)
-            # Formula: Start % + (Required Rate at Start * Weeks in Month)
-            m_idx = sorted_months.index(m_key)
-            prev_m_key = sorted_months[m_idx-1] if m_idx > 0 else None
-            req_at_start = month_groups[prev_m_key][-1]["required_future_rate"] if prev_m_key else 0.96
-            
-            # Use 4.43 for 31-day months, 4.28 for 30-day, etc.
-            days_in_month = 31 # Default
-            if "April" in m_key or "June" in m_key or "September" in m_key or "November" in m_key:
-                days_in_month = 30
-            elif "February" in m_key:
-                days_in_month = 28 # Simplified
-            
-            weeks_in_month = days_in_month / 7.0
-            
-            # This is the "Fixed" target for the end of the month, set when the month began
-            target_fixed_month_end = round(m_start_pct + (req_at_start * weeks_in_month), 2)
-            production_planned_fixed = round(target_fixed_month_end - m_start_pct, 2)
+            target_fixed_month_end = round(m_start_pct + m_envisaged_total, 2)
+            production_planned_fixed = round(m_envisaged_total, 2)
 
             # 2. Rolling Target (Dynamic Milestone)
-            # This is where we SHOULD be by month end if we work at the CURRENT required rate starting from TODAY.
             if is_ongoing:
-                # Approximate remaining weeks in the month
-                # E.g. "11TH - 17TH MAY" means ~14 days left in a 31 day month = 2 weeks
-                # We can extract the last day from the label or use a simple approximation
-                # For high accuracy as requested: May 17th to May 31st is 14 days = 2.0 weeks.
-                # Let's dynamically calculate based on the last day in the label
-                last_day_match = re.search(r'(\d+)(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', group[-1]["label"], re.IGNORECASE)
-                if last_day_match:
-                    last_day = int(last_day_match.group(1))
-                    remaining_days = days_in_month - last_day
+                if len(group) > 0:
+                    last_day_match = re.search(r'(\d+)(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', group[-1]["label"], re.IGNORECASE)
+                    q = int(last_day_match.group(1)) if last_day_match else 0
                 else:
-                    remaining_days = days_in_month / 2.0 # fallback
-
-                remaining_weeks_in_month = remaining_days / 7.0
-                target_rolling_month_end = round(m_end_pct + (req_weekly * remaining_weeks_in_month), 2)
-                production_required_rolling = round(req_weekly * remaining_weeks_in_month, 2)
+                    q = 0
+                
+                w = days_in_month - q
+                H = k_rate * w
+                target_rolling_month_end = round(m_end_pct + H, 2)
+                production_required_rolling = round(H, 2)
             else:
-                target_rolling_month_end = round(m_start_pct + (req_weekly * weeks_in_month), 2)
-                production_required_rolling = round(req_weekly * weeks_in_month, 2)
+                weeks_in_month = days_in_month / 7.0
+                target_rolling_month_end = round(m_start_pct + (required_weekly * weeks_in_month), 2)
+                production_required_rolling = round(required_weekly * weeks_in_month, 2)
+
+            if len(group) > 0:
+                slippage_gap = round(group[-1]["slippage_gap"], 2)
+            else:
+                slippage_gap = round(weekly_financials[-1]["slippage_gap"], 2) if len(weekly_financials) > 0 else 0.0
 
             monthly_financials.append({
                 "month": m_key,
@@ -260,11 +304,13 @@ class FinancialEngine:
                 "envisaged_production": m_envisaged_total,
                 "variance": round(m_actual - m_envisaged_total, 2),
                 "is_ongoing": is_ongoing,
-                "required_weekly": req_weekly,
+                "required_weekly": required_weekly,
                 "target_fixed_month_end": target_fixed_month_end,
                 "production_planned_fixed": production_planned_fixed,
                 "target_rolling_month_end": target_rolling_month_end,
-                "production_required_rolling": production_required_rolling
+                "production_required_rolling": production_required_rolling,
+                "revenue_earned": round((m_end_pct / 100.0) * self.contract_sum, 2),
+                "slippage_gap": slippage_gap
             })
 
 
