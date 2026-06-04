@@ -648,6 +648,32 @@ async def restore_cache(file: UploadFile = File(...), current_user: dict = Depen
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to extract and restore cache: {str(e)}")
 
+@app.get("/api/admin/backup-cache")
+async def backup_cache(current_user: dict = Depends(require_admin)):
+    """Zips the persistent cache directory and streams it as a ZIP file download."""
+    import zipfile
+    import io
+    from fastapi.responses import StreamingResponse
+    
+    zip_buffer = io.BytesIO()
+    cache_dir = "cache"
+    if os.path.exists(cache_dir):
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(cache_dir):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    # Preserve relative path inside the zip file
+                    relative_path = os.path.relpath(full_path, os.path.dirname(cache_dir)).replace("\\", "/")
+                    zf.write(full_path, relative_path)
+                    
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=production_cache.zip"}
+    )
+
+
 @app.get("/api/admin/debug-cache")
 async def debug_cache(current_user: dict = Depends(require_admin)):
     """A diagnostic endpoint to inspect the files present on the persistent disk."""
