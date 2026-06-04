@@ -619,18 +619,18 @@ export default function TrendsDashboard() {
               </div>
 
               {/* SVG Chart with Y-Axis */}
-              <div className={`relative ${isMobile ? 'h-64 w-[98vw] left-1/2 -translate-x-1/2' : 'h-96 w-full'} flex mt-4`}>
+              <div className={`relative ${isMobile ? 'h-96 w-[98vw] left-1/2 -translate-x-1/2' : 'h-[32rem] w-full'} flex mt-4`}>
                 {/* Y-Axis Labels - Sticky on left */}
-                <div className={`${isMobile ? 'w-10 h-48 pb-6 pr-1 text-[9px]' : 'w-14 h-72 pb-8 pr-3 text-[10px]'} flex flex-col justify-between font-bold text-slate-400 text-right bg-white z-30 sticky left-0`}>
+                <div className={`${isMobile ? 'w-10 h-48 pb-6 pr-1 text-[9px]' : 'w-14 h-72 pb-8 pr-3 text-[10px]'} flex flex-col justify-between font-bold text-slate-400 text-right bg-white z-30 sticky left-0 mt-32`}>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) * 1.1)}</span>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) / 2)}</span>
                   <span>0</span>
                 </div>
 
                 {/* Scrollable Chart Viewport */}
-                <div className={`flex-1 ${isMobile ? 'h-56' : 'h-80'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
+                <div className={`flex-1 ${isMobile ? 'h-[22rem]' : 'h-[28rem]'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
                   <div
-                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-4 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-8 pb-8'}`}
+                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-4 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-8 pb-8'} mt-32`}
                     style={{
                       minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 44 : 76) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 32 : 64)}px`
                     }}
