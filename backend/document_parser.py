@@ -13,7 +13,7 @@ class DocumentParser:
         os.makedirs(self.docs_dir, exist_ok=True)
         os.makedirs(os.path.join(self.docs_dir, "pdfs"), exist_ok=True)
 
-    async def parse_document(self, pdf_path: str) -> dict:
+    async def parse_document(self, pdf_path: str, user_summary: str = "", existing_docs: list = None) -> dict:
         """
         Parses a project document (Contractor letter, Client request, etc.) using PyMuPDF 
         for local text extraction and Gemini for structured analytical claims analysis.
@@ -42,14 +42,32 @@ class DocumentParser:
             extracted_text = "Failed to extract text locally."
             is_scanned = True
 
+        # Build context from user summary and existing documents
+        context_str = ""
+        if user_summary.strip():
+            context_str += f"\n[USER-PROVIDED CONTEXT / BRIEF SUMMARY OF THIS DOCUMENT]:\n{user_summary.strip()}\n"
+            
+        if existing_docs:
+            context_str += "\n[EXISTING DOCUMENTS IN PROJECT REGISTER (FOR RELATIONSHIP & FLOW ANALYSIS)]:\n"
+            for doc in existing_docs:
+                context_str += f"- Title: {doc.get('title')}, Date: {doc.get('date_sent')}, Sender: {doc.get('sender')}, Recipient: {doc.get('recipient')}, Summary: {doc.get('summary')}\n"
+
         # 2. Formulate a rich claim and analysis prompt for Gemini
-        prompt = """
+        prompt = f"""
         You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Compliance Review AI for high-value housing projects.
         
         Analyze the attached project document (which could be a letter, formal request, EOT claim, site instruction, warning, or general report/minutes/lab tests) 
         for the Makindu Affordable Housing Project.
+        {context_str}
         
-        CRITICAL ENGINEERING STANDARDS FOR LAB CUBE TESTS:
+        INSTRUCTIONS FOR DETERMINING THE UNDERLYING THEME & EVALUATING THE DOCUMENT:
+        1. Identify the core theme of the document (e.g., roof structure layout, reinforcement steel test report, EOT claims, general correspondence).
+        2. ONLY evaluate concrete cube compressive strength test results (using the CRITICAL ENGINEERING STANDARDS FOR LAB CUBE TESTS below) if the document is actually a concrete cube compressive strength test report or specifically focuses on concrete cube test results.
+        3. Do NOT default to analyzing or emphasizing concrete cube test results for structural layouts, design drawings, reinforcement steel reports, or general correspondence that have nothing to do with concrete cube crushing tests.
+        4. Focus the detailed analysis, action items, and contractual implications on the ACTUAL theme of the document.
+        5. Flow & Relationship Analysis: Use the user-provided context and the list of existing documents in the project register to understand the flow of correspondence. If this document refers to a previously uploaded document (or one mentioned in the user-provided context, such as a prior 'REQUEST FOR CLARIFICATION'), explain how this document relates to/responds to it. If the referenced document is not found in the register, note it as an expected document not yet in the register.
+        
+        CRITICAL ENGINEERING STANDARDS FOR LAB CUBE TESTS (APPLY ONLY IF the document is a concrete cube test report):
         If the document contains concrete compressive cube crushing test results (BS 1881 / KS EAS 18-1 codes), you MUST check the age of the concrete at crushing:
         1. 7-Day / 8-Day Early Tests: Do NOT evaluate these early indicators against the final 28-day design strength class. Instead, apply the standard civil engineering rule where 7-day strength should yield approximately 65% to 70% of the 28-day characteristic strength:
            - Class C25/20 (M25): Expected strength at 7 days is >= 17 N/mm2.
@@ -60,14 +78,14 @@ class DocumentParser:
            - Only flag a concrete strength failure as a critical risk if a 28-day test falls below the designated target, or if a 7-day test is significantly deficient (below the 60% mark).
         
         Extract the following structured fields in valid JSON matching this schema:
-        {
+        {{
             "title": "string (the official subject, title, or a concise logical identifier for this document)",
             "summary": "string (a concise, 2-3 sentence executive summary of the document's main points)",
-            "detailed_analysis": "string (a highly detailed breakdown of what is discussed, including concrete strength analysis with specific crushing ages, concrete classes, and actual values if applicable)",
+            "detailed_analysis": "string (a highly detailed breakdown of the document's core theme, technical parameters, and any flow/relationships to other documents based on user context or register)",
             "requests_made": ["string (a list of all specific requests made by the sender - e.g., extension of time, payments, material approvals, additional info)"],
-            "action_items": ["string (a list of all concrete actions, decisions, or approvals required from the recipient)"],
-            "contractual_implications": "string (any potential contractual risks, liquidated damages implications, timeline adjustments, or concrete quality risks evaluating early ages correctly)"
-        }
+            "action_items": ["string (a list of all actions, decisions, or approvals required from the recipient, focused on the theme of this document)"],
+            "contractual_implications": "string (any potential contractual risks, liquidated damages implications, timeline adjustments, or concrete/material quality risks relevant to the actual document theme)"
+        }}
         
         Return ONLY valid JSON.
         """
@@ -120,18 +138,40 @@ class DocumentParser:
             # If visual OCR fallback fails OR it was not scanned to begin with, fall back to text-only analysis
             logger.info("Running text-only fallback analysis...")
             fallback_prompt = f"""
-            Analyze the following text content of a construction project document and extract details in valid JSON matching this schema:
+            You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Compliance Review AI for high-value housing projects.
+            
+            Analyze the following text content of a project document for the Makindu Affordable Housing Project.
+            {context_str}
+            
+            INSTRUCTIONS FOR DETERMINING THE UNDERLYING THEME & EVALUATING THE DOCUMENT:
+            1. Identify the core theme of the document (e.g., roof structure layout, reinforcement steel test report, EOT claims, general correspondence).
+            2. ONLY evaluate concrete cube compressive strength test results (using the CRITICAL ENGINEERING STANDARDS FOR LAB CUBE TESTS below) if the document text is actually a concrete cube compressive strength test report or specifically focuses on concrete cube test results.
+            3. Do NOT default to analyzing or emphasizing concrete cube test results for structural layouts, design drawings, reinforcement steel reports, or general correspondence that have nothing to do with concrete cube crushing tests.
+            4. Focus the detailed analysis, action items, and contractual implications on the ACTUAL theme of the document.
+            5. Flow & Relationship Analysis: Use the user-provided context and the list of existing documents in the project register to understand the flow of correspondence. If this document refers to a previously uploaded document (or one mentioned in the user-provided context, such as a prior 'REQUEST FOR CLARIFICATION'), explain how this document relates to/responds to it. If the referenced document is not found in the register, note it as an expected document not yet in the register.
+            
+            CRITICAL ENGINEERING STANDARDS FOR LAB CUBE TESTS (APPLY ONLY IF the document is a concrete cube test report):
+            If the document contains concrete compressive cube crushing test results (BS 1881 / KS EAS 18-1 codes), you MUST check the age of the concrete at crushing:
+            - 7-Day / 8-Day Early Tests: 7-day strength should yield approximately 65% to 70% of the 28-day characteristic strength:
+               - Class C25/20 (M25): Expected strength at 7 days is >= 17 N/mm2.
+               - Class C30/25 (M30): Expected strength at 7 days is >= 20 N/mm2.
+               - Class C15/12 (M15): Expected strength at 7 days is >= 10 N/mm2.
+            - Alarm Thresholds:
+               - If a 7-day or 8-day result meets or exceeds this 65% limit, classify as "Passing / On Track" with no immediate contractual risks.
+               - Only flag failure if a 28-day test falls below the designated target, or if a 7-day test is below 60%.
+            
+            Extract details in valid JSON matching this schema:
             {{
-                "title": "string",
-                "summary": "string",
-                "detailed_analysis": "string",
-                "requests_made": ["string"],
-                "action_items": ["string"],
-                "contractual_implications": "string"
+                "title": "string (the official subject, title, or a concise logical identifier for this document)",
+                "summary": "string (a concise, 2-3 sentence executive summary of the document's main points)",
+                "detailed_analysis": "string (a highly detailed breakdown of the document's core theme, technical parameters, and any flow/relationships to other documents based on user context or register)",
+                "requests_made": ["string (a list of all specific requests made by the sender)"],
+                "action_items": ["string (a list of all actions, decisions, or approvals required from the recipient, focused on the theme of this document)"],
+                "contractual_implications": "string (any potential contractual risks, liquidated damages implications, timeline adjustments, or concrete/material quality risks relevant to the actual document theme)"
             }}
             
             TEXT:
-            {extracted_text[:15000]} # Cap text to prevent huge prompts
+            {extracted_text[:15000]}
             """
             from ai_client import generate_summary_json
             try:

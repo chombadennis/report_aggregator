@@ -486,7 +486,29 @@ async def upload_document(
         with open(pdf_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
             
-        parsed_data = await document_parser.parse_document(pdf_path)
+        # Get existing documents to provide flow and relationship context to the AI
+        existing_docs = []
+        try:
+            if os.path.exists(docs_dir):
+                for f_name in os.listdir(docs_dir):
+                    if f_name.endswith(".json"):
+                        try:
+                            with open(os.path.join(docs_dir, f_name), "r") as f:
+                                doc_data = json.load(f)
+                                existing_docs.append({
+                                    "title": doc_data.get("title"),
+                                    "summary": doc_data.get("summary"),
+                                    "date_sent": doc_data.get("date_sent"),
+                                    "category": doc_data.get("category"),
+                                    "sender": doc_data.get("sender"),
+                                    "recipient": doc_data.get("recipient")
+                                })
+                        except Exception as e:
+                            print(f"Error loading existing document {f_name} metadata: {e}")
+        except Exception as e:
+            print(f"Error listing project documents: {e}")
+
+        parsed_data = await document_parser.parse_document(pdf_path, user_summary=summary, existing_docs=existing_docs)
         
         final_title = title.strip() if title.strip() else parsed_data.get("title", file.filename)
         final_summary = summary.strip() if summary.strip() else parsed_data.get("summary", "")
