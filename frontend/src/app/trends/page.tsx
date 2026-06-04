@@ -619,9 +619,9 @@ export default function TrendsDashboard() {
               </div>
 
               {/* SVG Chart with Y-Axis */}
-              <div className={`relative ${isMobile ? 'h-64' : 'h-96'} w-full flex mt-4`}>
+              <div className={`relative ${isMobile ? 'h-64 w-[98vw] left-1/2 -translate-x-1/2' : 'h-96 w-full'} flex mt-4`}>
                 {/* Y-Axis Labels - Sticky on left */}
-                <div className={`w-14 ${isMobile ? 'h-48 pb-6' : 'h-72 pb-8'} flex flex-col justify-between text-[10px] font-bold text-slate-400 pr-3 text-right bg-white z-30 sticky left-0`}>
+                <div className={`${isMobile ? 'w-10 h-48 pb-6 pr-1 text-[9px]' : 'w-14 h-72 pb-8 pr-3 text-[10px]'} flex flex-col justify-between font-bold text-slate-400 text-right bg-white z-30 sticky left-0`}>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) * 1.1)}</span>
                   <span>{Math.round((Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 100) / 2)}</span>
                   <span>0</span>
@@ -630,12 +630,9 @@ export default function TrendsDashboard() {
                 {/* Scrollable Chart Viewport */}
                 <div className={`flex-1 ${isMobile ? 'h-56' : 'h-80'} overflow-x-auto overflow-y-visible custom-scrollbar pb-12`}>
                   <div
-                    className={`relative border-b border-l border-slate-100 group/chart transition-all ${isMobile ? 'h-48 pb-6 px-4' : 'h-72 pb-8 px-8'}`}
+                    className={`relative flex items-end border-b border-l border-slate-100 group/chart transition-all ${isMobile ? ('h-48 px-4 pb-6 ' + (timeScale === 'daily' ? 'gap-4' : 'gap-8')) : 'h-72 gap-2 px-8 pb-8'}`}
                     style={{
-                      width: '100%',
-                      minWidth: isMobile && timeScale === 'daily' && activeTrend.length > 6
-                        ? `${activeTrend.length * 44 + 32}px`
-                        : '100%'
+                      minWidth: `${activeTrend.length * (isMobile ? (timeScale === 'daily' ? 44 : 76) : (timeScale === 'daily' ? 48 : 88)) + (isMobile ? 32 : 64)}px`
                     }}
                   >
                     {/* Grid Lines */}
@@ -645,133 +642,116 @@ export default function TrendsDashboard() {
                       <div className="w-full border-t border-slate-50 invisible"></div>
                     </div>
 
-                    {/* Content Container (absolutely positioned inside the padding of the parent chart div) */}
-                    <div className={`absolute inset-0 ${isMobile ? 'px-4 pb-6' : 'px-8 pb-8'} pointer-events-none`}>
-                      {/* Advanced Momentum Line Overlay */}
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                        <defs>
-                          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
-                            <stop offset="50%" stopColor="#f97316" stopOpacity="0.5" />
-                            <stop offset="100%" stopColor="#f97316" stopOpacity="0.1" />
-                          </linearGradient>
-                        </defs>
-                        {activeTrend.length > 0 && (
-                          <path
-                            d={activeTrend.map((p: any, i: number) => {
-                              const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
-                              const val = p.value ?? p.labour ?? 0;
-                              const y = 100 - ((val / max) * 100);
-                              
-                              const N = activeTrend.length;
-                              const paddingPct = isMobile ? 12 : 8;
-                              const pctX = N > 1 ? paddingPct + (i / (N - 1)) * (100 - 2 * paddingPct) : 50;
+                    {/* Advanced Momentum Line Overlay */}
+                    <svg className={`absolute inset-0 w-full h-full ${isMobile ? 'pb-6' : 'pb-8'} pointer-events-none z-10 overflow-visible`} preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
+                          <stop offset="50%" stopColor="#f97316" stopOpacity="0.5" />
+                          <stop offset="100%" stopColor="#f97316" stopOpacity="0.1" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d={activeTrend.map((p: any, i: number) => {
+                          const max = (Math.max(...activeTrend.map((pt: any) => pt.value ?? pt.labour ?? 0)) || 1) * 1.1;
+                          const val = p.value ?? p.labour ?? 0;
+                          const y = 100 - ((val / max) * 100);
 
-                              return `${i === 0 ? 'M' : 'L'} ${pctX} ${y}`;
-                            }).join(' ')}
-                            fill="none"
-                            stroke="url(#lineGrad)"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            className="transition-all duration-1000"
-                          />
-                        )}
-                      </svg>
+                          const W = isMobile 
+                            ? (timeScale === 'daily' ? 24 : 40)
+                            : (timeScale === 'daily' ? 40 : 80);
+                          const G = isMobile ? (timeScale === 'daily' ? 16 : 32) : 8;
+                          const P = isMobile ? 16 : 32;
+                          const pxX = i * (W + G) + P + W / 2;
+                          const chartHeight = isMobile ? 168 : 256;
 
-                      {/* Bars & Labels (absolutely positioned relative to the content area) */}
-                      {activeTrend.map((point: any, i: number) => {
-                        const val = point.value ?? point.labour ?? 0;
-                        const max = (Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 1) * 1.1;
-                        const height = (val / max) * 100;
-                        const isDisrupted = point.weather_disrupted;
-                        const isWeekend = point.is_weekend;
-                        const label = point.label || point.date;
+                          return `${i === 0 ? 'M' : 'L'} ${pxX} ${y * 0.01 * chartHeight}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke="url(#lineGrad)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
 
-                        const N = activeTrend.length;
-                        const paddingPct = isMobile ? 12 : 8;
-                        const pctX = N > 1 ? paddingPct + (i / (N - 1)) * (100 - 2 * paddingPct) : 50;
+                    {activeTrend.map((point: any, i: number) => {
+                      const val = point.value ?? point.labour ?? 0;
+                      const max = (Math.max(...activeTrend.map((p: any) => p.value ?? p.labour ?? 0)) || 1) * 1.1;
+                      const height = (val / max) * 100;
+                      const isDisrupted = point.weather_disrupted;
+                      const isWeekend = point.is_weekend;
+                      const label = point.label || point.date;
 
-                        return (
+                      return (
+                        <div key={i} className={`flex-none ${isMobile ? (timeScale === 'daily' ? 'w-6' : 'w-10') : (timeScale === 'daily' ? 'w-10' : 'w-20')} group relative flex flex-col items-center h-full justify-end hover:z-[60]`}>
+                          {/* Bar */}
                           <div
-                            key={i}
-                            className="absolute bottom-0 group flex flex-col items-center justify-end hover:z-[60] pointer-events-auto"
-                            style={{
-                              left: `${pctX}%`,
-                              transform: 'translateX(-50%)',
-                              width: isMobile 
-                                ? (timeScale === 'daily' ? '24px' : '40px')
-                                : (timeScale === 'daily' ? '40px' : '80px'),
-                              height: '100%'
-                            }}
+                            className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
+                            style={{ height: `${Math.max(height, 5)}%` }}
                           >
-                            {/* Bar */}
-                            <div
-                              className={`w-full rounded-t-xl transition-all duration-700 relative shadow-md ${isWeekend ? 'bg-slate-200' : isDisrupted ? 'bg-slate-500 shadow-inner' : 'bg-gradient-to-t from-vivid-tangerine-600 to-vivid-tangerine-400'} group-hover:scale-x-110 group-hover:brightness-110 z-20`}
-                              style={{ height: `${Math.max(height, 5)}%` }}
-                            >
-                              {/* Improved Tooltip (Doodle) - Responsive & Compact on Mobile */}
-                              <div className={`absolute bottom-4 
-                                ${i < 2 ? 'left-0 translate-x-0' : i > activeTrend.length - 3 ? 'right-0 translate-x-0' : 'left-1/2 -translate-x-1/2'} 
-                                bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-3.5 sm:px-5 py-3 sm:py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-52 sm:w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
+                            {/* Improved Tooltip (Doodle) - Responsive & Compact on Mobile */}
+                            <div className={`absolute bottom-4 
+                            ${i < 2 ? 'left-0 translate-x-0' : i > activeTrend.length - 3 ? 'right-0 translate-x-0' : 'left-1/2 -translate-x-1/2'} 
+                            bg-slate-900/95 backdrop-blur-md text-white text-[10px] px-3.5 sm:px-5 py-3 sm:py-4 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 w-52 sm:w-64 z-50 pointer-events-none shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-white/10`}>
 
-                                <div className="flex justify-between items-center mb-2 sm:mb-3">
-                                  <div className="flex items-center gap-1.5 sm:gap-2">
-                                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
-                                    <span className="font-black uppercase tracking-widest text-[7px] sm:text-[8px] text-white/60">Intelligence Report</span>
-                                  </div>
-                                  <span className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase">{label}</span>
+                              <div className="flex justify-between items-center mb-2 sm:mb-3">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
+                                  <span className="font-black uppercase tracking-widest text-[7px] sm:text-[8px] text-white/60">Intelligence Report</span>
                                 </div>
+                                <span className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase">{label}</span>
+                              </div>
 
-                                <div className="flex justify-between items-end mb-3 sm:mb-4">
-                                  <div>
-                                    <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
-                                    <p className="font-black text-2xl sm:text-3xl text-white leading-none">{val}</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
-                                    <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                      {isDisrupted ? '⚠️ Disrupted' : '✅ Optimal'}
-                                    </span>
-                                  </div>
+                              <div className="flex justify-between items-end mb-3 sm:mb-4">
+                                <div>
+                                  <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Peak Momentum</p>
+                                  <p className="font-black text-2xl sm:text-3xl text-white leading-none">{val}</p>
                                 </div>
+                                <div className="text-right">
+                                  <p className="text-[6px] sm:text-[7px] text-white/40 uppercase mb-0.5">Site Condition</p>
+                                  <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDisrupted ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                    {isDisrupted ? '⚠️ Disrupted' : '✅ Optimal'}
+                                  </span>
+                                </div>
+                              </div>
 
-                                <div className="bg-white/5 rounded-2xl p-2 sm:p-3 mb-2 sm:mb-3 border border-white/5">
-                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                                    <div className="p-0.5 sm:p-1 bg-blue-500/20 rounded-md">
-                                      <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
-                                    </div>
-                                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
+                              <div className="bg-white/5 rounded-2xl p-2 sm:p-3 mb-2 sm:mb-3 border border-white/5">
+                                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                                  <div className="p-0.5 sm:p-1 bg-blue-500/20 rounded-md">
+                                    <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
                                   </div>
-                                  <p className="text-[8px] sm:text-[9px] text-white/80 leading-relaxed font-medium line-clamp-2 sm:line-clamp-none">
-                                    {typeof point.materials === 'string' ? point.materials : `📦 ${point.materials} categories delivered this period.`}
+                                  <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
+                                </div>
+                                <p className="text-[8px] sm:text-[9px] text-white/80 leading-relaxed font-medium line-clamp-2 sm:line-clamp-none">
+                                  {typeof point.materials === 'string' ? point.materials : `📦 ${point.materials} categories delivered this period.`}
+                                </p>
+                              </div>
+
+                              {/* Executive Commentary */}
+                              {point.prose_summary && (
+                                <div className="space-y-1 hidden sm:block">
+                                  <span className="text-[7px] text-white/30 uppercase tracking-widest">Executive Verdict</span>
+                                  <p className="text-[8px] text-white/50 leading-relaxed italic line-clamp-3">
+                                    "{point.prose_summary.substring(0, 100)}..."
                                   </p>
                                 </div>
+                              )}
 
-                                {/* Executive Commentary */}
-                                {point.prose_summary && (
-                                  <div className="space-y-1 hidden sm:block">
-                                    <span className="text-[7px] text-white/30 uppercase tracking-widest">Executive Verdict</span>
-                                    <p className="text-[8px] text-white/50 leading-relaxed italic line-clamp-3">
-                                      "{point.prose_summary.substring(0, 100)}..."
-                                    </p>
-                                  </div>
-                                )}
-
-                                {/* Arrow Alignment - Points Down to Bar Bottom */}
-                                <div className={`absolute top-full 
-                                  ${i < 2 ? 'left-6' : i > activeTrend.length - 3 ? 'right-6' : 'left-1/2 -translate-x-1/2'} 
-                                  border-8 border-transparent border-t-slate-900`}></div>
-                              </div>
+                              {/* Arrow Alignment - Points Down to Bar Bottom */}
+                              <div className={`absolute top-full 
+                                ${i < 2 ? 'left-6' : i > activeTrend.length - 3 ? 'right-6' : 'left-1/2 -translate-x-1/2'} 
+                                border-8 border-transparent border-t-slate-900`}></div>
                             </div>
-
-                            {/* X-Axis Date */}
-                            <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${isMobile || timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
-                              {formatXAxis(label)}
-                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          {/* X-Axis Date */}
+                          <span className={`absolute top-full mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-tighter whitespace-nowrap transition-all ${isMobile || timeScale === 'daily' ? 'rotate-[-45deg] origin-top-left -translate-x-4' : ''}`}>
+                            {formatXAxis(label)}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
