@@ -1182,7 +1182,7 @@ export default function TrendsDashboard() {
                 <ShieldCheck className="text-emerald-400 w-8 h-8" />
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Claims & Risk Verdict</span>
               </div>
-              <h2 className="text-xl sm:text-3xl font-bold mb-4">Contractual Exposure Level: <span className={insights?.claim_verdict === 'High' ? 'text-rose-500' : 'text-sunflower-gold-500'}>{insights?.claim_verdict}</span></h2>
+              <h2 className="text-xl sm:text-3xl font-bold mb-4">Contractual Exposure Level: <span className={insights?.claim_verdict === 'Critical' || insights?.claim_verdict === 'High' ? 'text-rose-500' : insights?.claim_verdict === 'Moderate' ? 'text-sunflower-gold-500' : 'text-emerald-400'}>{insights?.claim_verdict}</span></h2>
               <p className="text-slate-400 text-sm leading-relaxed mb-8">
                 {insights?.executive_summary.substring(0, 200)}...
               </p>
@@ -1249,14 +1249,14 @@ export default function TrendsDashboard() {
               <div className="grid grid-cols-2 gap-6 mb-10">
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Risk Verdict</p>
-                  <p className={`text-2xl font-black ${insights?.claim_verdict === 'High' ? 'text-rose-500' : 'text-sunflower-gold-500'}`}>
+                  <p className={`text-2xl font-black ${insights?.claim_verdict === 'Critical' || insights?.claim_verdict === 'High' ? 'text-rose-500' : insights?.claim_verdict === 'Moderate' ? 'text-sunflower-gold-500' : 'text-emerald-400'}`}>
                     {insights?.claim_verdict}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Slippage Progress Analysis</p>
                   <p className="text-2xl font-black text-slate-900">
-                    {(globalProgress.time - globalProgress.work).toFixed(2)}%
+                    {currentSlippage.toFixed(2)}%
                   </p>
                 </div>
               </div>

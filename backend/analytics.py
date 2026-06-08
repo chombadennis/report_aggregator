@@ -449,12 +449,14 @@ class AnalyticsEngine:
 
             # Calculate hard-coded verdict to force AI consistency
             slippage = latest_fin.get("slippage_gap", 0) if latest_fin else 0
-            if slippage <= 15:
+            if slippage <= 10:
                 calculated_verdict = "Low"
-            elif slippage <= 25:
+            elif slippage <= 15:
                 calculated_verdict = "Moderate"
-            else:
+            elif slippage <= 25:
                 calculated_verdict = "High"
+            else:
+                calculated_verdict = "Critical"
 
         # Load all uploaded project correspondence to enrich the AI context!
         docs_text = ""
@@ -540,11 +542,12 @@ class AnalyticsEngine:
            - Summary of momentum and overall health.
            - CLAIM & RISK VERDICT (claim_verdict): 
              * IMPORTANT: Base this level ONLY on the Slippage Gap % levels below. IGNORE the "Projected Variance (Days)" or "Completion Date" when choosing this level.
-             * 'Low': If slippage is <= 15%. Frame as "Manageable operational variance."
-             * 'Moderate': If slippage is 15.1% - 25%. Frame as "Significant divergence requiring monitoring."
-             * 'High': If slippage is > 25%. Frame as "Critical schedule exposure."
+             * 'Low': If slippage is <= 10%. Frame as "Manageable operational variance."
+             * 'Moderate': If slippage is 10.1% - 15%. Frame as "Significant divergence requiring monitoring."
+             * 'High': If slippage is 15.1% - 25%. Frame as "Critical schedule exposure."
+             * 'Critical': If slippage is > 25%. Frame as "Urgent schedule recovery required."
            - CRITICAL STRICTURE: DO NOT mention the "Projected Variance" (e.g., '1209 Days LATE') or the estimated completion date (e.g., '18 Mar 2031') in the executive_summary or recommendations. These are for internal reference only. Instead, refer to the Slippage Gap %, Revenue earned, and the Recalibrated Monthly targets to describe the status.
-           - Ensure the executive_summary reflects the TONE of the assigned slippage level (Constructive for Low/Moderate, Urgent for High).
+           - Ensure the executive_summary reflects the TONE of the assigned slippage level (Constructive for Low/Moderate, Urgent for High/Critical).
 .
 
         Return the analysis in JSON matching this schema:
@@ -561,7 +564,7 @@ class AnalyticsEngine:
             }},
             "executive_summary": "string",
             "critical_advice": "string",
-            "claim_verdict": "string (Low/Moderate/High)"
+            "claim_verdict": "string (Low/Moderate/High/Critical)"
         }}
         """
         
