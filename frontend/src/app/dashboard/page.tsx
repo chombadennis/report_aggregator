@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { FileText, TrendingUp, ArrowRight } from 'lucide-react';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -391,26 +392,37 @@ export default function Home() {
         </div>
 
         {/* Dashboard Navigation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-10">
-          <Link href="/contract" className="group bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-sunflower-gold-400 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-widest bg-sunflower-gold-50 text-sunflower-gold-700 px-3 py-1.5 rounded-xl border border-sunflower-gold-200 shadow-sm">
-                Contract Summary
-              </span>
-              <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+          <Link href="/contract" className="group relative bg-white p-8 rounded-3xl shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-sunflower-gold-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-sunflower-gold-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
+            <div className="flex items-start justify-between relative z-10">
+              <div className="p-3.5 bg-sunflower-gold-50 rounded-2xl border border-sunflower-gold-100 text-sunflower-gold-600 transition-transform duration-300 group-hover:scale-110">
+                <FileText className="w-6 h-6" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-sunflower-gold-500 group-hover:text-white group-hover:border-sunflower-gold-400">
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </div>
             </div>
-            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Contract Summary</h3>
-            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 mt-1">Project details and scope of works</p>
+            <div className="mt-6 relative z-10">
+              <h3 className="text-lg font-bold text-slate-900 group-hover:text-sunflower-gold-700 transition-colors">Contract Summary</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">View project scope, baseline estimates, financial breakdown, and contract timelines.</p>
+            </div>
           </Link>
-          <Link href="/trends" className="group bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-vanilla-custard-100 hover:border-vivid-tangerine-400 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-widest bg-vivid-tangerine-50 text-vivid-tangerine-700 px-3 py-1.5 rounded-xl border border-vivid-tangerine-200 shadow-sm">
-                Trend Analysis
-              </span>
-              <span className="text-vivid-tangerine-400 group-hover:translate-x-1 transition-transform">→</span>
+
+          <Link href="/trends" className="group relative bg-white p-8 rounded-3xl shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-vivid-tangerine-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
+            <div className="flex items-start justify-between relative z-10">
+              <div className="p-3.5 bg-vivid-tangerine-50 rounded-2xl border border-vivid-tangerine-100 text-vivid-tangerine-600 transition-transform duration-300 group-hover:scale-110">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-vivid-tangerine-500 group-hover:text-white group-hover:border-vivid-tangerine-400">
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </div>
             </div>
-            <h3 className="font-bold text-sm sm:text-base text-vivid-tangerine-955 break-words">Trend Analysis</h3>
-            <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 mt-1">Visual performance & risk analysis</p>
+            <div className="mt-6 relative z-10">
+              <h3 className="text-lg font-bold text-slate-900 group-hover:text-vivid-tangerine-600 transition-colors">Trend & Performance Analysis</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily & weekly labor trends, weather disruptions, schedule slippages, and AI diagnostics.</p>
+            </div>
           </Link>
         </div>
 

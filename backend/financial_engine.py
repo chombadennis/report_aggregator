@@ -115,9 +115,27 @@ class FinancialEngine:
             pct_work = self._parse_percent(w.get("pct_work_done") or w.get("pct_work") or w.get("work_completed_percent"))
             pct_time = self._parse_percent(w.get("pct_period_elapsed") or w.get("pct_period") or w.get("time_elapsed_percent"))
             
-            # Weekly Chain Logic
-            weeks_elapsed = round((pct_time / 100.0) * TOTAL_WEEKS)
-            remaining_weeks = max(1, TOTAL_WEEKS - (weeks_elapsed - 1)) # Including this week
+            # Weekly Chain Logic (Using exact day-based remaining time for weekly calculations to avoid rounding discrepancies)
+            try:
+                start_dt = w.get("_sort_date")
+                if not isinstance(start_dt, datetime.datetime):
+                    start_dt = datetime.datetime.strptime(str(start_dt), "%Y-%m-%d")
+                end_dt = start_dt + datetime.timedelta(days=6)
+                
+                # Elapsed days at the start of the week (prior to this week)
+                days_elapsed_prev = (start_dt - contract_start).days
+                days_elapsed_prev = max(0, min(days_elapsed_prev, 731))
+                remaining_weeks = max(0.1, (731.0 - days_elapsed_prev) / 7.0)
+                
+                # Elapsed days at the end of the week (after this week)
+                days_elapsed_end = (end_dt - contract_start).days + 1
+                days_elapsed_end = max(0, min(days_elapsed_end, 731))
+                rem_weeks_next = max(0.1, (731.0 - days_elapsed_end) / 7.0)
+            except Exception:
+                # Fallback to fractional weeks elapsed from pct_time if date calculation fails
+                exact_weeks_elapsed = (pct_time / 100.0) * TOTAL_WEEKS
+                remaining_weeks = max(0.1, TOTAL_WEEKS - (exact_weeks_elapsed - 1.0))
+                rem_weeks_next = max(0.1, TOTAL_WEEKS - exact_weeks_elapsed)
             
             # For the first week in our list, if it's already at 6%, we can't assume 0% start 
             # unless it IS the first week of the project.
@@ -141,7 +159,6 @@ class FinancialEngine:
             envisaged_pct_work_cum = self._get_s_curve_target(pct_time)
             
             # Recalibrate for FUTURE (used for next week/month targets)
-            rem_weeks_next = max(1, TOTAL_WEEKS - weeks_elapsed)
             required_future_rate = round((100.0 - pct_work) / rem_weeks_next, 2)
             variance_cum = round(pct_work - envisaged_pct_work_cum, 2)
             

@@ -214,6 +214,11 @@ export default function TrendsDashboard() {
     return timeScale === 'weekly' ? (financials.weekly_financials || []) : (financials.daily_financials || []);
   }, [financials, timeScale]);
 
+  const latestFinancial = useMemo(() => {
+    if (!activeFinancials || activeFinancials.length === 0) return null;
+    return activeFinancials[activeFinancials.length - 1];
+  }, [activeFinancials]);
+
   const globalProgress = useMemo(() => {
     if (!data) return { work: 0, time: 0, timeStr: '0%', workStr: '0%' };
 
@@ -336,7 +341,7 @@ export default function TrendsDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4">Revenue Accrued</p>
             <div className="text-xl font-black text-slate-900 tracking-tight">
-              KES {(2127050827.72 * (globalProgress.work / 100) || 0).toLocaleString()}
+              KES {(latestFinancial ? latestFinancial.revenue_earned : (2127050827.72 * (globalProgress.work / 100) || 0)).toLocaleString()}
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -348,7 +353,7 @@ export default function TrendsDashboard() {
             <div className="p-5 sm:p-8 flex-1">
               <div className="flex justify-between items-start mb-6">
                 {(() => {
-                  const slippage = globalProgress.time - globalProgress.work;
+                  const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
                   const getStatus = (val: number) => {
                     if (val <= 10) return { label: '🟢 On Track', color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-600' };
                     if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'amber', bg: 'bg-amber-50', text: 'text-amber-600' };
@@ -373,7 +378,7 @@ export default function TrendsDashboard() {
                 })()}
               </div>
               {(() => {
-                const slippage = globalProgress.time - globalProgress.work;
+                const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
                 const getStatus = (val: number) => {
                   if (val <= 10) return { label: '🟢 On Track', color: 'bg-emerald-500' };
                   if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'bg-amber-500' };
@@ -393,7 +398,7 @@ export default function TrendsDashboard() {
             <div className="bg-slate-50 px-8 py-4">
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 {(() => {
-                  const slippage = globalProgress.time - globalProgress.work;
+                  const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
                   const getColor = (val: number) => {
                     if (val <= 10) return 'bg-emerald-500';
                     if (val <= 15) return 'bg-amber-500';
@@ -424,7 +429,10 @@ export default function TrendsDashboard() {
               </div>
               <div className="space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  KES 2.127B • Week {globalProgress.timeStr !== '0%' ? Math.round((globalProgress.time / 100) * 104) : 'N/A'}
+                  KES 2.127B • Week {(() => {
+                    const pctTime = latestFinancial ? latestFinancial.pct_time : globalProgress.time;
+                    return pctTime !== 0 ? Math.round((pctTime / 100) * 104) : 'N/A';
+                  })()}
                 </span>
               </div>
             </div>
@@ -465,20 +473,6 @@ export default function TrendsDashboard() {
                 }
               }}
             />
-            <div className="flex bg-slate-100 p-0.5 sm:p-1 rounded-xl shadow-inner">
-              <button
-                onClick={() => setTimeScale('daily')}
-                className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                Daily
-              </button>
-              <button
-                onClick={() => setTimeScale('weekly')}
-                className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                Weekly
-              </button>
-            </div>
           </div>
         </div>
       </nav>
@@ -599,7 +593,23 @@ export default function TrendsDashboard() {
             <div className="bg-white rounded-[2rem] p-4 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 sm:mb-10">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Labour Force Momentum</h2>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold">Labour Force Momentum</h2>
+                    <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+                      <button
+                        onClick={() => setTimeScale('daily')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        Daily
+                      </button>
+                      <button
+                        onClick={() => setTimeScale('weekly')}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        Weekly
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-sm text-slate-400 font-medium italic">Showing {timeScale} personnel trends</p>
                 </div>
                 <div className="flex gap-8">
@@ -1011,16 +1021,16 @@ export default function TrendsDashboard() {
                 <Layers className="text-vivid-tangerine-600 w-6 h-6" />
                 <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
               </div>
-              <div className="flex bg-slate-100 p-0.5 rounded-lg shadow-inner">
+              <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
                 <button
                   onClick={() => setRecalScale('weekly')}
-                  className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Weekly
                 </button>
                 <button
                   onClick={() => setRecalScale('monthly')}
-                  className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Monthly
                 </button>
