@@ -247,6 +247,11 @@ export default function TrendsDashboard() {
     return { work: maxWork, time: maxTime, workStr: maxWorkStr, timeStr: maxTimeStr };
   }, [data]);
 
+  const currentSlippage = useMemo(() => {
+    if (latestFinancial) return latestFinancial.slippage_gap;
+    return globalProgress.time - globalProgress.work;
+  }, [latestFinancial, globalProgress]);
+
   // Helper to shorten the labels for the X-Axis
   const formatXAxis = (tickItem: string) => {
     if (!tickItem) return "";
@@ -353,7 +358,7 @@ export default function TrendsDashboard() {
             <div className="p-5 sm:p-8 flex-1">
               <div className="flex justify-between items-start mb-6">
                 {(() => {
-                  const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
+                  const slippage = currentSlippage;
                   const getStatus = (val: number) => {
                     if (val <= 10) return { label: '🟢 On Track', color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-600' };
                     if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'amber', bg: 'bg-amber-50', text: 'text-amber-600' };
@@ -378,7 +383,7 @@ export default function TrendsDashboard() {
                 })()}
               </div>
               {(() => {
-                const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
+                const slippage = currentSlippage;
                 const getStatus = (val: number) => {
                   if (val <= 10) return { label: '🟢 On Track', color: 'bg-emerald-500' };
                   if (val <= 15) return { label: '🟡 Moderate Slippage', color: 'bg-amber-500' };
@@ -398,7 +403,7 @@ export default function TrendsDashboard() {
             <div className="bg-slate-50 px-8 py-4">
               <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 {(() => {
-                  const slippage = latestFinancial ? latestFinancial.slippage_gap : (globalProgress.time - globalProgress.work);
+                  const slippage = currentSlippage;
                   const getColor = (val: number) => {
                     if (val <= 10) return 'bg-emerald-500';
                     if (val <= 15) return 'bg-amber-500';
@@ -1208,7 +1213,7 @@ export default function TrendsDashboard() {
               <div className="w-48 h-48 rounded-full border-8 border-white/5 flex items-center justify-center relative">
                 <div className="absolute inset-4 rounded-full border-8 border-vivid-tangerine-500/20"></div>
                 <div className="text-center">
-                  <p className="text-5xl font-black mb-1">{Math.max(0, Math.round(globalProgress.time - globalProgress.work))}%</p>
+                  <p className="text-5xl font-black mb-1">{Math.max(0, Math.round(currentSlippage))}%</p>
                   <p className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Risk Variance</p>
                 </div>
               </div>
