@@ -431,7 +431,7 @@ class AnalyticsEngine:
             } for t in sorted_trends
         ]
 
-    async def generate_ai_insights(self, trends: Dict[str, Any], contract_context: Dict[str, Any], financials: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def generate_ai_insights(self, trends: List[Dict[str, Any]], contract_context: Dict[str, Any], financials: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Enhanced AI Insights with SWOT and detailed recommendations.
         """
@@ -457,6 +457,39 @@ class AnalyticsEngine:
                 calculated_verdict = "High"
             else:
                 calculated_verdict = "Critical"
+
+        # Enrich trends data with full raw materials specifically for the AI
+        enriched_trends = []
+        raw_weekly = self._get_all_data(source="weekly")
+        
+        # Build lookup dict of weekly reports (prioritizing duplicates with more materials data)
+        weekly_lookup = {}
+        for w in raw_weekly:
+            w_labels = [w.get("_display_date"), w.get("reporting_period"), w.get("report_date")]
+            for lbl in w_labels:
+                if lbl:
+                    key = str(lbl).strip().lower()
+                    existing = weekly_lookup.get(key)
+                    if not existing or len(w.get("materials_delivered", [])) > len(existing.get("materials_delivered", [])):
+                        weekly_lookup[key] = w
+                    
+        for t in trends:
+            t_copy = t.copy()
+            label_key = str(t.get("label", "")).strip().lower()
+            matching_w = weekly_lookup.get(label_key)
+            
+            if matching_w:
+                raw_mats = matching_w.get("materials_delivered", [])
+                t_copy["detailed_materials_delivered"] = [
+                    {
+                        "description": m.get("description") or m.get("Description") or "Unknown",
+                        "quantity": m.get("quantity") or m.get("Quantity") or "0",
+                        "units": m.get("units") or m.get("Units") or ""
+                    } for m in raw_mats
+                ]
+            else:
+                t_copy["detailed_materials_delivered"] = t.get("materials")
+            enriched_trends.append(t_copy)
 
         # Load all uploaded project correspondence to enrich the AI context!
         docs_text = ""
@@ -495,8 +528,8 @@ class AnalyticsEngine:
         PROJECT CONTEXT:
         {json.dumps(contract_context, indent=2)}
         
-        HISTORICAL TRENDS & QUALITATIVE DATA (Weather Comments & Prose Summaries):
-        {json.dumps(trends, indent=2)}
+        HISTORICAL TRENDS & QUALITATIVE DATA (Weather Comments, Prose Summaries, and Detailed Materials Delivered):
+        {json.dumps(enriched_trends, indent=2)}
         
         PRE-CALCULATED FINANCIAL & SLIPPAGE DATA:
         {json.dumps(financials, indent=2) if financials else "No financial data available."}
@@ -526,13 +559,19 @@ class AnalyticsEngine:
            - TONE: Maintain a highly constructive, partner-oriented tone. Frame delays as shared challenges to be solved with the contractor. Avoid alarmist language for moderate slippage.
  
         2. SWOT Analysis: Strengths, Weaknesses, Opportunities, and Threats. 
-           - Use the 'prose_summary', 'weather_comments', recalibration deltas, and the uploaded Project Correspondence/Communications to explain the momentum, risks, EOT claims, and timeline impacts.
+           - Use the 'prose_summary', 'weather_comments', 'detailed_materials_delivered', recalibration deltas, and the uploaded Project Correspondence/Communications to explain the momentum, risks, EOT claims, and timeline impacts.
+           - MATERIALS LOGISTICS & TIME-SERIES CORRELATION:
+             * Analyze the relationship between weekly material deliveries ('detailed_materials_delivered') and that week's work done % ('financial_progress').
+             * Check for immediate impacts: Did a specific shortage of cement, reinforcement steel, river sand, ballast, or water cause an immediate drop in that week's actual production?
+             * Check for lag & spillover effects: If production remained strong during a week of low material deliveries, check if it was buffered by high material deliveries in the preceding week(s).
+             * Forward-looking forecasting: Predict the production trajectory for the following week(s) based on the latest week's material delivery trend. If the latest week shows a critical shortage of primary materials, flag this as a threat and project a delay in subsequent works.
+             * Document these logistics patterns and forecasts explicitly in the Strengths, Weaknesses, and Threats sections of the SWOT.
            - STRICTURE: NEVER claim 'optimal' or 'clear' weather if the 'weather_comments' mention rain.
            - Review 'site_instructions' against their issuance dates: Did subsequent production (actual vs envisaged) improve after instructions were issued?
-           - Strengths (e.g., consistent labour, recovering slippage in specific weeks)
-           - Weaknesses (e.g., production shortfall in April, widening variance)
+           - Strengths (e.g., consistent labour, recovering slippage in specific weeks, surplus material delivery buffer)
+           - Weaknesses (e.g., production shortfall in April, widening variance, critical material shortages/logistical bottlenecks)
            - Opportunities (e.g., clear weather windows, catching up to the recalibrated May target)
-           - Threats (e.g., liquidated damages risk, security incidents)
+           - Threats (e.g., liquidated damages risk, security incidents, upcoming production delay due to trailing materials deficit)
         
         2. STAKEHOLDER RECOMMENDATIONS:
            - TO THE CLIENT (PM): Strategic moves to protect the budget and timeline.
