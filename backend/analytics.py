@@ -21,6 +21,39 @@ class AnalyticsEngine:
         m = re.search(r"\d+", str(v))
         return int(m.group(0)) if m else 0
 
+    def _extract_materials_from_weekly(self, data: dict) -> list:
+        """
+        Extracts materials from weekly data, handling both the parsed schema 
+        ('materials_delivered': list of dicts) and compiled schema ('materials_sum': dict of dicts).
+        Returns a unified list of dicts: [{'description': ..., 'quantity': ..., 'units': ...}]
+        """
+        if not data:
+            return []
+            
+        m_delivered = data.get("materials_delivered")
+        if isinstance(m_delivered, list):
+            return [
+                {
+                    "description": m.get("description") or m.get("Description") or "Unknown",
+                    "quantity": str(m.get("quantity") or m.get("Quantity") or "0").strip(),
+                    "units": m.get("units") or m.get("Units") or m.get("unit") or m.get("Unit") or ""
+                } for m in m_delivered if m
+            ]
+            
+        m_sum = data.get("materials_sum")
+        if isinstance(m_sum, dict):
+            unified = []
+            for name, details in m_sum.items():
+                if not isinstance(details, dict): continue
+                unified.append({
+                    "description": name,
+                    "quantity": str(details.get("qty") or "0").strip(),
+                    "units": details.get("unit") or ""
+                })
+            return unified
+            
+        return []
+
     def get_daily_trends(self):
         raw_dailies = self._get_all_data(source="daily")
         
@@ -281,10 +314,10 @@ class AnalyticsEngine:
                 
                 if w_match:
                     # Found the specific weekly JSON - extract verbatim
-                    m_delivered = w_match.get("materials_delivered", [])
+                    valid_materials = self._extract_materials_from_weekly(w_match)
                     # Filter out materials with 0 quantity
-                    valid_materials = [m for m in m_delivered if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
-                    m_lines = [f"{m.get('description', 'Unknown').upper()} ({m.get('quantity', '0')})" for m in valid_materials[:5]]
+                    valid_materials = [m for m in valid_materials if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
+                    m_lines = [f"{m['description'].upper()} ({m['quantity']} {m['units']})".strip() for m in valid_materials[:5]]
                     materials_desc = f"{len(valid_materials)} categories: {', '.join(m_lines)}" if valid_materials else "0 categories"
                     # Adopt the true reporting period from the weekly file if available
                     period = w_match.get("_display_date", period)
@@ -391,11 +424,11 @@ class AnalyticsEngine:
                     if isinstance(day, dict) and (day.get("Comments") or day.get("Comments Given") or day.get("comments") or day.get("condition") or day.get("morning"))
                 ]
             
-            m_delivered = d.get("materials_delivered", [])
-            valid_mats = [m for m in m_delivered if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
-            m_lines = [f"{m.get('description', 'Unknown').upper()} ({m.get('quantity', '0')})" for m in valid_mats[:5]]
+            valid_mats = self._extract_materials_from_weekly(d)
+            valid_mats = [m for m in valid_mats if m.get("quantity") and str(m.get("quantity")).strip() not in ["0", "0.0", "None", "", "0 Tons", "0 kgs"]]
+            m_lines = [f"{m['description'].upper()} ({m['quantity']} {m['units']})".strip() for m in valid_mats[:5]]
             materials_val = f"{len(valid_mats)} categories: {', '.join(m_lines)}" if valid_mats else "0 categories"
-            if not m_delivered:
+            if not valid_mats and d.get("materials_count"):
                 materials_val = d.get("materials_count", 0)
                 
             unique_trends[date_key] = {
@@ -468,25 +501,21 @@ class AnalyticsEngine:
             w_labels = [w.get("_display_date"), w.get("reporting_period"), w.get("report_date")]
             for lbl in w_labels:
                 if lbl:
-                    key = str(lbl).strip().lower()
+                    key = str(lbl).strip().lower().replace("–", "-").replace("—", "-")
                     existing = weekly_lookup.get(key)
-                    if not existing or len(w.get("materials_delivered", [])) > len(existing.get("materials_delivered", [])):
+                    w_mats = self._extract_materials_from_weekly(w)
+                    exist_mats = self._extract_materials_from_weekly(existing) if existing else []
+                    if not existing or len(w_mats) > len(exist_mats):
                         weekly_lookup[key] = w
                     
         for t in trends:
             t_copy = t.copy()
             label_key = str(t.get("label", "")).strip().lower()
-            matching_w = weekly_lookup.get(label_key)
+            label_key_norm = label_key.replace("–", "-").replace("—", "-")
+            matching_w = weekly_lookup.get(label_key_norm)
             
             if matching_w:
-                raw_mats = matching_w.get("materials_delivered", [])
-                t_copy["detailed_materials_delivered"] = [
-                    {
-                        "description": m.get("description") or m.get("Description") or "Unknown",
-                        "quantity": m.get("quantity") or m.get("Quantity") or "0",
-                        "units": m.get("units") or m.get("Units") or ""
-                    } for m in raw_mats
-                ]
+                t_copy["detailed_materials_delivered"] = self._extract_materials_from_weekly(matching_w)
             else:
                 t_copy["detailed_materials_delivered"] = t.get("materials")
             enriched_trends.append(t_copy)
