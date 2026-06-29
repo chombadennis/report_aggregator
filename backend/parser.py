@@ -71,7 +71,7 @@ class ReportParser:
           Always extract 'units' as the unit of measure ONLY (e.g. "ft", "tons", "pcs", "bags", "tippers"). NEVER leave 'units' empty if a unit is visible in the table.
 
         - VISITORS: Locate the visitors section and extract the exact text verbatim (e.g. "2 visitors on site").
-        - INTERNS: Extract the specific values and names.
+        - INTERNS: Locate the dedicated Intern/Interns section of the report (independent of the Labour table; it may be headed as 'INTERN', 'INTERNS', 'INTERN-SDHUD', 'INTERNS-SDHUD', or similar variations, case-insensitive). Extract the specific types of interns (e.g., 'TVETS', 'SDHUD') and their counts/names into the interns dictionary. Do NOT mix this with the Labour table.
         
         Return the data in perfect JSON matching this schema:
         - If the page DOES NOT contain ANY of the target sections (e.g. it's just a cover page or photos), return an empty object {{}} or null for all fields. 

@@ -186,6 +186,12 @@ class ReportGenerator:
         summary_table = self._find_table_by_any_header_cell(doc, "SUMMARY OF WORK")
         if summary_table:
             self._fill_summary_works_table(summary_table, data.get("summary_to_date", {}))
+        else:
+            _, heading_para = self._find_para_by_text(doc, "Q. SUMMARY OF WORK")
+            if not heading_para:
+                _, heading_para = self._find_para_by_text(doc, "SUMMARY OF WORKS DONE TO DATE")
+            if heading_para and data.get("summary_to_date"):
+                self._insert_table_after_para(doc, heading_para, data.get("summary_to_date", {}))
 
         # 12. Normalize document layout formatting (indentation and alignment)
         self._normalize_document_formatting(doc)
@@ -554,3 +560,48 @@ class ReportGenerator:
                 new_row = table.add_row()
                 new_row.cells[0].text = component
                 new_row.cells[1].text = str(description)
+
+    def _insert_table_after_para(self, doc, para, data_dict):
+        """Creates and inserts a 2-column table after a specific paragraph with borders and bulleted items."""
+        from docx.enum.table import WD_TABLE_ALIGNMENT
+        
+        # 1. Create a table with 1 header row + N data rows
+        rows_count = 1 + len(data_dict)
+        table = doc.add_table(rows=rows_count, cols=2)
+        table.style = 'Table Grid'
+        table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        
+        # Style the header row
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = "Block / Component"
+        hdr_cells[1].text = "Summary of Work Done to Date"
+        for cell in hdr_cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    run.font.bold = True
+                    
+        # Populate the table rows
+        for idx, (component, description) in enumerate(data_dict.items(), start=1):
+            row_cells = table.rows[idx].cells
+            row_cells[0].text = str(component)
+            
+            # Format description as bullets (each bullet in its own paragraph)
+            desc_cell = row_cells[1]
+            desc_cell.text = "" # Clear default paragraph
+            
+            desc_str = str(description).strip()
+            # Split items by semicolon
+            parts = [p.strip() for p in desc_str.split(";") if p.strip()]
+            
+            if not parts or (len(parts) == 1 and parts[0].lower() == "none"):
+                desc_cell.paragraphs[0].text = "• None"
+            else:
+                first_text = parts[0]
+                desc_cell.paragraphs[0].text = f"• {first_text}" if not first_text.startswith("•") else first_text
+                for part in parts[1:]:
+                    p_text = f"• {part}" if not part.startswith("•") else part
+                    desc_cell.add_paragraph(p_text)
+            
+        # 2. Position the table directly after the heading paragraph using XML manipulation
+        para._p.addnext(table._tbl)
+        return table

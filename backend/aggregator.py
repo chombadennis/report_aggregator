@@ -107,9 +107,13 @@ class Aggregator:
         def _find_labour_value(labour_dict, canonical_name):
             """Case-insensitive fuzzy match against parsed keys. Always returns a string, never empty."""
             key_lower = canonical_name.lower().replace(" ", "").replace("&", "and")
+            if key_lower == "intern":
+                key_lower_alt = "interns"
+            else:
+                key_lower_alt = key_lower
             for k, v in labour_dict.items():
                 k_norm = k.lower().replace(" ", "").replace("&", "and")
-                if k_norm == key_lower:
+                if k_norm == key_lower or k_norm == key_lower_alt:
                     # Normalise: empty string or None → "0"
                     return str(v).strip() if str(v).strip() else "0"
             return "0"
@@ -132,6 +136,8 @@ class Aggregator:
         # Explicitly skip "TOTAL" and similar aggregate rows — these are computed, not categories.
         EXCLUDED_KEYS = {"total", "sub-total", "subtotal", "grand total"}
         canonical_lower = {c.lower().replace(" ", "").replace("&", "and") for c in LABOUR_CANONICAL_ORDER}
+        if "intern" in canonical_lower:
+            canonical_lower.add("interns")
         extra_categories = []
         for r in reports_by_day:
             if not r: continue
