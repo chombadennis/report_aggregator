@@ -52,13 +52,7 @@ class ProgressReportGenerator:
         section = doc.sections[0]
         section.different_first_page_header_footer = True
         
-        logo_path = self._get_circular_logo_path()
-        if logo_path:
-            header = section.header
-            header_p = header.paragraphs[0]
-            header_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            hrun = header_p.add_run()
-            hrun.add_picture(logo_path, width=Inches(0.8)) # Clean compact header logo
+        # Header logo removed at user request to keep logo on cover page only.
             
         # --- COVER PAGE ---
         self._add_cover_page(doc, data)
