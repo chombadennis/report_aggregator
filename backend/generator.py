@@ -322,17 +322,126 @@ class ReportGenerator:
 
                 first_block = False
 
+    def _set_cell_width(self, cell, width_in_inches):
+        """Sets cell width in inches and updates underlying XML elements to enforce it."""
+        import docx
+        cell.width = docx.shared.Inches(width_in_inches)
+        tcPr = cell._tc.get_or_add_tcPr()
+        tcW = tcPr.first_child_found_in("w:tcW")
+        if tcW is None:
+            from docx.oxml import OxmlElement
+            tcW = OxmlElement('w:tcW')
+            tcPr.append(tcW)
+        tcW.set(docx.oxml.ns.qn('w:w'), str(int(width_in_inches * 1440))) # 1 inch = 1440 dxa
+        tcW.set(docx.oxml.ns.qn('w:type'), 'dxa')
+
     def _fill_labour_table(self, table, labour_data):
         """
         Table 7 — CATEGORY | Mon | Tue | Wed | Thur | Fri | Sat | Sun.
-        Matches by category name. Extra categories inserted BEFORE TOTAL row.
-        TOTAL is always last.
+        Dynamically expands day columns into Day and Night shifts if night data exists for that day.
         """
-        # Clear all data cells first
+        import docx
+        import ast
+
+        days_header_map = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
+        
+        # 1. Determine which days have night data
+        days_with_night = [False] * 7
+        for day_idx in range(7):
+            for cat, values in labour_data.items():
+                if cat == "TOTAL":
+                    continue
+                if day_idx < len(values):
+                    val = values[day_idx]
+                    is_dict = isinstance(val, dict)
+                    if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
+                        try:
+                            val = ast.literal_eval(val)
+                            is_dict = isinstance(val, dict)
+                        except:
+                            pass
+                    if is_dict:
+                        n_val = str(val.get("Night", "0")).strip()
+                        if n_val not in ("0", "", "-"):
+                            days_with_night[day_idx] = True
+                            break
+
+        # 2. Build the target headers
+        new_headers = ["CATEGORY"]
+        for day_idx in range(7):
+            day_name = days_header_map[day_idx]
+            if days_with_night[day_idx]:
+                new_headers.append(f"{day_name} - Day")
+                new_headers.append(f"{day_name} - Night")
+            else:
+                new_headers.append(day_name)
+
+        num_cols = len(new_headers)
+
+        # 3. Expand table columns dynamically if needed
+        cols_to_add = num_cols - len(table.columns)
+        if cols_to_add > 0:
+            for _ in range(cols_to_add):
+                table.add_column(docx.shared.Inches(0.5))
+
+        # Copy run formatting helper
+        def copy_run_formatting(src_p, dest_p):
+            dest_p.alignment = src_p.alignment
+            dest_p.paragraph_format.space_before = src_p.paragraph_format.space_before
+            dest_p.paragraph_format.space_after = src_p.paragraph_format.space_after
+            if src_p.runs:
+                src_run = src_p.runs[0]
+                if not dest_p.runs:
+                    dest_p.add_run()
+                dest_run = dest_p.runs[0]
+                dest_run.font.name = src_run.font.name
+                dest_run.font.size = src_run.font.size
+                dest_run.font.bold = src_run.font.bold
+                dest_run.font.italic = src_run.font.italic
+                dest_run.font.color.rgb = src_run.font.color.rgb
+
+        # Helper to flatten 7 days of values to fit the table columns
+        def _get_flat_values(values):
+            flat_values = []
+            for day_idx in range(7):
+                val = values[day_idx] if day_idx < len(values) else "0"
+                is_dict = isinstance(val, dict)
+                if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
+                    try:
+                        val = ast.literal_eval(val)
+                        is_dict = isinstance(val, dict)
+                    except:
+                        pass
+                
+                if days_with_night[day_idx]:
+                    if is_dict:
+                        flat_values.append(str(val.get("Day", "0")).strip())
+                        flat_values.append(str(val.get("Night", "0")).strip())
+                    else:
+                        flat_values.append(str(val).strip())
+                        flat_values.append("0")
+                else:
+                    if is_dict:
+                        flat_values.append(str(val.get("Day", "0")).strip())
+                    else:
+                        flat_values.append(str(val).strip())
+            return flat_values
+
+        # 4. Fill header row and copy formatting
+        hdr_row = table.rows[0]
+        ref_hdr_p = hdr_row.cells[1].paragraphs[0] if len(hdr_row.cells) > 1 else None
+        for idx, header_text in enumerate(new_headers):
+            cell = hdr_row.cells[idx]
+            cell.text = header_text
+            if idx >= 8 and ref_hdr_p and cell.paragraphs:
+                copy_run_formatting(ref_hdr_p, cell.paragraphs[0])
+
+        # 5. Clear and pre-format data rows
         for row in table.rows[1:]:
-            for col_idx in range(1, 8):
-                if col_idx < len(row.cells):
-                    row.cells[col_idx].text = "0"
+            for col_idx in range(1, num_cols):
+                row.cells[col_idx].text = "0"
+                if col_idx >= 8 and len(row.cells) > 1 and row.cells[1].paragraphs and row.cells[col_idx].paragraphs:
+                    copy_run_formatting(row.cells[1].paragraphs[0], row.cells[col_idx].paragraphs[0])
 
         # Build set of category labels already in the template
         template_cats = {
@@ -340,8 +449,6 @@ class ReportGenerator:
             for row in table.rows[1:]
         }
 
-        # Fill matching rows using a two-pass approach to prevent partial match hijacking
-        # (e.g., preventing "Unskilled" from matching "Steel Unskilled" if an exact match exists)
         unmatched = {}
         used_rows = set()
 
@@ -353,7 +460,8 @@ class ReportGenerator:
             
             for tmpl_norm, row in template_cats.items():
                 if ai_norm == tmpl_norm:
-                    for i, val in enumerate(values):
+                    flat_vals = _get_flat_values(values)
+                    for i, val in enumerate(flat_vals):
                         col_idx = i + 1
                         if col_idx < len(row.cells):
                             row.cells[col_idx].text = str(val)
@@ -366,7 +474,6 @@ class ReportGenerator:
                 continue
             ai_norm = ai_cat.strip().upper().replace(" ", "").replace("&", "AND")
             
-            # Skip if we already matched this AI category in Pass 1
             already_matched = False
             for tmpl_norm in used_rows:
                 if ai_norm == tmpl_norm:
@@ -380,7 +487,8 @@ class ReportGenerator:
                 if tmpl_norm in used_rows:
                     continue
                 if ai_norm in tmpl_norm or tmpl_norm in ai_norm:
-                    for i, val in enumerate(values):
+                    flat_vals = _get_flat_values(values)
+                    for i, val in enumerate(flat_vals):
                         col_idx = i + 1
                         if col_idx < len(row.cells):
                             row.cells[col_idx].text = str(val)
@@ -394,7 +502,13 @@ class ReportGenerator:
         for ai_cat, values in unmatched.items():
             new_row = self._insert_row_before_last(table)
             new_row.cells[0].text = ai_cat
-            for i, val in enumerate(values):
+            # Set formatting for new columns in the newly inserted row
+            for col_idx in range(1, num_cols):
+                if col_idx >= 8 and len(new_row.cells) > 1 and new_row.cells[1].paragraphs and new_row.cells[col_idx].paragraphs:
+                    copy_run_formatting(new_row.cells[1].paragraphs[0], new_row.cells[col_idx].paragraphs[0])
+            
+            flat_vals = _get_flat_values(values)
+            for i, val in enumerate(flat_vals):
                 col_idx = i + 1
                 if col_idx < len(new_row.cells):
                     new_row.cells[col_idx].text = str(val)
@@ -402,10 +516,19 @@ class ReportGenerator:
         # Now fill the TOTAL row (always the last row)
         if "TOTAL" in labour_data:
             total_row = table.rows[-1]
-            for i, val in enumerate(labour_data["TOTAL"]):
+            flat_vals = _get_flat_values(labour_data["TOTAL"])
+            for i, val in enumerate(flat_vals):
                 col_idx = i + 1
                 if col_idx < len(total_row.cells):
                     total_row.cells[col_idx].text = str(val)
+
+        # 6. Apply precise cell widths to fit within 6.5 inch printable area
+        cat_width = 1.5
+        col_width = (6.5 - cat_width) / (num_cols - 1)
+        for row in table.rows:
+            self._set_cell_width(row.cells[0], cat_width)
+            for idx in range(1, num_cols):
+                self._set_cell_width(row.cells[idx], col_width)
 
     def _fill_weather_table(self, table, weather_data):
         """Table 10 — DAY | MORNING | AFTERNOON | EVENING | CONDITION"""

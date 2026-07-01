@@ -15,10 +15,35 @@ class AnalyticsEngine:
         self.monthly_dir = monthly_dir
 
     def _clean_val(self, v: Any) -> int:
-        """Extracts the first number from a string (e.g. '4(m)' -> 4)."""
+        """Extracts the first number from a string (e.g. '4(m)' -> 4), or sums Day/Night values if dict or string."""
+        if isinstance(v, dict):
+            d = self._clean_val(v.get("Day", 0))
+            n = self._clean_val(v.get("Night", 0))
+            return d + n
+            
         if isinstance(v, (int, float)):
             return int(v)
-        m = re.search(r"\d+", str(v))
+            
+        val_str = str(v).strip()
+        if val_str.startswith("{") and val_str.endswith("}"):
+            try:
+                import ast
+                parsed_val = ast.literal_eval(val_str)
+                if isinstance(parsed_val, dict):
+                    return self._clean_val(parsed_val)
+            except:
+                pass
+
+        # Check if string contains "Day:" and "Night:" pattern (e.g. "Day: 77, Night: 48")
+        val_lower = val_str.lower()
+        if "day:" in val_lower and "night:" in val_lower:
+            day_match = re.search(r"day:\s*(\d+)", val_str, re.IGNORECASE)
+            night_match = re.search(r"night:\s*(\d+)", val_str, re.IGNORECASE)
+            d = int(day_match.group(1)) if day_match else 0
+            n = int(night_match.group(1)) if night_match else 0
+            return d + n
+
+        m = re.search(r"\d+", val_str)
         return int(m.group(0)) if m else 0
 
     def _extract_materials_from_weekly(self, data: dict) -> list:

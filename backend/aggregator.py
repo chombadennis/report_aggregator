@@ -105,7 +105,7 @@ class Aggregator:
         ]
 
         def _find_labour_value(labour_dict, canonical_name):
-            """Case-insensitive fuzzy match against parsed keys. Always returns a string, never empty."""
+            """Case-insensitive fuzzy match against parsed keys. Returns dict, string, or 0."""
             key_lower = canonical_name.lower().replace(" ", "").replace("&", "and")
             if key_lower == "intern":
                 key_lower_alt = "interns"
@@ -114,8 +114,7 @@ class Aggregator:
             for k, v in labour_dict.items():
                 k_norm = k.lower().replace(" ", "").replace("&", "and")
                 if k_norm == key_lower or k_norm == key_lower_alt:
-                    # Normalise: empty string or None → "0"
-                    return str(v).strip() if str(v).strip() else "0"
+                    return v
             return "0"
 
         def _extract_numeric(val):
@@ -124,12 +123,33 @@ class Aggregator:
             m = re.match(r"(\d+)", str(val).strip())
             return int(m.group(1)) if m else 0
 
+        # Build day-by-day values
         labour_matrix = {}
         for cat in LABOUR_CANONICAL_ORDER:
             day_values = []
-            for r in reports_by_day:
+            for day_idx in range(7):
+                r = reports_by_day[day_idx]
                 val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
-                day_values.append(val)
+                
+                # Check if val is dict or string representation of dict
+                is_dict = isinstance(val, dict)
+                if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
+                    try:
+                        import ast
+                        val = ast.literal_eval(val)
+                        is_dict = isinstance(val, dict)
+                    except:
+                        pass
+                
+                if is_dict:
+                    d_val = str(val.get("Day", "0")).strip()
+                    n_val = str(val.get("Night", "0")).strip()
+                    if n_val in ("0", "", "-"):
+                        day_values.append(d_val if d_val else "0")
+                    else:
+                        day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
+                else:
+                    day_values.append(str(val).strip() if val else "0")
             labour_matrix[cat] = day_values
 
         # Dynamic expansion: detect any extra categories in the PDFs not in the canonical list.
@@ -152,27 +172,96 @@ class Aggregator:
 
         for cat in extra_categories:
             day_values = []
-            for r in reports_by_day:
+            for day_idx in range(7):
+                r = reports_by_day[day_idx]
                 val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
-                day_values.append(val)
+                
+                is_dict = isinstance(val, dict)
+                if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
+                    try:
+                        import ast
+                        val = ast.literal_eval(val)
+                        is_dict = isinstance(val, dict)
+                    except:
+                        pass
+                
+                if is_dict:
+                    d_val = str(val.get("Day", "0")).strip()
+                    n_val = str(val.get("Night", "0")).strip()
+                    if n_val in ("0", "", "-"):
+                        day_values.append(d_val if d_val else "0")
+                    else:
+                        day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
+                else:
+                    day_values.append(str(val).strip() if val else "0")
             labour_matrix[cat] = day_values
 
         # TOTAL row: Use verbatim from daily reports if available, otherwise sum — ALWAYS LAST
         total_per_day = []
+        all_cats_for_total = [cat for cat in labour_matrix.keys() if cat != "TOTAL"]
         for day_idx in range(7):
             r = reports_by_day[day_idx]
-            # Check if we have a verbatim TOTAL from the daily report
             verbatim_total = r.get("labour", {}).get("TOTAL") if r else None
+            
+            is_dict = isinstance(verbatim_total, dict)
+            if not is_dict and isinstance(verbatim_total, str) and verbatim_total.strip().startswith("{") and verbatim_total.strip().endswith("}"):
+                try:
+                    import ast
+                    verbatim_total = ast.literal_eval(verbatim_total)
+                    is_dict = isinstance(verbatim_total, dict)
+                except:
+                    pass
+            
             if verbatim_total:
-                total_per_day.append(str(verbatim_total))
+                if is_dict:
+                    vt_day = str(verbatim_total.get("Day", "0")).strip()
+                    vt_night = str(verbatim_total.get("Night", "0")).strip()
+                    if vt_night in ("0", "", "-"):
+                        total_per_day.append(vt_day if vt_day else "0")
+                    else:
+                        total_per_day.append({"Day": vt_day if vt_day else "0", "Night": vt_night})
+                else:
+                    total_per_day.append(str(verbatim_total).strip())
             else:
-                # Fallback to sum of categories if TOTAL is missing
-                day_total = sum(
-                    _extract_numeric(labour_matrix[cat][day_idx])
-                    for cat in all_cats_for_total
-                )
-                total_per_day.append(str(day_total) if day_total > 0 else "0")
+                # Fallback to sum of categories
+                day_has_night = False
+                for cat in all_cats_for_total:
+                    cat_val = labour_matrix[cat][day_idx]
+                    if isinstance(cat_val, dict):
+                        day_has_night = True
+                        break
+                
+                if day_has_night:
+                    sum_day = 0
+                    sum_night = 0
+                    for cat in all_cats_for_total:
+                        cat_val = labour_matrix[cat][day_idx]
+                        if isinstance(cat_val, dict):
+                            sum_day += _extract_numeric(cat_val.get("Day", "0"))
+                            sum_night += _extract_numeric(cat_val.get("Night", "0"))
+                        else:
+                            sum_day += _extract_numeric(cat_val)
+                    total_per_day.append({"Day": str(sum_day), "Night": str(sum_night)})
+                else:
+                    sum_day = sum(
+                        _extract_numeric(labour_matrix[cat][day_idx])
+                        for cat in all_cats_for_total
+                    )
+                    total_per_day.append(str(sum_day) if sum_day > 0 else "0")
         labour_matrix["TOTAL"] = total_per_day
+
+        # Build labour_daily mapping for analytics/history database format
+        labour_daily = {}
+        for day_idx, r in enumerate(reports_by_day):
+            if not r: continue
+            date_str = r.get("date")
+            parsed_dt = _parse_report_date(r)
+            norm_date = parsed_dt.strftime("%Y-%m-%d") if parsed_dt else date_str
+            if norm_date:
+                cat_map = {}
+                for cat in labour_matrix.keys():
+                    cat_map[cat] = labour_matrix[cat][day_idx]
+                labour_daily[norm_date] = cat_map
 
         # 2. Weather Grid
         weather_grid = []
@@ -314,6 +403,7 @@ class Aggregator:
 
         result = {
             "labour": labour_matrix,
+            "labour_daily": labour_daily,
             "weather": weather_grid,
             "works_by_day": works_by_day_summary,
             "materials_sum": materials_summary,
