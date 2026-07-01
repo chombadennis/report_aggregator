@@ -17,9 +17,18 @@ class AnalyticsEngine:
     def _clean_val(self, v: Any) -> int:
         """Extracts the first number from a string (e.g. '4(m)' -> 4), or sums Day/Night values if dict or string."""
         if isinstance(v, dict):
-            d = self._clean_val(v.get("Day", 0))
-            n = self._clean_val(v.get("Night", 0))
-            return d + n
+            day_sum = 0
+            night_sum = 0
+            for key, val in v.items():
+                key_lower = str(key).lower()
+                val_int = self._clean_val(val)
+                if "night" in key_lower:
+                    night_sum += val_int
+                elif "day" in key_lower:
+                    day_sum += val_int
+                else:
+                    day_sum += val_int
+            return day_sum + night_sum
             
         if isinstance(v, (int, float)):
             return int(v)
