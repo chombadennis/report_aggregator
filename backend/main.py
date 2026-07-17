@@ -683,8 +683,8 @@ async def clear_cache(pattern: str = Form(...), current_user: dict = Depends(req
     if not os.path.exists(cache_dir):
         return {"status": "success", "message": "Cache directory does not exist.", "deleted": []}
         
-    # Clean pattern to prevent path traversal (only allow alphanumeric, underscores, hyphens, stars, dots)
-    pattern_clean = re.sub(r'[^a-zA-Z0-9_\-\*\.]', '', pattern)
+    # Clean pattern to prevent path traversal (only allow alphanumeric, underscores, hyphens, stars, dots, slashes)
+    pattern_clean = re.sub(r'[^a-zA-Z0-9_\-\*\.\/]', '', pattern)
     search_path = os.path.join(cache_dir, pattern_clean)
     
     deleted_files = []
