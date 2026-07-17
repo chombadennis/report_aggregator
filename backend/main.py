@@ -674,6 +674,37 @@ async def backup_cache(current_user: dict = Depends(require_admin)):
     )
 
 
+@app.post("/api/admin/clear-cache")
+async def clear_cache(pattern: str = Form(...), current_user: dict = Depends(require_admin)):
+    """Securely deletes specific files from the cache directory on the persistent disk."""
+    import glob
+    import re
+    cache_dir = "cache"
+    if not os.path.exists(cache_dir):
+        return {"status": "success", "message": "Cache directory does not exist.", "deleted": []}
+        
+    # Clean pattern to prevent path traversal (only allow alphanumeric, underscores, hyphens, stars, dots)
+    pattern_clean = re.sub(r'[^a-zA-Z0-9_\-\*\.]', '', pattern)
+    search_path = os.path.join(cache_dir, pattern_clean)
+    
+    deleted_files = []
+    for filepath in glob.glob(search_path):
+        abs_path = os.path.abspath(filepath)
+        abs_cache_dir = os.path.abspath(cache_dir)
+        if abs_path.startswith(abs_cache_dir) and os.path.isfile(abs_path):
+            try:
+                os.remove(abs_path)
+                deleted_files.append(os.path.basename(abs_path))
+            except Exception as e:
+                print(f"Error removing {abs_path}: {e}")
+            
+    return {
+        "status": "success",
+        "message": f"Successfully deleted {len(deleted_files)} files matching pattern '{pattern_clean}'.",
+        "deleted": deleted_files
+    }
+
+
 @app.get("/api/admin/debug-cache")
 async def debug_cache(current_user: dict = Depends(require_admin)):
     """A diagnostic endpoint to inspect the files present on the persistent disk."""

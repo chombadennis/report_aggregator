@@ -244,8 +244,8 @@ class MonthlyAggregator:
                 "Store keeper", "Security", "Painters", "Intern"
             ]
             
-            # Map of normalized names to official names for better matching
-            official_names = {c.upper().replace(" ", ""): c for c in base_categories}
+            # Map of normalized names to official names for better matching (stripping all whitespaces and newlines)
+            official_names = {re.sub(r'\s+', '', c.upper()): c for c in base_categories}
             
             # Initialize with zeros in the correct order
             week_labour_matrix = {cat: ["0"] * 7 for cat in base_categories}
@@ -266,22 +266,23 @@ class MonthlyAggregator:
                         w_idx = days_of_week.index(dt.strftime("%A"))
                         if isinstance(categories, dict):
                             for cat, val in categories.items():
-                                cat_norm = cat.upper().replace(" ", "")
+                                cat_norm = re.sub(r'\s+', '', cat.upper())
                                 if cat_norm in official_names:
                                     official_cat = official_names[cat_norm]
                                     week_labour_matrix[official_cat][w_idx] = str(val)
                                 elif cat_norm == "TOTAL":
                                     week_labour_matrix["TOTAL"][w_idx] = str(val)
                                 else:
-                                    # If a brand new category is found, insert it before TOTAL
-                                    if cat not in week_labour_matrix:
+                                    # Clean category name (e.g. replace any internal newlines or multiple spaces)
+                                    cat_cleaned = re.sub(r'\s+', ' ', cat).strip()
+                                    if cat_cleaned not in week_labour_matrix:
                                         new_matrix = {}
                                         for k, v in week_labour_matrix.items():
                                             if k == "TOTAL":
-                                                new_matrix[cat] = ["0"] * 7
+                                                new_matrix[cat_cleaned] = ["0"] * 7
                                             new_matrix[k] = v
                                         week_labour_matrix = new_matrix
-                                    week_labour_matrix[cat][w_idx] = str(val)
+                                    week_labour_matrix[cat_cleaned][w_idx] = str(val)
                     except: pass
             
             weekly_labour_matrices.append(week_labour_matrix)

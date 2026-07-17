@@ -552,61 +552,88 @@ class ReportParser:
         Targeted extraction of Labour and Materials from Weekly Reports.
         Supports multi-page tables and split rows (where a cell spans two pages).
         """
-        labour_data = {}
+        labour_shifts = {}
         materials_data = []
         days_of_week = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
         
-        last_labour_cat = None # Track for split-row merging
+        last_labour_cat = None
+        last_labour_cols = None
+        last_col_mappings = None
 
         for page_idx, page in enumerate(doc):
             tables = page.find_tables()
             for table in tables:
                 raw_rows = table.extract()
-                if not raw_rows: continue
+                if not raw_rows or len(raw_rows) < 2: continue
                 headers = [str(c).strip().upper() for c in raw_rows[0] if c]
                 
                 # --- 1. Labour Matrix Detection & Continuation ---
                 is_labour = any("CATEGORY" in h for h in headers) and any(d in "".join(headers) for d in days_of_week)
-                is_continuation = len(raw_rows[0]) == 8 and last_labour_cat is not None and not is_labour
+                is_continuation = last_labour_cols is not None and len(raw_rows[0]) == last_labour_cols and not is_labour
                 
                 if is_labour or is_continuation:
-                    day_indices = {i: i for i in range(1, 8)} # Default for headerless
+                    # --- 2. Determine Column Mapping ---
                     if is_labour:
-                        day_indices = {}
-                        for i, h in enumerate(headers):
+                        last_labour_cols = len(raw_rows[0])
+                        col_mappings = {}
+                        for col_idx in range(1, len(raw_rows[0])):
+                            cell_text = str(raw_rows[0][col_idx] or "").strip().upper()
+                            # Find which day this column corresponds to
+                            matched_day_idx = -1
                             for d_idx, d_name in enumerate(days_of_week):
-                                if d_name in h: day_indices[d_idx] = i
+                                if d_name in cell_text:
+                                    matched_day_idx = d_idx
+                                    break
+                            
+                            if matched_day_idx != -1:
+                                shift_type = "NIGHT" if "NIGHT" in cell_text or "NITE" in cell_text else "DAY"
+                                col_mappings[col_idx] = (matched_day_idx, shift_type)
+                        
+                        last_col_mappings = col_mappings
+                    else:
+                        col_mappings = last_col_mappings
                     
+                    # --- 3. Process Rows ---
                     start_row = 1 if is_labour else 0
                     for row in raw_rows[start_row:]:
-                        if len(row) < 8: continue
-                        cat = str(row[0] or "").strip()
-                        
-                        # Handle Split Row: If first cell is empty, it's a continuation of the previous row
-                        if not cat and last_labour_cat:
-                            for d_idx in range(7):
-                                col_idx = day_indices.get(d_idx+1 if is_continuation else d_idx)
-                                if col_idx and col_idx < len(row):
-                                    val = str(row[col_idx] or "").strip()
-                                    if val:
-                                        # Merge strings: e.g., "2(1m," + "1f)" -> "2(1m, 1f)"
-                                        prev = labour_data[last_labour_cat][d_idx]
-                                        labour_data[last_labour_cat][d_idx] = (prev + " " + val).strip()
+                        if len(row) < len(raw_rows[0]):
                             continue
-
-                        if not cat or cat.upper() in ["CATEGORY"]: continue
                         
-                        last_labour_cat = cat
-                        if cat not in labour_data:
-                            labour_data[cat] = ["0"] * 7
+                        cat = str(row[0] or "").strip()
+                        # Skip header/footer noise
+                        if cat.upper() in ["CATEGORY", "TOTAL", "SUB-TOTAL", "GRAND TOTAL"]:
+                            continue
                         
-                        for d_idx in range(7):
-                            col_idx = day_indices.get(d_idx+1 if is_continuation else d_idx)
-                            if col_idx is not None and col_idx < len(row):
+                        # Check if it's a repeated header row inside continuation
+                        is_header_row = any(d in str(cell).upper() for cell in row for d in days_of_week)
+                        if is_header_row:
+                            continue
+                            
+                        # Handle split rows
+                        if not cat and last_labour_cat:
+                            cat = last_labour_cat
+                        elif cat:
+                            # Clean category name (e.g. "Ass. Site\nAgent" -> "Ass. Site Agent")
+                            cat = re.sub(r'\s+', ' ', cat).strip()
+                            last_labour_cat = cat
+                        else:
+                            continue
+                            
+                        if cat not in labour_shifts:
+                            labour_shifts[cat] = {d: {"DAY": "0", "NIGHT": "0"} for d in range(7)}
+                            
+                        for col_idx, (day_idx, shift_type) in col_mappings.items():
+                            if col_idx < len(row):
                                 val = str(row[col_idx] or "").strip() or "0"
-                                labour_data[cat][d_idx] = val
+                                if val != "0" and val != "" and val != "-":
+                                    existing = labour_shifts[cat][day_idx][shift_type]
+                                    if existing == "0":
+                                        labour_shifts[cat][day_idx][shift_type] = val
+                                    else:
+                                        # Concatenate with space if multiple values are found
+                                        labour_shifts[cat][day_idx][shift_type] = f"{existing} {val}".strip()
 
-                # --- 2. Materials Table Detection ---
+                # --- 4. Materials Table Detection ---
                 has_desc = any("DESCRIPTION" in h for h in headers)
                 has_qty = any("QUANTITY" in h for h in headers)
                 
@@ -623,7 +650,22 @@ class ReportParser:
                                 materials_data.append({
                                     "description": desc,
                                     "quantity": str(row[idx_qty]).strip()
+                                    # Note: Daily parser splits unit, but weekly parser stores it as raw string.
+                                    # Keeping this exactly as in original to avoid database model mismatch.
                                 })
+
+        # --- 5. Reconstruct Labour Matrix ---
+        labour_data = {}
+        for cat, days in labour_shifts.items():
+            day_list = []
+            for d in range(7):
+                day_val = days[d]["DAY"]
+                night_val = days[d]["NIGHT"]
+                if night_val != "0" and night_val != "" and night_val != "-":
+                    day_list.append(f"Day({day_val}), Night({night_val})")
+                else:
+                    day_list.append(day_val)
+            labour_data[cat] = day_list
 
         return labour_data, materials_data
 

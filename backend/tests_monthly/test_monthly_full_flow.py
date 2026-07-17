@@ -12,13 +12,13 @@ from monthly_generator import MonthlyReportGenerator
 
 async def main():
     # 1. SETUP PATHS
-    root_dir = r"d:\maks_ahp\weeklies"
+    root_dir = r"e:\MyProjects\maks_ahp\weeklies"
     weekly_pdfs = [
-        os.path.join(root_dir, "MAKINDU AHP WEEKLY REPORT TEMPLATE FINAL 19TH WEEK MARCH AND APRIL.pdf"),
-        os.path.join(root_dir, "MAKINDU AHP WEEK 20 PROGRESS REPORT.pdf"),
-        os.path.join(root_dir, "MAKINDU AHP WEEK 21 PROGRESS REPORT.pdf"),
-        os.path.join(root_dir, "MAKINDU AHP WEEK 22 PROGRESS REPORT.pdf"),
-        os.path.join(root_dir, "MAKINDU AHP WEEK 23 PROGRESS REPORT.pdf")
+        os.path.join(root_dir, "MAKINDU AHP WEEK 28 PROGRESS REPORT.pdf"),
+        os.path.join(root_dir, "MAKINDU AHP WEEK 29 PROGRESS REPORT.pdf"),
+        os.path.join(root_dir, "MAKINDU AHP WEEK 30 PROGRESS REPORT.pdf"),
+        os.path.join(root_dir, "MAKINDU AHP WEEK 31 PROGRESS REPORT.pdf"),
+        os.path.join(root_dir, "MAKINDU AHP WEEK 32 PROGRESS REPORT.pdf")
     ]
     
     template_path = "monthly_report_template.docx"
@@ -44,11 +44,11 @@ async def main():
     
     async def parse_with_log(i, pdf_path):
         async with semaphore:
-            print(f"Vision Scanning Week {i+19}: {os.path.basename(pdf_path)}...")
+            print(f"Vision Scanning Week {i+28}: {os.path.basename(pdf_path)}...")
             data = await parser.parse_report(pdf_path, session_dir, "WEEKLY")
             
             # Save individual weekly JSON
-            json_filename = f"week_{i+19}.json"
+            json_filename = f"week_{i+28}.json"
             json_path = os.path.join(json_dir, json_filename)
             with open(json_path, "w") as f:
                 json.dump(data, f, indent=2)
@@ -59,14 +59,14 @@ async def main():
     weekly_data_list = await asyncio.gather(*tasks)
 
     # 4. AGGREGATE
-    print("\nAggregating monthly data (April 2026)...")
-    # Metadata for April 2026
+    print("\nAggregating monthly data (June 2026)...")
+    # Metadata for June 2026
     metadata = {
-        "title": "MONTHLY REPORT (APRIL 2026)",
-        "report_date": "1ST – 30TH APRIL 2026",
-        "time_elapsed": "21 Weeks",
-        "pct_period": "20.25%",
-        "pct_work": "7.29%"
+        "title": "MONTHLY REPORT (JUNE 2026)",
+        "report_date": "1ST – 30TH JUNE 2026",
+        "time_elapsed": "30 Weeks",
+        "pct_period": "28.84%",
+        "pct_work": "11.22%"
     }
     
     monthly_summary = aggregator.compile_monthly_data(weekly_data_list, metadata)

@@ -68,52 +68,88 @@ class TestFinancialOngoingMonth(unittest.TestCase):
 
     def test_financial_engine_run(self):
         """Verify that the actual FinancialEngine compute runs successfully and has correct mathematical results."""
+        import sys
+        import types
+        import datetime
+        from unittest.mock import patch
         from financial_engine import FinancialEngine
-        engine = FinancialEngine(analysis_dir="cache/analysis_test")
-        data = engine.compute_and_cache_financials()
-        self.assertIn("monthly_financials", data)
-        self.assertTrue(len(data["monthly_financials"]) > 0)
-        
-        # Verify the presence of the fields
-        first_month = data["monthly_financials"][0]
-        self.assertIn("revenue_earned", first_month)
-        self.assertIn("slippage_gap", first_month)
-        
-        # Verify April 2026 values
-        april = next((m for m in data["monthly_financials"] if m["month"] == "April 2026"), None)
-        self.assertIsNotNone(april)
-        self.assertEqual(april["start_pct"], 5.472)
-        self.assertEqual(april["end_pct"], 8.22)
-        self.assertEqual(april["actual_production"], 2.75)
-        self.assertEqual(april["envisaged_production"], 4.69)
-        self.assertEqual(april["variance"], -1.94)
-        self.assertEqual(april["required_weekly"], 1.11)
-        
-        # Verify May 2026 values
-        may = next((m for m in data["monthly_financials"] if m["month"] == "May 2026"), None)
-        self.assertIsNotNone(may)
-        self.assertEqual(may["start_pct"], 8.22)
-        self.assertEqual(may["end_pct"], 9.64)
-        self.assertEqual(may["actual_production"], 1.42)
-        self.assertEqual(may["envisaged_production"], 4.93)
-        self.assertEqual(may["variance"], -3.51)
-        self.assertEqual(may["required_weekly"], 1.17)
-        self.assertFalse(may["is_ongoing"]) # Completed month
-        
-        # Verify June 2026 values (ongoing/current month)
-        june = next((m for m in data["monthly_financials"] if m["month"] == "June 2026"), None)
-        self.assertIsNotNone(june)
-        self.assertEqual(june["start_pct"], 9.64)
-        self.assertEqual(june["end_pct"], 9.64)
-        self.assertEqual(june["actual_production"], 0.0)
-        self.assertEqual(june["envisaged_production"], 5.0)
-        self.assertEqual(june["variance"], -5.0)
-        self.assertEqual(june["required_weekly"], 1.17)
-        self.assertTrue(june["is_ongoing"]) # Ongoing/current system month
-        self.assertEqual(june["target_fixed_month_end"], 14.64)
-        self.assertEqual(june["target_rolling_month_end"], 14.64)
-        self.assertEqual(june["production_planned_fixed"], 5.0)
-        self.assertEqual(june["production_required_rolling"], 5.0)
+        from analytics import AnalyticsEngine
+
+        # Subclass datetime to mock now()
+        class MockDatetime(datetime.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return datetime.datetime(2026, 6, 15)
+
+        # Create a mock datetime module to override sys.modules
+        mock_datetime_mod = types.ModuleType('datetime')
+        for name in dir(datetime):
+            setattr(mock_datetime_mod, name, getattr(datetime, name))
+        mock_datetime_mod.datetime = MockDatetime
+
+        # Mock weekly data to filter out June/July weeks, keeping June "ongoing" and empty for the test
+        real_get_all_data = AnalyticsEngine._get_all_data
+        def mock_get_all(self_obj, source="weekly"):
+            data = real_get_all_data(self_obj, source)
+            if source == "weekly":
+                return [
+                    w for w in data 
+                    if "june" not in str(w.get("label", "")).lower() 
+                    and "july" not in str(w.get("label", "")).lower()
+                    and "june" not in str(w.get("_display_date", "")).lower()
+                    and "july" not in str(w.get("_display_date", "")).lower()
+                ]
+            return data
+
+        with patch.dict(sys.modules, {'datetime': mock_datetime_mod}), \
+             patch.object(AnalyticsEngine, '_get_all_data', mock_get_all):
+            
+            engine = FinancialEngine(analysis_dir="cache/analysis_test")
+            data = engine.compute_and_cache_financials()
+            
+            self.assertIn("monthly_financials", data)
+            self.assertTrue(len(data["monthly_financials"]) > 0)
+            
+            # Verify the presence of the fields
+            first_month = data["monthly_financials"][0]
+            self.assertIn("revenue_earned", first_month)
+            self.assertIn("slippage_gap", first_month)
+            
+            # Verify April 2026 values
+            april = next((m for m in data["monthly_financials"] if m["month"] == "April 2026"), None)
+            self.assertIsNotNone(april)
+            self.assertEqual(april["start_pct"], 5.472)
+            self.assertEqual(april["end_pct"], 8.22)
+            self.assertEqual(april["actual_production"], 2.75)
+            self.assertEqual(april["envisaged_production"], 4.69)
+            self.assertEqual(april["variance"], -1.94)
+            self.assertEqual(april["required_weekly"], 1.11)
+            
+            # Verify May 2026 values
+            may = next((m for m in data["monthly_financials"] if m["month"] == "May 2026"), None)
+            self.assertIsNotNone(may)
+            self.assertEqual(may["start_pct"], 8.22)
+            self.assertEqual(may["end_pct"], 9.64)
+            self.assertEqual(may["actual_production"], 1.42)
+            self.assertEqual(may["envisaged_production"], 4.93)
+            self.assertEqual(may["variance"], -3.51)
+            self.assertEqual(may["required_weekly"], 1.17)
+            self.assertFalse(may["is_ongoing"]) # Completed month
+            
+            # Verify June 2026 values (ongoing/current month)
+            june = next((m for m in data["monthly_financials"] if m["month"] == "June 2026"), None)
+            self.assertIsNotNone(june)
+            self.assertEqual(june["start_pct"], 9.64)
+            self.assertEqual(june["end_pct"], 9.64)
+            self.assertEqual(june["actual_production"], 0.0)
+            self.assertEqual(june["envisaged_production"], 5.0)
+            self.assertEqual(june["variance"], -5.0)
+            self.assertEqual(june["required_weekly"], 1.17)
+            self.assertTrue(june["is_ongoing"]) # Ongoing/current system month
+            self.assertEqual(june["target_fixed_month_end"], 14.64)
+            self.assertEqual(june["target_rolling_month_end"], 14.64)
+            self.assertEqual(june["production_planned_fixed"], 5.0)
+            self.assertEqual(june["production_required_rolling"], 5.0)
 
 if __name__ == "__main__":
     unittest.main()
