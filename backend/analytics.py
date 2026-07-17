@@ -235,6 +235,7 @@ class AnalyticsEngine:
                                 data["_display_date"] = data["reporting_period"]
                                 # USE GLOBAL ReportParser() DIRECTLY
                                 data["_sort_date"] = ReportParser()._parse_weekly_start_date(data["reporting_period"])
+                                data["_is_history"] = False
                                 all_data.append(data)
                                 logger.debug(f"Successfully read cache file {cf} (Period: {data['reporting_period']})")
                             elif source == "daily" and "date" in data:
@@ -243,7 +244,7 @@ class AnalyticsEngine:
                     except Exception as e:
                         logger.error(f"Failed to read cache file {cf}: {e}")
                         continue
-
+ 
         for f_name in history_files:
             file_path = os.path.join(target_dir, f_name)
             try:
@@ -264,10 +265,11 @@ class AnalyticsEngine:
                             start_dt = datetime.strptime(f"01 {match.group(1)} {match.group(2)}", "%d %B %Y")
                         else:
                             start_dt = datetime.now() # Fallback
-
+ 
                     if start_dt:
                         data["_sort_date"] = start_dt
                         data["_display_date"] = period
+                        data["_is_history"] = True
                         all_data.append(data)
                         logger.debug(f"Successfully read history file {file_path} (Period: {period})")
             except Exception as e:

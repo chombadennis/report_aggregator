@@ -92,7 +92,9 @@ class FinancialEngine:
         import datetime
         contract_start = datetime.datetime(2025, 11, 24)
         
-        # Pre-sort and deduplicate
+        # Pre-sort to prioritize history files (_is_history = True) over cache files for the same period
+        raw_weekly.sort(key=lambda x: (str(x.get("_sort_date", "")), not x.get("_is_history", False)))
+        
         raw_weekly_processed = []
         for w in raw_weekly:
             date_label = w.get("_display_date") or w.get("label", "Unknown Week")
@@ -100,8 +102,6 @@ class FinancialEngine:
             if norm_label in seen_weeks: continue
             seen_weeks.add(norm_label)
             raw_weekly_processed.append(w)
-            
-        raw_weekly_processed.sort(key=lambda x: str(x.get("_sort_date", "")))
         
         prev_pct_work = 0.0
         # If we have a lot of history, we might want to estimate the first week's start % 

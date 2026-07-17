@@ -601,7 +601,7 @@ class ReportParser:
                         
                         cat = str(row[0] or "").strip()
                         # Skip header/footer noise
-                        if cat.upper() in ["CATEGORY", "TOTAL", "SUB-TOTAL", "GRAND TOTAL"]:
+                        if cat.upper() in ["CATEGORY", "SUB-TOTAL", "GRAND TOTAL"]:
                             continue
                         
                         # Check if it's a repeated header row inside continuation
