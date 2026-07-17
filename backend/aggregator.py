@@ -124,58 +124,58 @@ class Aggregator:
             return int(m.group(1)) if m else 0
 
         # Build day-by-day values
-        labour_matrix = {}
-        for cat in LABOUR_CANONICAL_ORDER:
-            day_values = []
-            for day_idx in range(7):
-                r = reports_by_day[day_idx]
-                val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
-                
-                # Check if val is dict or string representation of dict
-                is_dict = isinstance(val, dict)
-                if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
-                    try:
-                        import ast
-                        val = ast.literal_eval(val)
-                        is_dict = isinstance(val, dict)
-                    except:
-                        pass
-                
-                if is_dict:
-                    d_val = str(val.get("Day", "0")).strip()
-                    n_val = str(val.get("Night", "0")).strip()
-                    if n_val in ("0", "", "-"):
-                        day_values.append(d_val if d_val else "0")
-                    else:
-                        day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
-                else:
-                    day_values.append(str(val).strip() if val else "0")
-            labour_matrix[cat] = day_values
+        def _get_shift_target(key, default_day_idx):
+            key_upper = str(key).upper()
+            target_day_idx = default_day_idx
+            
+            day_names = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+            for idx, d_name in enumerate(day_names):
+                if d_name in key_upper:
+                    target_day_idx = idx
+                    break
+            
+            shift_type = "DAY"
+            if "NIGHT" in key_upper or "NITE" in key_upper:
+                shift_type = "NIGHT"
+            return target_day_idx, shift_type
 
-        # Dynamic expansion: detect any extra categories in the PDFs not in the canonical list.
-        # Explicitly skip "TOTAL" and similar aggregate rows — these are computed, not categories.
+        # 1. Gather all categories present in the reports
+        all_categories = list(LABOUR_CANONICAL_ORDER)
         EXCLUDED_KEYS = {"total", "sub-total", "subtotal", "grand total"}
+        
+        # Check for extra categories
         canonical_lower = {c.lower().replace(" ", "").replace("&", "and") for c in LABOUR_CANONICAL_ORDER}
         if "intern" in canonical_lower:
             canonical_lower.add("interns")
-        extra_categories = []
+            
         for r in reports_by_day:
             if not r: continue
             for k in r.get("labour", {}).keys():
                 if k.strip().lower() in EXCLUDED_KEYS:
-                    continue  # Skip aggregate rows — never treat TOTAL as a category
+                    continue
                 k_norm = k.lower().replace(" ", "").replace("&", "and")
-                # Only add if it doesn't match any canonical category
                 if not any(k_norm == c for c in canonical_lower):
-                    if k not in extra_categories:
-                        extra_categories.append(k)
+                    found = False
+                    for existing in all_categories:
+                        if existing.lower().replace(" ", "").replace("&", "and") == k_norm:
+                            found = True
+                            break
+                    if not found:
+                        all_categories.append(k)
 
-        for cat in extra_categories:
-            day_values = []
-            for day_idx in range(7):
-                r = reports_by_day[day_idx]
-                val = _find_labour_value(r.get("labour", {}), cat) if r else "0"
-                
+        # 2. Populate temporary matrix with default "0" values
+        temp_matrix = {cat: [{"Day": "0", "Night": "0"} for _ in range(7)] for cat in all_categories}
+
+        # 3. Fill the temporary matrix from daily reports
+        for day_idx in range(7):
+            r = reports_by_day[day_idx]
+            if not r: continue
+            
+            for cat in all_categories:
+                val = _find_labour_value(r.get("labour", {}), cat)
+                if val == "0" or not val:
+                    continue
+                    
                 is_dict = isinstance(val, dict)
                 if not is_dict and isinstance(val, str) and val.strip().startswith("{") and val.strip().endswith("}"):
                     try:
@@ -184,70 +184,77 @@ class Aggregator:
                         is_dict = isinstance(val, dict)
                     except:
                         pass
-                
+                        
                 if is_dict:
-                    d_val = str(val.get("Day", "0")).strip()
-                    n_val = str(val.get("Night", "0")).strip()
-                    if n_val in ("0", "", "-"):
-                        day_values.append(d_val if d_val else "0")
-                    else:
-                        day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
+                    for k, v in val.items():
+                        target_day_idx, shift_type = _get_shift_target(k, day_idx)
+                        if shift_type == "NIGHT":
+                            temp_matrix[cat][target_day_idx]["Night"] = str(v).strip()
+                        else:
+                            temp_matrix[cat][target_day_idx]["Day"] = str(v).strip()
                 else:
-                    day_values.append(str(val).strip() if val else "0")
+                    temp_matrix[cat][day_idx]["Day"] = str(val).strip()
+
+        # 4. Convert temporary matrix to final format (collapsing Night="0" into a simple string)
+        labour_matrix = {}
+        for cat in all_categories:
+            day_values = []
+            for day_idx in range(7):
+                d_val = temp_matrix[cat][day_idx]["Day"]
+                n_val = temp_matrix[cat][day_idx]["Night"]
+                if n_val in ("0", "", "-"):
+                    day_values.append(d_val if d_val else "0")
+                else:
+                    day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
             labour_matrix[cat] = day_values
 
-        # TOTAL row: Use verbatim from daily reports if available, otherwise sum — ALWAYS LAST
-        total_per_day = []
-        all_cats_for_total = [cat for cat in labour_matrix.keys() if cat != "TOTAL"]
+        # 5. Compile TOTAL row: Use verbatim from daily reports mapped to days, otherwise sum
+        temp_total = [{"Day": "0", "Night": "0"} for _ in range(7)]
+        
         for day_idx in range(7):
             r = reports_by_day[day_idx]
             verbatim_total = r.get("labour", {}).get("TOTAL") if r else None
-            
-            is_dict = isinstance(verbatim_total, dict)
-            if not is_dict and isinstance(verbatim_total, str) and verbatim_total.strip().startswith("{") and verbatim_total.strip().endswith("}"):
-                try:
-                    import ast
-                    verbatim_total = ast.literal_eval(verbatim_total)
-                    is_dict = isinstance(verbatim_total, dict)
-                except:
-                    pass
-            
-            if verbatim_total:
-                if is_dict:
-                    vt_day = str(verbatim_total.get("Day", "0")).strip()
-                    vt_night = str(verbatim_total.get("Night", "0")).strip()
-                    if vt_night in ("0", "", "-"):
-                        total_per_day.append(vt_day if vt_day else "0")
-                    else:
-                        total_per_day.append({"Day": vt_day if vt_day else "0", "Night": vt_night})
-                else:
-                    total_per_day.append(str(verbatim_total).strip())
-            else:
-                # Fallback to sum of categories
-                day_has_night = False
-                for cat in all_cats_for_total:
-                    cat_val = labour_matrix[cat][day_idx]
-                    if isinstance(cat_val, dict):
-                        day_has_night = True
-                        break
+            if verbatim_total and str(verbatim_total).strip() != "0":
+                is_dict = isinstance(verbatim_total, dict)
+                if not is_dict and isinstance(verbatim_total, str) and verbatim_total.strip().startswith("{") and verbatim_total.strip().endswith("}"):
+                    try:
+                        import ast
+                        verbatim_total = ast.literal_eval(verbatim_total)
+                        is_dict = isinstance(verbatim_total, dict)
+                    except:
+                        pass
                 
-                if day_has_night:
-                    sum_day = 0
-                    sum_night = 0
-                    for cat in all_cats_for_total:
-                        cat_val = labour_matrix[cat][day_idx]
-                        if isinstance(cat_val, dict):
-                            sum_day += _extract_numeric(cat_val.get("Day", "0"))
-                            sum_night += _extract_numeric(cat_val.get("Night", "0"))
+                if is_dict:
+                    for k, v in verbatim_total.items():
+                        target_day_idx, shift_type = _get_shift_target(k, day_idx)
+                        if shift_type == "NIGHT":
+                            temp_total[target_day_idx]["Night"] = str(v).strip()
                         else:
-                            sum_day += _extract_numeric(cat_val)
-                    total_per_day.append({"Day": str(sum_day), "Night": str(sum_night)})
+                            temp_total[target_day_idx]["Day"] = str(v).strip()
                 else:
-                    sum_day = sum(
-                        _extract_numeric(labour_matrix[cat][day_idx])
-                        for cat in all_cats_for_total
-                    )
-                    total_per_day.append(str(sum_day) if sum_day > 0 else "0")
+                    temp_total[day_idx]["Day"] = str(verbatim_total).strip()
+
+        # Fallback for days missing verbatim totals: sum of category counts
+        all_cats_for_total = [cat for cat in labour_matrix.keys() if cat != "TOTAL"]
+        for day_idx in range(7):
+            if temp_total[day_idx]["Day"] == "0" and temp_total[day_idx]["Night"] == "0":
+                sum_day = 0
+                sum_night = 0
+                for cat in all_cats_for_total:
+                    sum_day += _extract_numeric(temp_matrix[cat][day_idx]["Day"])
+                    sum_night += _extract_numeric(temp_matrix[cat][day_idx]["Night"])
+                temp_total[day_idx]["Day"] = str(sum_day)
+                temp_total[day_idx]["Night"] = str(sum_night)
+
+        # Convert temp_total to final format
+        total_per_day = []
+        for day_idx in range(7):
+            d_val = temp_total[day_idx]["Day"]
+            n_val = temp_total[day_idx]["Night"]
+            if n_val in ("0", "", "-"):
+                total_per_day.append(d_val if d_val else "0")
+            else:
+                total_per_day.append({"Day": d_val if d_val else "0", "Night": n_val})
         labour_matrix["TOTAL"] = total_per_day
 
         # Build labour_daily mapping for analytics/history database format
