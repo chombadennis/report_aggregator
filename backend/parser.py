@@ -341,6 +341,7 @@ class ReportParser:
         """
         labour_data = {}
         materials_data = []
+        is_parsing_labour = False
         
         for page in doc:
             tabs = page.find_tables()
@@ -360,9 +361,20 @@ class ReportParser:
                 if not is_labour and data:
                     # Fallback: check the first row of actual data for the keyword
                     is_labour = any("CATEGORY" in str(c).upper() for c in data[0])
-
+ 
+                # Continuation table check:
+                if not is_labour and is_parsing_labour:
+                    is_materials = len(headers) == 3 and "DESCRIPTION" in headers and "QTY" in headers and "S/N" in headers
+                    is_machinery = any("CONDITION" in h or "STATUS" in h for h in headers)
+                    if not is_materials and not is_machinery and len(data[0]) in [2, 3]:
+                        is_labour = True
+ 
                 if is_labour:
-                    for row in data[1:]:
+                    is_parsing_labour = True
+                    # If this is a continuation, the first row contains actual data, not a header
+                    start_row = 0 if (not any("LABOUR" in h or "CATEGORY" in h for h in headers) and not any("CATEGORY" in str(c).upper() for c in data[0])) else 1
+                    
+                    for row in data[start_row:]:
                         if not row or not row[0]: continue
                         cat = str(row[0]).strip()
                         if not cat: continue
@@ -386,9 +398,10 @@ class ReportParser:
                         
                         if "TOTAL" in cat.upper():
                             labour_data["TOTAL"] = val
+                            is_parsing_labour = False
                             break
                         labour_data[cat] = val
-
+ 
                 # 2. MATERIALS DELIVERED TO SITE Identification
                 if len(headers) == 3 and "DESCRIPTION" in headers and "QTY" in headers and "S/N" in headers:
                     idx_desc = headers.index("DESCRIPTION")
