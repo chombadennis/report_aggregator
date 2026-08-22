@@ -186,8 +186,11 @@ class Aggregator:
                         pass
                         
                 if is_dict:
+                    is_single_value = len(val) == 1
                     for k, v in val.items():
                         target_day_idx, shift_type = _get_shift_target(k, day_idx)
+                        if is_single_value:
+                            target_day_idx = day_idx
                         if shift_type == "NIGHT":
                             temp_matrix[cat][target_day_idx]["Night"] = str(v).strip()
                         else:
