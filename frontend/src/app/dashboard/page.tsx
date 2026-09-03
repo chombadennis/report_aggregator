@@ -270,6 +270,45 @@ export default function Home() {
       return;
     }
 
+    // 1. Sanitization (XSS, SQLi, Length Limits)
+    const sanitize = (input: string) => {
+      if (!input) return "";
+      return input.substring(0, 150).replace(/[<>;=]/g, "").trim();
+    };
+
+    const sTitle = sanitize(title);
+    const sDates = sanitize(dates);
+    const sTimeLapsed = sanitize(timeLapsed);
+    const sPctPeriod = sanitize(pctPeriod);
+    const sPctWork = sanitize(pctWork);
+
+    // 2. Strict Input Format Validation
+    if (sTitle.length < 5) {
+      setError('Report Title must be at least 5 characters long.');
+      return;
+    }
+
+    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JAN', 'FEB', 'MAR', 'APR', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    if (!months.some(m => sDates.toUpperCase().includes(m)) || !/\d{4}/.test(sDates)) {
+      setError(`Reporting Period must include a valid month and a 4-digit year. Example: ${mode === 'weekly' ? '6TH - 12TH APRIL 2026' : 'APRIL 2026'}`);
+      return;
+    }
+
+    if (!/^\d+(\.\d+)?\s*Weeks?$/i.test(sTimeLapsed)) {
+      setError('Time Lapsed must be in the format: "X Weeks" (e.g. "20 Weeks").');
+      return;
+    }
+
+    if (!/^\d+(\.\d+)?%?$/.test(sPctPeriod)) {
+      setError('% Period Elapsed must be a valid number with an optional % sign (e.g. "19.43%").');
+      return;
+    }
+
+    if (!/^\d+(\.\d+)?%?$/.test(sPctWork)) {
+      setError('% Work Done must be a valid number with an optional % sign (e.g. "7.29%").');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -278,11 +317,11 @@ export default function Home() {
 
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
-    formData.append('title', title);
-    formData.append('report_date', dates);
-    formData.append('time_elapsed', timeLapsed);
-    formData.append('pct_period', pctPeriod);
-    formData.append('pct_work', pctWork);
+    formData.append('title', sTitle);
+    formData.append('report_date', sDates);
+    formData.append('time_elapsed', sTimeLapsed);
+    formData.append('pct_period', sPctPeriod);
+    formData.append('pct_work', sPctWork);
 
     try {
       const token = await getToken();
