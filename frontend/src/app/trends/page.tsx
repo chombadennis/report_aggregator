@@ -222,30 +222,30 @@ export default function TrendsDashboard() {
   const globalProgress = useMemo(() => {
     if (!data) return { work: 0, time: 0, timeStr: '0%', workStr: '0%' };
 
-    const allRecords = [...(data.weekly || []), ...(data.daily || [])];
-    let maxWork = 0;
-    let maxWorkStr = '0%';
-    let maxTime = 0;
-    let maxTimeStr = '0%';
+    // Prefer the strict backend financial calculation (latest chronological week)
+    if (latestFinancial) {
+      return {
+        work: latestFinancial.pct_work || 0,
+        time: latestFinancial.pct_time || 0,
+        workStr: `${latestFinancial.pct_work || 0}%`,
+        timeStr: `${latestFinancial.pct_time || 0}%`
+      };
+    }
 
-    allRecords.forEach(r => {
-      const wVal = r.financial_progress || r.work_completed_percent;
-      const w = parseFloat(wVal);
-      if (!isNaN(w) && w > maxWork) {
-        maxWork = w;
-        maxWorkStr = wVal;
-      }
+    // Fallback: take the chronologically latest report from analytics
+    const records = data.weekly?.length > 0 ? data.weekly : data.daily || [];
+    if (records.length === 0) return { work: 0, time: 0, timeStr: '0%', workStr: '0%' };
 
-      const tVal = r.time_progress || r.time_elapsed_percent;
-      const t = parseFloat(tVal);
-      if (!isNaN(t) && t > maxTime) {
-        maxTime = t;
-        maxTimeStr = tVal;
-      }
-    });
+    const latest = records[records.length - 1];
+    
+    const wVal = latest.financial_progress || latest.work_completed_percent || '0%';
+    const w = parseFloat(wVal) || 0;
+    
+    const tVal = latest.time_progress || latest.time_elapsed_percent || '0%';
+    const t = parseFloat(tVal) || 0;
 
-    return { work: maxWork, time: maxTime, workStr: maxWorkStr, timeStr: maxTimeStr };
-  }, [data]);
+    return { work: w, time: t, workStr: wVal, timeStr: tVal };
+  }, [data, latestFinancial]);
 
   const currentSlippage = useMemo(() => {
     if (latestFinancial) return latestFinancial.slippage_gap;
