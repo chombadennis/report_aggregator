@@ -43,6 +43,10 @@ export default function Home() {
   const [docToDelete, setDocToDelete] = useState<any | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // Register UI States
+  const [activeRegisterTab, setActiveRegisterTab] = useState('contractor'); // contractor | client | general
+  const [registerSearchQuery, setRegisterSearchQuery] = useState('');
+
   const [mounted, setMounted] = useState(false);
   const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -546,7 +550,7 @@ export default function Home() {
               type="file" multiple accept=".pdf"
               onChange={(e) => isAdmin && handleFileChange(e.target.files)}
               className="hidden" id="file-upload"
-              disabled={!isAdmin}
+              disabled={!isAdmin || loading}
             />
             {isAdmin ? (
               <label htmlFor="file-upload" className="cursor-pointer">
@@ -747,6 +751,7 @@ export default function Home() {
                   accept=".pdf"
                   onChange={(e) => handleDocFileChange(e.target.files)}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={docLoading || loading}
                 />
                 <div className="text-3xl mb-2">📁</div>
                 <div className="text-xs font-bold text-vivid-tangerine-900 mb-1">
@@ -797,11 +802,55 @@ export default function Home() {
         )}
 
         {/* Correspondence Register */}
-        {uploadedDocs.length > 0 && (
-          <div className="space-y-4 mb-16 text-left">
-            <h3 className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-widest mb-4">Ingested Correspondence Register</h3>
-            <div className="grid grid-cols-1 gap-1 sm:gap-4">
-              {uploadedDocs.map((doc) => (
+        <div className="space-y-4 mb-16 text-left">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h3 className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-widest">Ingested Correspondence Register</h3>
+            {uploadedDocs.length > 0 && (
+              <div className="relative w-full sm:w-64">
+                <input 
+                  type="text" 
+                  value={registerSearchQuery}
+                  onChange={(e) => setRegisterSearchQuery(e.target.value)}
+                  placeholder="Search documents..."
+                  className="w-full bg-white border border-vanilla-custard-200 rounded-xl pl-4 pr-10 py-2 text-sm text-vivid-tangerine-950 focus:border-vivid-tangerine-500 outline-none transition-colors"
+                />
+                <span className="absolute right-3 top-2.5 opacity-40">🔍</span>
+              </div>
+            )}
+          </div>
+
+          {uploadedDocs.length > 0 ? (
+            <>
+              {/* Category Tabs */}
+              <div className="flex gap-2 mb-4 p-1 bg-vanilla-custard-50 rounded-xl border border-vanilla-custard-200 w-full sm:w-fit">
+                {(['contractor', 'client', 'general'] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveRegisterTab(cat)}
+                    className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
+                      activeRegisterTab === cat
+                        ? 'bg-white text-vivid-tangerine-700 shadow-sm border border-vanilla-custard-200'
+                        : 'text-vivid-tangerine-600/70 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-800'
+                    }`}
+                  >
+                    {cat === 'contractor' ? '👷 Contractor' : cat === 'client' ? '🏢 Client / PM' : '📚 General'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 gap-1 sm:gap-4">
+                {[...uploadedDocs]
+                  .filter(doc => doc.category === activeRegisterTab)
+                  .filter(doc => {
+                    if (!registerSearchQuery) return true;
+                    const q = registerSearchQuery.toLowerCase();
+                    const searchTitle = (doc.title || doc.ai_analysis?.title || "").toLowerCase();
+                    const sender = (doc.sender || "").toLowerCase();
+                    return searchTitle.includes(q) || sender.includes(q);
+                  })
+                  .sort((a, b) => new Date(b.date_sent || b.date_uploaded).getTime() - new Date(a.date_sent || a.date_uploaded).getTime())
+                  .map((doc) => (
                 <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-2xl border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
                   <div className="flex-1">
                     <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
@@ -858,11 +907,22 @@ export default function Home() {
                       </button>
                     )}
                   </div>
-                </div>
-              ))}
+                  </div>
+                ))}
+                
+                {[...uploadedDocs].filter(doc => doc.category === activeRegisterTab).length === 0 && (
+                  <div className="bg-vanilla-custard-50/50 border border-dashed border-vanilla-custard-200 rounded-2xl p-8 text-center text-vivid-tangerine-800 text-sm font-medium">
+                    No documents found in this category.
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm font-medium">
+              No correspondence uploaded yet.
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* AI Claims Overlay Modal */}
         {activeDocDetail && (
