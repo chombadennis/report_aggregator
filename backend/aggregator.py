@@ -274,15 +274,26 @@ class Aggregator:
                 labour_daily[norm_date] = cat_map
 
         # 2. Weather Grid
+        import re
+        def _clean_weather(val):
+            val = str(val or "-").strip()
+            if val == "-": return "-"
+            val = re.split(r'[-–—]?\s*favour', val, flags=re.IGNORECASE)[0]
+            val = re.split(r'[-–—]?\s*favor', val, flags=re.IGNORECASE)[0]
+            parts = val.split('-')
+            if len(parts) > 1 and len(parts[1].strip()) > 5:
+                val = parts[0]
+            return val.strip(' -') or "-"
+
         weather_grid = []
         for i, r in enumerate(reports_by_day):
             w = r.get("weather", {}) if r else {}
             weather_grid.append({
                 "day": days_map[i].capitalize(),
-                "morning": w.get("morning", "-"),
-                "afternoon": w.get("afternoon", "-"),
-                "evening": w.get("evening", "-"),
-                "condition": w.get("condition", "-")
+                "morning": _clean_weather(w.get("morning", "-")),
+                "afternoon": _clean_weather(w.get("afternoon", "-")),
+                "evening": _clean_weather(w.get("evening", "-")),
+                "condition": "Favourable for Work"
             })
 
         # 3. Materials Summation — robust unit extraction with fallback from quantity string
