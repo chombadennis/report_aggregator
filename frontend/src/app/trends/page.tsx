@@ -1131,6 +1131,135 @@ export default function TrendsDashboard() {
             </div>
           </section>
 
+          {/* Progress vs Time vs Slippage Table */}
+          <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+            <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="text-blue-600 w-6 h-6" />
+                <h2 className="text-2xl font-bold">Elapsed Time vs Progress vs Slippage</h2>
+              </div>
+              <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+                <button
+                  onClick={() => setRecalScale('weekly')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Weekly
+                </button>
+                <button
+                  onClick={() => setRecalScale('monthly')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-[2rem] border border-slate-100">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50">
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      {recalScale === 'weekly' ? 'Reporting Week' : 'Reporting Month'}
+                    </th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start Time %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start Days Elapsed</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Start Progress %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End Time %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End Days Elapsed</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">End Progress %</th>
+                    <th className="p-2 sm:p-4 text-[10px] font-black text-rose-600 uppercase tracking-widest text-right">Slippage Gap</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recalScale === 'weekly' ? (
+                    (financials?.weekly_financials || []).map((w: any, i: number) => {
+                      const endTimePct = w.pct_time || 0;
+                      const endDaysElapsed = Math.round((endTimePct / 100) * 731);
+                      const startTimePct = i > 0 ? (financials.weekly_financials[i - 1].pct_time || 0) : Math.max(0, endTimePct - (7 / 731) * 100);
+                      const startDaysElapsed = Math.round((startTimePct / 100) * 731);
+                      return (
+                        <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                          <td className="p-2 sm:p-4">
+                            <p className="text-xs font-bold text-slate-700">{w.label}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{startTimePct.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{startDaysElapsed}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{w.start_pct?.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-700">{endTimePct.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-700">{endDaysElapsed}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right bg-rose-50/20">
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                              {w.slippage_gap >= 0 ? '+' : ''}{w.slippage_gap?.toFixed(2)}%
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    (financials?.monthly_financials || []).map((m: any, i: number) => {
+                      const mEndProgress = m.end_pct || 0;
+                      const mSlippage = m.slippage_gap || 0;
+                      const endTimePctM = mEndProgress + mSlippage;
+                      const endDaysElapsedM = Math.round((endTimePctM / 100) * 731);
+                      const prevEndProgress = i > 0 ? (financials.monthly_financials[i - 1].end_pct || 0) : 0;
+                      const prevSlippage = i > 0 ? (financials.monthly_financials[i - 1].slippage_gap || 0) : 0;
+                      const startTimePctM = i > 0 ? (prevEndProgress + prevSlippage) : Math.max(0, endTimePctM - (30.44 / 731) * 100);
+                      const startDaysElapsedM = Math.round((startTimePctM / 100) * 731);
+                      return (
+                        <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                          <td className="p-2 sm:p-4">
+                            <p className="text-xs font-bold text-slate-700">{m.month}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{startTimePctM.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{startDaysElapsedM}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-medium text-slate-400">{m.start_pct?.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-700">{endTimePctM.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-700">{endDaysElapsedM}</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right">
+                            <p className="text-xs font-black text-slate-900">{m.end_pct?.toFixed(2)}%</p>
+                          </td>
+                          <td className="p-2 sm:p-4 text-right bg-rose-50/20">
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-md ${m.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                              {m.slippage_gap >= 0 ? '+' : ''}{m.slippage_gap?.toFixed(2)}%
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 p-4 bg-slate-900 rounded-2xl text-[10px] text-white/60 font-medium">
+              <span>
+                <span className="text-blue-400 font-black">LOGIC:</span> Time Elapsed is derived mathematically based on the 731-day contract duration. Slippage = End Time % - End Progress %. Days elapsed track the total calendar days from project inception.
+              </span>
+            </div>
+          </section>
+
         </div>
 
         {/* Stakeholder Recommendations */}
