@@ -237,10 +237,10 @@ export default function TrendsDashboard() {
     if (records.length === 0) return { work: 0, time: 0, timeStr: '0%', workStr: '0%' };
 
     const latest = records[records.length - 1];
-    
+
     const wVal = latest.financial_progress || latest.work_completed_percent || '0%';
     const w = parseFloat(wVal) || 0;
-    
+
     const tVal = latest.time_progress || latest.time_elapsed_percent || '0%';
     const t = parseFloat(tVal) || 0;
 
@@ -348,9 +348,14 @@ export default function TrendsDashboard() {
             <div className="text-xl font-black text-slate-900 tracking-tight">
               KES {(latestFinancial ? latestFinancial.revenue_earned : (2127050827.72 * (globalProgress.work / 100) || 0)).toLocaleString()}
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Live Ledger</span>
+            <div className="flex flex-col gap-3 mt-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Live Ledger</span>
+              </div>
+              <div className="inline-flex bg-vivid-tangerine-50 px-3 py-1.5 rounded-xl border border-vivid-tangerine-100 self-start shadow-sm">
+                <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-700">Work Progress: {globalProgress.workStr}</span>
+              </div>
             </div>
           </div>
 
@@ -400,8 +405,18 @@ export default function TrendsDashboard() {
                 );
               })()}
             </div>
-            <div className="bg-slate-50 px-8 py-4">
-              <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-slate-50 px-8 py-5 flex flex-col gap-3 border-t border-slate-100">
+              <div className="flex justify-between items-end">
+                <div>
+                  <span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Elapsed Time</span>
+                  <span className="text-sm font-black text-slate-700">{globalProgress.timeStr}</span>
+                </div>
+                <div className="text-right">
+                  <span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Work Progress</span>
+                  <span className="text-sm font-black text-emerald-600">{globalProgress.workStr}</span>
+                </div>
+              </div>
+              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
                 {(() => {
                   const slippage = currentSlippage;
                   const getColor = (val: number) => {
@@ -432,13 +447,21 @@ export default function TrendsDashboard() {
                   <p className="text-lg font-black text-slate-900 leading-none">Makindu Affordable Housing</p>
                 </div>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-3 mt-4">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  KES 2.127B • Week {(() => {
-                    const pctTime = latestFinancial ? latestFinancial.pct_time : globalProgress.time;
-                    return pctTime !== 0 ? Math.round((pctTime / 100) * 104) : 'N/A';
-                  })()}
+                  KES 2.127B Contract Valuation
                 </span>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-block bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    Week {(() => {
+                      const pctTime = latestFinancial ? latestFinancial.pct_time : globalProgress.time;
+                      return pctTime !== 0 ? Math.round((pctTime / 100) * 104) : 'N/A';
+                    })()}
+                  </span>
+                  <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    Elapsed Time: {globalProgress.timeStr}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -672,7 +695,7 @@ export default function TrendsDashboard() {
                           const val = p.value ?? p.labour ?? 0;
                           const y = 100 - ((val / max) * 100);
 
-                          const W = isMobile 
+                          const W = isMobile
                             ? (timeScale === 'daily' ? 24 : 40)
                             : (timeScale === 'daily' ? 40 : 80);
                           const G = isMobile ? (timeScale === 'daily' ? 16 : 32) : 8;

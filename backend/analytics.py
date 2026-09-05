@@ -229,7 +229,7 @@ class AnalyticsEngine:
                 cache_files = [os.path.join(cache_dir, f) for f in os.listdir(cache_dir) if f.startswith(prefix) and f.endswith(".json")]
                 for cf in cache_files:
                     try:
-                        with open(cf, "r") as f:
+                        with open(cf, "r", encoding="utf-8") as f:
                             data = json.load(f)
                             if source == "weekly" and "reporting_period" in data and "_display_date" not in data:
                                 data["_display_date"] = data["reporting_period"]
@@ -248,7 +248,7 @@ class AnalyticsEngine:
         for f_name in history_files:
             file_path = os.path.join(target_dir, f_name)
             try:
-                with open(file_path, "r") as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     # Support legacy daily-reports-as-weekly
                     if source == "weekly" and "report_date" in data:
@@ -564,7 +564,7 @@ class AnalyticsEngine:
             for f_name in os.listdir(docs_dir):
                 if f_name.endswith(".json"):
                     try:
-                        with open(os.path.join(docs_dir, f_name), "r") as f:
+                        with open(os.path.join(docs_dir, f_name), "r", encoding="utf-8") as f:
                             doc_data = json.load(f)
                             docs_list.append(doc_data)
                     except:
