@@ -211,43 +211,17 @@ class Aggregator:
                     day_values.append({"Day": d_val if d_val else "0", "Night": n_val})
             labour_matrix[cat] = day_values
 
-        # 5. Compile TOTAL row: Use verbatim from daily reports mapped to days, otherwise sum
+        # 5. Compile TOTAL row: Always sum category counts to avoid LLM hallucinated totals (e.g. "17703")
         temp_total = [{"Day": "0", "Night": "0"} for _ in range(7)]
-        
-        for day_idx in range(7):
-            r = reports_by_day[day_idx]
-            verbatim_total = r.get("labour", {}).get("TOTAL") if r else None
-            if verbatim_total and str(verbatim_total).strip() != "0":
-                is_dict = isinstance(verbatim_total, dict)
-                if not is_dict and isinstance(verbatim_total, str) and verbatim_total.strip().startswith("{") and verbatim_total.strip().endswith("}"):
-                    try:
-                        import ast
-                        verbatim_total = ast.literal_eval(verbatim_total)
-                        is_dict = isinstance(verbatim_total, dict)
-                    except:
-                        pass
-                
-                if is_dict:
-                    for k, v in verbatim_total.items():
-                        target_day_idx, shift_type = _get_shift_target(k, day_idx)
-                        if shift_type == "NIGHT":
-                            temp_total[target_day_idx]["Night"] = str(v).strip()
-                        else:
-                            temp_total[target_day_idx]["Day"] = str(v).strip()
-                else:
-                    temp_total[day_idx]["Day"] = str(verbatim_total).strip()
-
-        # Fallback for days missing verbatim totals: sum of category counts
         all_cats_for_total = [cat for cat in labour_matrix.keys() if cat != "TOTAL"]
         for day_idx in range(7):
-            if temp_total[day_idx]["Day"] == "0" and temp_total[day_idx]["Night"] == "0":
-                sum_day = 0
-                sum_night = 0
-                for cat in all_cats_for_total:
-                    sum_day += _extract_numeric(temp_matrix[cat][day_idx]["Day"])
-                    sum_night += _extract_numeric(temp_matrix[cat][day_idx]["Night"])
-                temp_total[day_idx]["Day"] = str(sum_day)
-                temp_total[day_idx]["Night"] = str(sum_night)
+            sum_day = 0
+            sum_night = 0
+            for cat in all_cats_for_total:
+                sum_day += _extract_numeric(temp_matrix[cat][day_idx]["Day"])
+                sum_night += _extract_numeric(temp_matrix[cat][day_idx]["Night"])
+            temp_total[day_idx]["Day"] = str(sum_day)
+            temp_total[day_idx]["Night"] = str(sum_night)
 
         # Convert temp_total to final format
         total_per_day = []

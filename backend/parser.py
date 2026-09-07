@@ -330,6 +330,18 @@ class ReportParser:
                 logger.warning(f"⚠️ Manual weekly table extraction failed: {me}")
             
         final_data["fingerprint"] = file_hash
+        
+        # Cleanup AI hallucinations in DAILY labour totals
+        if report_type == "DAILY" and "labour" in final_data and isinstance(final_data["labour"], dict):
+            import re
+            labour_dict = final_data["labour"]
+            sum_val = 0
+            for k, v in labour_dict.items():
+                if k.strip().upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL", "GRAND TOTAL"]:
+                    m = re.match(r"(\d+)", str(v).strip())
+                    if m: sum_val += int(m.group(1))
+            labour_dict["TOTAL"] = str(sum_val)
+            
         with open(cache_path, "w") as f: json.dump(final_data, f, indent=2)
         return final_data
 
