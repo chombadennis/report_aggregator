@@ -221,10 +221,10 @@ class ReportGenerator:
         
         # Mapping frontend keys to row indices in Table 0
         mapping = {
-            "time_elapsed": 13,
-            "pct_period": 14,
-            "pct_work": 15,
-            "report_date": 16
+            "time_elapsed": 14,
+            "pct_period": 15,
+            "pct_work": 16,
+            "report_date": 17
         }
         
         for key, row_idx in mapping.items():
