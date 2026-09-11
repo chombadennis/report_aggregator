@@ -209,6 +209,7 @@ async def generate_monthly_stream(
     time_elapsed: str = Form(""),
     pct_period: str = Form(""),
     pct_work: str = Form(""),
+    visitors_data: str = Form(""),
     current_user: dict = Depends(require_admin)
 ):
     """Monthly generation with Server-Sent Events for real-time progress."""
@@ -238,7 +239,8 @@ async def generate_monthly_stream(
 
             metadata = {
                 "title": title, "report_date": report_date,
-                "time_elapsed": time_elapsed, "pct_period": pct_period, "pct_work": pct_work
+                "time_elapsed": time_elapsed, "pct_period": pct_period, "pct_work": pct_work,
+                "visitors": json.loads(visitors_data) if visitors_data else []
             }
             
             # --- CHRONOLOGY VALIDATION ---

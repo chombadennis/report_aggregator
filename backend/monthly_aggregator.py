@@ -501,7 +501,8 @@ class MonthlyAggregator:
             "health_safety": compile_incident_summary(hs_prose, hs_issues),
             "security": compile_incident_summary(sec_prose, sec_issues),
             "challenges": aggregate_prose("challenges_prose"),
-            "visitors_prose": visitors_list
+            "visitors_prose": visitors_list,
+            "visitors": metadata.get("visitors", [])
         }
         
         self._save_to_history(result)

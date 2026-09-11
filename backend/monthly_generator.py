@@ -76,10 +76,10 @@ class MonthlyReportGenerator:
         if doc.tables:
             table0 = doc.tables[0]
             mapping = {
-                "time_elapsed": 13,     # Item 14
-                "pct_period": 14,       # Item 15
-                "pct_work": 15,         # Item 16
-                "reporting_period": 16  # Item 17
+                "time_elapsed": 14,     # Item 14
+                "pct_period": 15,       # Item 15
+                "pct_work": 16,         # Item 16
+                "reporting_period": 17  # Item 17
             }
             for key, idx in mapping.items():
                 if idx < len(table0.rows):
@@ -108,30 +108,7 @@ class MonthlyReportGenerator:
                         para = cell.add_paragraph()
                         para.text = f"• {p}"
 
-        # 4. Section F: Cubes (Table 4) - Structural Overhaul
-        cube_table = self._find_table_by_header(doc, "Compressive strength")
-        if cube_table:
-            # Shift all rows down by inserting a new header row at the top
-            # We use OxmlElement directly to insert at the very beginning of the table
-            new_tr = OxmlElement('w:tr')
-            for i in range(len(cube_table.columns)):
-                new_tc = OxmlElement('w:tc')
-                new_p = OxmlElement('w:p')
-                new_r = OxmlElement('w:r')
-                new_t = OxmlElement('w:t')
-                new_t.text = "Element." if i == 0 else ("Test." if i == 1 else "")
-                new_r.append(new_t)
-                new_p.append(new_r)
-                new_tc.append(new_p)
-                new_tr.append(new_tc)
-            
-            # Safely insert the new row before the first existing row to avoid corruption
-            cube_table.rows[0]._element.addprevious(new_tr)
-            # Make the new header bold
-            for cell in cube_table.rows[0].cells:
-                for para in cell.paragraphs:
-                    for run in para.runs:
-                        run.bold = True
+
 
         # 5. Section G: Machines (Table 5)
         machine_table = self._find_table_by_header(doc, "Condition")
@@ -338,6 +315,33 @@ class MonthlyReportGenerator:
             
             # Place after header
             inst_header_para._p.addnext(table._element)
+
+        # 12. Section M: Visitors (Dynamic Table Creation)
+        visitors_header_para = self._find_paragraph_anywhere(doc, "VISITORS/ CONSULTANTS ON SITE")
+        visitors_data = data.get("visitors", [])
+        
+        if visitors_header_para and visitors_data:
+            # Filter out empty rows
+            valid_visitors = [v for v in visitors_data if v.get("name") or v.get("org") or v.get("date")]
+            if valid_visitors:
+                # Create Table
+                table = doc.add_table(rows=1, cols=4)
+                self._set_table_borders(table)
+                hdr = table.rows[0].cells
+                for idx, txt in enumerate(["S/N", "NAME", "ORGANISATION", "DATE ON SITE"]):
+                    hdr[idx].text = txt
+                    for p in hdr[idx].paragraphs:
+                        for run in p.runs: run.bold = True
+                
+                for i, v in enumerate(valid_visitors, 1):
+                    row = table.add_row()
+                    row.cells[0].text = str(i)
+                    row.cells[1].text = v.get("name", "")
+                    row.cells[2].text = v.get("org", "")
+                    row.cells[3].text = v.get("date", "")
+                
+                # Place after header
+                visitors_header_para._p.addnext(table._element)
 
         doc.save(output_path)
         return output_path

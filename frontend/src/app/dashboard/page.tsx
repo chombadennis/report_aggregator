@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { FileText, TrendingUp, ArrowRight } from 'lucide-react';
+import { FileText, TrendingUp, ArrowRight, Plus, Trash2 } from 'lucide-react';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -25,6 +25,7 @@ export default function Home() {
   const [pctPeriod, setPctPeriod] = useState('');
   const [pctWork, setPctWork] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [visitors, setVisitors] = useState<{name: string, org: string, date: string}[]>([{name: '', org: '', date: ''}]);
 
   // Correspondence & Document States
   const [docCategory, setDocCategory] = useState('contractor'); // contractor | client | general
@@ -327,6 +328,10 @@ export default function Home() {
     formData.append('pct_period', sPctPeriod);
     formData.append('pct_work', sPctWork);
 
+    if (mode === 'monthly') {
+      formData.append('visitors_data', JSON.stringify(visitors));
+    }
+
     try {
       const token = await getToken();
       const endpoint = mode === 'weekly' ? '/api/generate-weekly-stream' : '/api/generate-monthly-stream';
@@ -377,7 +382,16 @@ export default function Home() {
       if (session_id) {
         setStatus('📥 Downloading final document...');
         window.location.href = `${BACKEND_URL}/api/download-session/${session_id}`;
-        setTimeout(() => setStatus(`✨ Success! ${mode === 'weekly' ? 'Weekly' : 'Monthly'} Report Ready.`), 2000);
+        setTimeout(() => {
+          setStatus(`✨ Success! ${mode === 'weekly' ? 'Weekly' : 'Monthly'} Report Ready.`);
+          setTitle('');
+          setDates('');
+          setTimeLapsed('');
+          setPctPeriod('');
+          setPctWork('');
+          setVisitors([{name: '', org: '', date: ''}]);
+          setFiles([]);
+        }, 2000);
       }
     } catch (err: any) {
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
@@ -540,6 +554,92 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Visitors Form */}
+        {mode === 'monthly' && (
+          <div className="mb-8 bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
+            <h3 className="text-lg font-bold text-vivid-tangerine-800 mb-4 uppercase tracking-widest">Visitors / Consultants on Site (Optional)</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-vanilla-custard-200 text-xs text-vivid-tangerine-600 uppercase tracking-wider">
+                    <th className="pb-3 pl-2">S/N</th>
+                    <th className="pb-3">Name</th>
+                    <th className="pb-3">Organisation</th>
+                    <th className="pb-3">Date on Site</th>
+                    <th className="pb-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visitors.map((v, i) => (
+                    <tr key={i} className="border-b border-vanilla-custard-100 last:border-0 hover:bg-vanilla-custard-50/50 transition-colors">
+                      <td className="py-3 pl-2 text-sm font-medium text-slate-500">{i + 1}</td>
+                      <td className="py-3 pr-2">
+                        <input
+                          value={v.name}
+                          onChange={(e) => {
+                            const newV = [...visitors];
+                            newV[i].name = e.target.value;
+                            setVisitors(newV);
+                          }}
+                          disabled={!isAdmin}
+                          placeholder="Name"
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                        />
+                      </td>
+                      <td className="py-3 pr-2">
+                        <input
+                          value={v.org}
+                          onChange={(e) => {
+                            const newV = [...visitors];
+                            newV[i].org = e.target.value;
+                            setVisitors(newV);
+                          }}
+                          disabled={!isAdmin}
+                          placeholder="Organisation"
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                        />
+                      </td>
+                      <td className="py-3 pr-2">
+                        <input
+                          type="date"
+                          value={v.date}
+                          onChange={(e) => {
+                            const newV = [...visitors];
+                            newV[i].date = e.target.value;
+                            setVisitors(newV);
+                          }}
+                          disabled={!isAdmin}
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                        />
+                      </td>
+                      <td className="py-3 text-right">
+                        <button
+                          onClick={() => {
+                            const newV = visitors.filter((_, idx) => idx !== i);
+                            setVisitors(newV.length ? newV : [{name: '', org: '', date: ''}]);
+                          }}
+                          disabled={!isAdmin}
+                          className="text-vivid-tangerine-400 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setVisitors([...visitors, {name: '', org: '', date: ''}])}
+                className="mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-lg transition-colors border border-sunflower-gold-100"
+              >
+                <Plus className="w-4 h-4" /> Add Visitor
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Upload Zone */}
         <div className="space-y-4">
           <div className={`bg-white border-2 border-dashed rounded-3xl p-4 sm:p-10 text-center transition-all shadow-lg ${isAdmin
@@ -583,7 +683,7 @@ export default function Home() {
               {files.map((file, idx) => (
                 <div key={idx} className="flex justify-between items-center text-sm bg-vanilla-custard-50 p-3 rounded-xl border border-vanilla-custard-100">
                   <span className="truncate max-w-[80%] font-medium text-vivid-tangerine-800">📄 {file.name}</span>
-                  <button onClick={() => removeFile(idx)} className="bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 p-1.5 rounded-lg transition-colors">✕</button>
+                  <button onClick={() => removeFile(idx)} disabled={loading} className={`p-1.5 rounded-lg transition-colors ${loading ? 'opacity-50 cursor-not-allowed text-slate-400' : 'bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100'}`}>✕</button>
                 </div>
               ))}
             </div>
