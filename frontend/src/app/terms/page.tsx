@@ -67,13 +67,13 @@ export default function TermsPage() {
           {/* Section 3 */}
           <div className="space-y-3">
             <h3 className="text-base font-bold text-vivid-tangerine-950 font-serif flex items-center gap-2">
-              <span className="text-sunflower-gold-500">3.</span> AI Output Accuracy and Professional Judgment
+              <span className="text-sunflower-gold-500">3.</span> Automated Output Accuracy and Professional Judgment
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
               This system uses advanced language and analytical models to process uploaded site records and assist in internal progress checking. While these analytical outputs are highly detailed, they are intended solely for informational reference and internal knowledge.
             </p>
             <p className="text-xs text-red-600 font-bold bg-red-50 p-4 rounded-2xl border border-red-100">
-              IMPORTANT: AI and automated analytics insights are purely for internal information checking and do not constitute professional advice, direct physical inspection, certified quantity surveys, or qualified legal counsel. This platform is not for official reporting, and outputs must not be used for official dissemination or contractual claims.
+              IMPORTANT: Automated analytics insights are purely for internal information checking and do not constitute professional advice, direct physical inspection, certified quantity surveys, or qualified legal counsel. This platform is not for official reporting, and outputs must not be used for official dissemination or contractual claims.
             </p>
           </div>
 
@@ -104,7 +104,7 @@ export default function TermsPage() {
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div>
               <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-              <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Intelligence &amp; Reporting</p>
+              <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
               <div className="flex items-center gap-2.5">
                 <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
                 <a href="https://neuralaxislabs.online" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">

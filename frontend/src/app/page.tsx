@@ -206,7 +206,7 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-28 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-700 text-xs font-bold uppercase tracking-widest mb-8 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-vivid-tangerine-500 animate-pulse" />
-            Field Intelligence &amp; Site Analytics Platform
+            Field Reporting &amp; Site Analytics Platform
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight font-serif bg-gradient-to-r from-sunflower-gold-600 via-vivid-tangerine-500 to-vivid-tangerine-700 bg-clip-text text-transparent py-2 leading-[1.15]">
@@ -216,13 +216,13 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-base md:text-lg text-vivid-tangerine-800 mb-4 max-w-2xl mx-auto font-medium leading-relaxed">
-            A unified AI-powered platform for site intelligence — parsing daily logs, generating weekly and monthly reports,
+            A unified smart platform for site reporting — parsing daily logs, generating weekly and monthly reports,
             tracking S-curve production analytics, evaluating project finances, and analysing contractor correspondence,
             EOT claims, and legal documents.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "S-Curve Analytics", "Claims Analysis", "Document Intelligence"].map((t) => (
+            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "S-Curve Analytics", "Claims Analysis", "Document Analysis"].map((t) => (
               <span key={t} className="text-[10px] font-black uppercase tracking-wide px-3 py-1.5 bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-600 rounded-full">
                 {t}
               </span>
@@ -249,7 +249,7 @@ export default function LandingPage() {
           <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-vanilla-custard-100 shadow-lg py-8 px-4 grid grid-cols-2 md:grid-cols-5 gap-6">
             <Stat value="3" label="Report types" />
             <Stat value="S-Curve" label="Production model" />
-            <Stat value="AI" label="Vision + NLP" />
+            <Stat value="OCR" label="Vision + NLP" />
             <Stat value="Word" label="Export format" />
             <Stat value="Live" label="Financial engine" />
           </div>
@@ -261,7 +261,7 @@ export default function LandingPage() {
         <div className="text-center mb-14">
           <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Full Platform Capabilities</p>
           <h2 className="text-2xl md:text-3xl font-bold font-serif text-vivid-tangerine-950 mb-3">
-            One platform. Every layer of site intelligence.
+            One platform. Every layer of site reporting.
           </h2>
           <p className="text-sm text-vivid-tangerine-700 max-w-xl mx-auto">
             From raw PDF logs to boardroom-ready progress reports — the system covers the full analytical lifecycle of a high-value construction project.
@@ -272,9 +272,9 @@ export default function LandingPage() {
           <CapCard
             icon={<Icon.Scan />}
             label="Parsing Engine"
-            title="AI Vision Log Parsing"
+            title="Vision Log Parsing"
             desc="Automatically extracts structured data from PDF daily site logs using advanced document vision models. Handles scanned pages with a high-resolution rendering fallback at up to 4× zoom for engineering-grade accuracy."
-            tags={["Daily Logs", "OCR", "Vision AI", "Scanned PDFs"]}
+            tags={["Daily Logs", "OCR", "Vision OCR", "Scanned PDFs"]}
             accent="bg-sunflower-gold-300"
           />
           <CapCard
@@ -327,18 +327,18 @@ export default function LandingPage() {
           />
           <CapCard
             icon={<Icon.Claim />}
-            label="Document Intelligence"
+            label="Document Analysis"
             title="Correspondence &amp; Document Analysis"
-            desc="Upload any project communication or document. Advanced document intelligence models analyse each file to extract key requests, action items, and relevant project implications automatically."
-            tags={["Documents", "Correspondence", "Site Records", "AI Analysis", "Action Items"]}
+            desc="Upload any project communication or document. Advanced document analysis models parse each file to extract key requests, action items, and relevant project implications automatically."
+            tags={["Documents", "Correspondence", "Site Records", "Auto Analysis", "Action Items"]}
             accent="bg-flag-red-200"
           />
           <CapCard
             icon={<Icon.AI />}
-            label="AI Insights"
+            label="Smart Insights"
             title="Management-Level Executive Summary"
-            desc="Feeds the full trend history, financial recalibration data, and uploaded project correspondence into our proprietary AI analysis engine to produce a management-level executive insight package — including SWOT, stakeholder recommendations, and critical advice summaries."
-            tags={["Executive Brief", "Secure AI Engine", "Recommendations", "Slippage Levels", "SWOT"]}
+            desc="Feeds the full trend history, financial recalibration data, and uploaded project correspondence into our proprietary analysis engine to produce a management-level executive insight package — including SWOT, stakeholder recommendations, and critical advice summaries."
+            tags={["Executive Brief", "Secure Engine", "Recommendations", "Slippage Levels", "SWOT"]}
             accent="bg-vanilla-custard-200"
           />
 
@@ -350,7 +350,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-14 items-center">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Document Intelligence</p>
+              <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Document Analysis</p>
               <h2 className="text-2xl md:text-3xl font-bold font-serif text-vivid-tangerine-950 mb-5">
                 Every project document. Fully analysed.
               </h2>
@@ -392,7 +392,7 @@ export default function LandingPage() {
                   </div>
                 ))}
                 <div className="flex items-center justify-between pt-2 border-t border-vanilla-custard-100">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">AI-analysed by Document Intelligence</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Analysed by Document Engine</span>
                   <span className="text-[10px] font-bold text-vivid-tangerine-700 bg-vanilla-custard-100 px-3 py-1 rounded-full">May 2026</span>
                 </div>
               </div>
@@ -406,16 +406,16 @@ export default function LandingPage() {
         <div className="text-center mb-14">
           <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">End-to-End Pipeline</p>
           <h2 className="text-2xl md:text-3xl font-bold font-serif text-vivid-tangerine-950">
-            From raw site log to full progress intelligence
+            From raw site log to full progress insights
           </h2>
         </div>
         <div className="grid md:grid-cols-2 gap-10">
           {[
             { n: "1", t: "Upload site logs or project documents", d: "Drop PDF daily logs, progress reports, or project documentation into the dashboard. The system auto-detects the document type." },
-            { n: "2", t: "AI Vision extraction and parsing", d: "Advanced Vision OCR models extract structured data from each page — including labor statistics, material tracking, progress narrative, and key metrics." },
+            { n: "2", t: "Vision extraction and parsing", d: "Advanced Vision OCR models extract structured data from each page — including labor statistics, material tracking, progress narrative, and key metrics." },
             { n: "3", t: "Aggregation and chronology validation", d: "The aggregation engine compiles logs into weekly and monthly summaries, deduplicates by date, validates chronological alignment, and flags out-of-sequence or mismatched submissions." },
             { n: "4", t: "Financial engine and S-curve calibration", d: "The financial engine computes daily and weekly revenue against the project contract value, calculates S-curve envisaged progress, variance (k), slippage gap, and recalibrated weekly target velocity." },
-            { n: "5", t: "AI insights and strategic recommendations", d: "The advanced intelligence engine produces a management executive brief — SWOT analysis, stakeholder insights, and strategic guidance based on project parameters." },
+            { n: "5", t: "Smart insights and strategic recommendations", d: "The advanced analysis engine produces a management executive brief — SWOT analysis, stakeholder insights, and strategic guidance based on project parameters." },
             { n: "6", t: "Generate and download professional reports", d: "Export a fully formatted Weekly Report, Monthly Report, or Project Progress & Site Analysis Report in branded Word format — ready for stakeholder review and sign-off." },
           ].map((s) => (
             <Step key={s.n} num={s.n} title={s.t} desc={s.d} />
@@ -504,13 +504,13 @@ export default function LandingPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-4">
           {[
-            { icon: <Icon.Document />, t: "1.0 Executive Summary", d: "AI-generated management brief reflecting current slippage level, tone-calibrated from constructive to urgent." },
+            { icon: <Icon.Document />, t: "1.0 Executive Summary", d: "Auto-generated management brief reflecting current slippage level, tone-calibrated from constructive to urgent." },
             { icon: <Icon.Finance />, t: "1.1 Recalibration Progress Summary", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
             { icon: <Icon.Trend />, t: "2.0 Monthly Production Table", d: "Completed months comparison: actual vs envisaged production and cumulative variance (k) per month." },
             { icon: <Icon.Calendar />, t: "3.0 Weekly Recalibration Chain", d: "Tactical week-by-week variance table showing where momentum was gained or lost throughout the project." },
-            { icon: <Icon.Shield />, t: "4.0 SWOT &amp; Progress Insights", d: "AI-generated SWOT analysis referencing site progress, production recovery, and overall correspondence." },
+            { icon: <Icon.Shield />, t: "4.0 SWOT &amp; Progress Insights", d: "Auto-generated SWOT analysis referencing site progress, production recovery, and overall correspondence." },
             { icon: <Icon.AI />, t: "5.0 Strategic Recommendations", d: "Separate actionable recommendations issued to project leads and administrators based on current data." },
-            { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded documents and correspondence with AI summaries and key implications." },
+            { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded documents and correspondence with auto-generated summaries and key implications." },
           ].map((item) => (
             <div key={item.t} className="bg-white border border-vanilla-custard-100 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-2">
@@ -550,7 +550,7 @@ export default function LandingPage() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-8">
           <div>
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Intelligence &amp; Reporting</p>
+            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
             <div className="flex items-center gap-2.5">
               <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
               <a href="https://neuralaxislabs.online" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">

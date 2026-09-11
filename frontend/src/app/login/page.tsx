@@ -37,7 +37,7 @@ export default function LoginPage() {
           MAKINDU <span className="bg-gradient-to-r from-sunflower-gold-400 to-vivid-tangerine-500 bg-clip-text text-transparent">AHP</span>
         </h1>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Field Intelligence &amp; Reporting Portal
+          Field Reporting &amp; Analytics Portal
         </p>
       </div>
 

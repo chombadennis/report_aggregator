@@ -73,13 +73,13 @@ export default function TrendsDashboard() {
         }
       });
       if (!res.ok) {
-        throw new Error("Failed to regenerate AI Insights");
+        throw new Error("Failed to regenerate Insights");
       }
       const newInsights = await res.json();
       setInsights(newInsights);
     } catch (err: any) {
       console.error(err);
-      setRegenerateError(err.message || "Failed to contact AI Engine");
+      setRegenerateError(err.message || "Failed to contact Analysis Engine");
     } finally {
       setIsRegenerating(false);
     }
@@ -512,12 +512,12 @@ export default function TrendsDashboard() {
             <div className="bg-vivid-tangerine-100 p-2 rounded-xl">
               <TrendingUp className="text-vivid-tangerine-600 w-6 h-6" />
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
               Project Performance <span className="text-vivid-tangerine-600">Analytics</span>
             </h1>
           </div>
           <p className="text-slate-500 max-w-2xl font-medium leading-relaxed">
-            Real-time operational intelligence extracted from site reports. Correlating labour momentum,
+            Real-time operational insights extracted from site reports. Correlating labour momentum,
             weather conditions, and material logistics.
           </p>
         </header>
@@ -736,7 +736,7 @@ export default function TrendsDashboard() {
                               <div className="flex justify-between items-center mb-2 sm:mb-3">
                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                   <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isDisrupted ? 'bg-slate-400' : 'bg-vivid-tangerine-500'}`}></div>
-                                  <span className="font-black uppercase tracking-widest text-[7px] sm:text-[8px] text-white/60">Intelligence Report</span>
+                                  <span className="font-black uppercase tracking-widest text-[7px] sm:text-[8px] text-white/60">Progress Report</span>
                                 </div>
                                 <span className="text-[7px] sm:text-[8px] font-bold text-white/30 uppercase">{label}</span>
                               </div>
@@ -826,7 +826,7 @@ export default function TrendsDashboard() {
                       <Sparkles className="w-4 h-4 text-slate-900" />
                     )}
                     <span className="tracking-wide text-[10px] uppercase">
-                      {isRegenerating ? "Generating..." : "Update AI SWOT Insights"}
+                      {isRegenerating ? "Generating..." : "Update SWOT Insights"}
                     </span>
                   </button>
                 )}
@@ -835,7 +835,7 @@ export default function TrendsDashboard() {
               {insights?._generated_at && (
                 <div className="text-[10px] font-bold text-slate-400 tracking-wider mb-6 uppercase flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                  <span>Last Analyzed by AI Engine: {insights._generated_at}</span>
+                  <span>Last Analyzed: {insights._generated_at}</span>
                 </div>
               )}
 
@@ -854,11 +854,11 @@ export default function TrendsDashboard() {
                     <Sparkles className="w-6 h-6 text-sunflower-gold-400 animate-pulse" />
                   </div>
 
-                  <h3 className="text-lg font-bold mb-2 text-white">AI Strategy Engine Uninitialized</h3>
+                  <h3 className="text-lg font-bold mb-2 text-white">Strategy Engine Uninitialized</h3>
                   <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
                     {isAdmin
-                      ? "No AI SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to AI Engine to generate insights."
-                      : "The AI-driven SWOT analysis and strategic recommendations are awaiting administrator generation. Please check back shortly once the administrator compiles the project report."}
+                      ? "No SWOT analysis or strategic recommendations have been generated for these trends yet. Feed current contract data, financial progress, and site correspondence to the analysis engine to generate insights."
+                      : "The SWOT analysis and strategic recommendations are awaiting administrator generation. Please check back shortly once the administrator compiles the project report."}
                   </p>
 
                   {isAdmin && (
@@ -873,7 +873,7 @@ export default function TrendsDashboard() {
                         <Sparkles className="w-4 h-4 text-slate-900" />
                       )}
                       <span className="tracking-widest text-[10px] uppercase">
-                        {isRegenerating ? "Running Analysis..." : "Compile AI Insights Now"}
+                        {isRegenerating ? "Running Analysis..." : "Compile Insights Now"}
                       </span>
                     </button>
                   )}
@@ -1041,6 +1041,234 @@ export default function TrendsDashboard() {
               );
             })()}
           </section>
+
+
+          {/* ── S-CURVE PROGRESS CHARTS ───────────────────────────────── */}
+          {financials?.weekly_financials && financials.weekly_financials.length > 0 && (() => {
+            const CONTRACT_SUM = 2127050827.72;
+            const TOTAL_WEEKS = 104;
+
+            // Hermite S(x) = 3x² - 2x³ — same formula as financial_engine.py
+            const hermite = (pctTime: number): number => {
+              const x = Math.max(0, Math.min(1, pctTime / 100));
+              return Math.round((3 * x * x - 2 * x * x * x) * 10000) / 100;
+            };
+
+            // Map actual weekly records to their TRUE week number on the 104-week timeline.
+            // pct_time from the backend = (days_elapsed / 731) * 100, so:
+            // true week = round((pct_time / 100) * 104), clamped to [1, 104].
+            const actualByWeek: Record<number, { actual_pct: number; actual_rev: number; label: string }> = {};
+            financials.weekly_financials.forEach((w: any) => {
+              const pctTime = typeof w.pct_time === 'number' ? w.pct_time : parseFloat(w.pct_time || '0');
+              const weekNum = Math.max(1, Math.min(104, Math.round((pctTime / 100) * TOTAL_WEEKS)));
+              if (!actualByWeek[weekNum]) {
+                actualByWeek[weekNum] = {
+                  label: w.label || `Week ${weekNum}`,
+                  actual_pct: typeof w.pct_work === 'number' ? parseFloat(w.pct_work.toFixed(2)) : 0,
+                  actual_rev: typeof w.revenue_earned === 'number' ? w.revenue_earned : 0,
+                };
+              }
+            });
+
+            // Build the full 104-week series:
+            // envisaged runs from week 1 → 104 (complete Hermite baseline).
+            // actual appears only for weeks where we have recorded data.
+            const weeklyData = Array.from({ length: TOTAL_WEEKS }, (_, i) => {
+              const wk = i + 1;
+              const pctTime = (wk / TOTAL_WEEKS) * 100;
+              const env = hermite(pctTime);
+              const actual = actualByWeek[wk];
+              return {
+                week: wk,
+                label: actual ? actual.label : `Week ${wk}`,
+                envisaged_pct: env,
+                actual_pct: actual ? actual.actual_pct : null,
+                envisaged_rev: Math.round((env / 100) * CONTRACT_SUM),
+                actual_rev: actual ? Math.round(actual.actual_rev) : null,
+              };
+            });
+
+            const actualWeeks = Object.keys(actualByWeek).map(Number).sort((a, b) => a - b);
+            const firstActualWeek = actualWeeks[0] ?? null;
+            const lastActualWeek = actualWeeks[actualWeeks.length - 1] ?? null;
+
+            const fmtM = (v: number) => `KES ${(v / 1000000).toFixed(1)}M`;
+            const fmtPct = (v: number) => `${v}%`;
+
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 mb-6 lg:mb-12">
+                {/* Chart 1 — % Progress: Envisaged vs Actual */}
+                <section className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Target className="w-4 h-4 text-indigo-500" />
+                      <h2 className="text-xl font-bold">S-Curve Progress: Full Project Timeline</h2>
+                    </div>
+                    <p className="text-xs text-slate-400 font-medium italic">Cumulative % work done — Hermite baseline vs actual (Weeks 1–104)</p>
+                    <div className="flex items-center gap-5 mt-3">
+                      <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-indigo-400 border-dashed border-t-2 border-indigo-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Envisaged</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-vivid-tangerine-500" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Actual</span></div>
+                    </div>
+                  </div>
+                  <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={weeklyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis
+                          dataKey="week"
+                          tickFormatter={(v: number) => v % 13 === 0 ? `Wk ${v}` : ''}
+                          tick={{ fontSize: 9, fill: '#94a3b8' }}
+                          axisLine={false}
+                          tickLine={false}
+                          interval={0}
+                        />
+                        <YAxis
+                          tickFormatter={fmtPct}
+                          tick={{ fontSize: 10, fill: '#94a3b8' }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={42}
+                          domain={[0, 100]}
+                        />
+                        <RechartsTooltip
+                          content={({ active, payload, label }: any) => {
+                            if (!active || !payload?.length) return null;
+                            const env = payload.find((p: any) => p.dataKey === 'envisaged_pct');
+                            const act = payload.find((p: any) => p.dataKey === 'actual_pct');
+                            return (
+                              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg px-4 py-3 text-xs">
+                                <p className="font-black text-slate-700 mb-2 uppercase tracking-wide">Week {label}</p>
+                                {env && <p className="text-indigo-500 font-bold">Envisaged: {env.value?.toFixed(2)}%</p>}
+                                {act?.value != null && <p className="text-vivid-tangerine-600 font-bold">Actual: {act.value?.toFixed(2)}%</p>}
+                                {env?.value != null && act?.value != null && (
+                                  <p className={`font-black mt-1 ${act.value - env.value >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    Variance: {(act.value - env.value).toFixed(2)}%
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="envisaged_pct"
+                          stroke="#818cf8"
+                          strokeWidth={2}
+                          strokeDasharray="5 3"
+                          dot={false}
+                          connectNulls
+                          name="Envisaged"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="actual_pct"
+                          stroke="#f97316"
+                          strokeWidth={2.5}
+                          dot={false}
+                          connectNulls={false}
+                          name="Actual"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-vivid-tangerine-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        Actual: Wk {firstActualWeek} &ndash; Wk {lastActualWeek} of {TOTAL_WEEKS}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{actualWeeks.length} weeks reported</span>
+                  </div>
+                </section>
+
+                {/* Chart 2 — KES Revenue: Envisaged vs Actual */}
+                <section className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="w-4 h-4 text-emerald-500" />
+                      <h2 className="text-xl font-bold">S-Curve Revenue: Full Project Timeline</h2>
+                    </div>
+                    <p className="text-xs text-slate-400 font-medium italic">Cumulative revenue (KES) — Hermite baseline vs actual (Weeks 1–104)</p>
+                    <div className="flex items-center gap-5 mt-3">
+                      <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-indigo-400 border-dashed border-t-2 border-indigo-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Envisaged</span></div>
+                      <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-emerald-500" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Actual</span></div>
+                    </div>
+                  </div>
+                  <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={weeklyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis
+                          dataKey="week"
+                          tickFormatter={(v: number) => v % 13 === 0 ? `Wk ${v}` : ''}
+                          tick={{ fontSize: 9, fill: '#94a3b8' }}
+                          axisLine={false}
+                          tickLine={false}
+                          interval={0}
+                        />
+                        <YAxis
+                          tickFormatter={(v: number) => fmtM(v)}
+                          tick={{ fontSize: 9, fill: '#94a3b8' }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={62}
+                          domain={[0, CONTRACT_SUM]}
+                        />
+                        <RechartsTooltip
+                          content={({ active, payload, label }: any) => {
+                            if (!active || !payload?.length) return null;
+                            const env = payload.find((p: any) => p.dataKey === 'envisaged_rev');
+                            const act = payload.find((p: any) => p.dataKey === 'actual_rev');
+                            return (
+                              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg px-4 py-3 text-xs">
+                                <p className="font-black text-slate-700 mb-2 uppercase tracking-wide">Week {label}</p>
+                                {env && <p className="text-indigo-500 font-bold">Envisaged: {fmtM(env.value)}</p>}
+                                {act?.value != null && <p className="text-emerald-600 font-bold">Actual: {fmtM(act.value)}</p>}
+                                {env?.value != null && act?.value != null && (
+                                  <p className={`font-black mt-1 ${act.value - env.value >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    Gap: {act.value - env.value >= 0 ? '+' : ''}{fmtM(act.value - env.value)}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="envisaged_rev"
+                          stroke="#818cf8"
+                          strokeWidth={2}
+                          strokeDasharray="5 3"
+                          dot={false}
+                          connectNulls
+                          name="Envisaged Revenue"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="actual_rev"
+                          stroke="#10b981"
+                          strokeWidth={2.5}
+                          dot={false}
+                          connectNulls={false}
+                          name="Actual Revenue"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Contract: KES 2.127B</span>
+                    </div>
+                    <span className="text-[10px] font-black text-vivid-tangerine-600 uppercase tracking-widest">
+                      Actual Wk {firstActualWeek}–{lastActualWeek} &middot; {fmtM(financials.weekly_financials[financials.weekly_financials.length - 1]?.revenue_earned || 0)} accrued
+                    </span>
+                  </div>
+                </section>
+              </div>
+            );
+          })()}
 
           {/* Production Recalibration Chain Table */}
           <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
@@ -1384,7 +1612,7 @@ export default function TrendsDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck className="text-emerald-400 w-5 h-5" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Intelligence Ready</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Analysis Ready</span>
                   </div>
                   <h2 className="text-3xl font-black tracking-tight">Progress Workspace</h2>
                 </div>
@@ -1423,7 +1651,7 @@ export default function TrendsDashboard() {
 
                 {/* Detailed SWOT Grid */}
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Detailed Intelligence Scan</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Detailed Progress Scan</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
                       <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-3">Strengths</p>
@@ -1548,7 +1776,7 @@ export default function TrendsDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting & Analytics</p>
 
             {/* NeuralAxis Labs Branding Logo */}
             <div className="flex items-center gap-2.5 mt-4">
@@ -1588,9 +1816,9 @@ export default function TrendsDashboard() {
                 <Loader2 className="w-10 h-10 text-sunflower-gold-400 animate-spin relative z-10" />
               </div>
 
-              <h3 className="text-2xl font-black text-white mb-3">AI Engine Processing</h3>
+              <h3 className="text-2xl font-black text-white mb-3">Analysis Processing</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-8">
-                AI Engine is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
+                System is analyzing the full trend history, project correspondence, and financial calibration data to generate strategic insights...
               </p>
 
               <div className="flex flex-col gap-2">

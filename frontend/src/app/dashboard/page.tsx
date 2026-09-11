@@ -171,7 +171,7 @@ export default function Home() {
     formData.append('recipient', finalRecipient);
 
     try {
-      setDocStatus('📡 Connecting to Claims Analysis AI Engine...');
+      setDocStatus('📡 Connecting to Claims Analysis Engine...');
       const token = await getToken();
       const response = await fetch(`${BACKEND_URL}/api/upload-document`, {
         method: 'POST',
@@ -186,7 +186,7 @@ export default function Home() {
         throw new Error(errData.detail || 'Server failed to process document');
       }
 
-      setDocStatus('Claims AI analysis complete!');
+      setDocStatus('Claims analysis complete!');
       setDocFile(null);
       setDocTitle('');
       setDocSummary('');
@@ -335,7 +335,7 @@ export default function Home() {
     try {
       const token = await getToken();
       const endpoint = mode === 'weekly' ? '/api/generate-weekly-stream' : '/api/generate-monthly-stream';
-      setStatus('📡 Connecting to AI Vision Engine...');
+      setStatus('📡 Connecting to Vision Engine...');
 
       const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
@@ -422,7 +422,7 @@ export default function Home() {
             <h1 className="text-2xl sm:text-3xl font-bold py-2 bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif leading-none">
               Makindu Affordable Housing Project
             </h1>
-            <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Industrial AI reporting for professional site managers.</p>
+            <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Intelligent reporting for professional site managers.</p>
           </div>
           <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
             {!isAdmin ? (
@@ -478,7 +478,7 @@ export default function Home() {
             </div>
             <div className="mt-6 relative z-10">
               <h3 className="text-lg font-bold text-slate-900 group-hover:text-vivid-tangerine-600 transition-colors">Trend & Performance Analysis</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily & weekly labor trends, weather disruptions, schedule slippages, and AI diagnostics.</p>
+              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily &amp; weekly labor trends, weather disruptions, schedule slippages, and smart diagnostics.</p>
             </div>
           </Link>
         </div>
@@ -748,7 +748,7 @@ export default function Home() {
             Project Correspondence & Claims Ingestion
           </h2>
           <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">
-            Upload contractor letters, client instructions, EOT requests, or meeting minutes. AI Engine will extract key claims and EOT risks to enrich your final reports.
+            Upload contractor letters, client instructions, EOT requests, or meeting minutes. The system will extract key claims and EOT risks to enrich your final reports.
           </p>
         </div>
 
@@ -838,7 +838,7 @@ export default function Home() {
                   onChange={(e) => setDocSummary(e.target.value)}
                   rows={3}
                   className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 text-sm resize-none"
-                  placeholder="Leave blank to let AI Engine scan the PDF and automatically summarize and analyze all key requests and EOT impacts."
+                  placeholder="Leave blank to let the system scan the PDF and automatically summarize and analyze all key requests and EOT impacts."
                 />
               </div>
             </div>
@@ -885,7 +885,7 @@ export default function Home() {
                 : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
                 }`}
             >
-              {docLoading ? '🔄 AI Claims Analysis Active...' : '🚀 Ingest Correspondence & Run AI'}
+              {docLoading ? '🔄 Analysis Active...' : '🚀 Ingest Correspondence & Analyse'}
             </button>
           </div>
         ) : (
@@ -893,7 +893,7 @@ export default function Home() {
             <div className="text-4xl mb-4">🔒</div>
             <h3 className="text-lg font-bold text-slate-800 font-serif mb-2">Read-Only Access: Correspondence Ingestion Locked</h3>
             <p className="text-xs text-slate-500 max-w-lg mx-auto leading-relaxed mb-4 font-medium">
-              Uploads of contractor letters, client instructions, or site reports for AI Claims scanning are locked for this account. Only designated Administrators can ingest new correspondence.
+              Uploads of contractor letters, client instructions, or site reports for Claims scanning are locked for this account. Only designated Administrators can ingest new correspondence.
             </p>
             <div className="text-[10px] text-amber-600 font-bold uppercase tracking-widest bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full inline-block shadow-sm">
               🔒 Requires Admin Account
@@ -1059,7 +1059,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">🧠 AI Detailed Analysis</h4>
+                   <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">🧠 Detailed Analysis</h4>
                   <p className="whitespace-pre-wrap text-vivid-tangerine-800">{activeDocDetail.ai_analysis?.detailed_analysis || "No detailed analysis available."}</p>
                 </div>
 
@@ -1139,7 +1139,7 @@ export default function Home() {
                   This action is **irreversible**. Deleting this document will permanently purge its parsed text content, contractor EOT requests, action items, and contractual delay risks from the cache.
                 </p>
                 <p className="text-xs text-red-600 font-black uppercase tracking-wider bg-red-50 p-3 rounded-lg border border-red-100 text-center">
-                  ⚠️ This document's AI insights will no longer be included in weekly/monthly report aggregation.
+                   ⚠️ This document's system insights will no longer be included in weekly/monthly report aggregation.
                 </p>
               </div>
 
@@ -1192,7 +1192,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
             <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Intelligence & Reporting</p>
+            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting &amp; Analytics</p>
 
             {/* NeuralAxis Labs Branding Logo */}
             <div className="flex items-center gap-2.5 mt-4">

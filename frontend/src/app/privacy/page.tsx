@@ -56,13 +56,13 @@ export default function PrivacyPage() {
           {/* Section 2 */}
           <div className="space-y-3">
             <h3 className="text-base font-bold text-vivid-tangerine-950 font-serif flex items-center gap-2">
-              <span className="text-sunflower-gold-500">2.</span> How Data is Processed & AI Processing
+              <span className="text-sunflower-gold-500">2.</span> How Data is Processed &amp; Automated Processing
             </h3>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
-              When a document is uploaded, it is processed securely using our integrated AI and analytics engine to extract key updates and tracking points.
+              When a document is uploaded, it is processed securely using our integrated analytics engine to extract key updates and tracking points.
             </p>
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed font-bold bg-vanilla-custard-50 p-3.5 rounded-xl border border-vanilla-custard-150">
-              🔒 Zero Data Training Guarantee: All processing is conducted securely under enterprise data privacy standards. The AI models used do not train on, retain, or store your uploaded project files, site logs, or financial tracking data for public or external model improvements.
+              🔒 Zero Data Training Guarantee: All processing is conducted securely under enterprise data privacy standards. The processing models used do not train on, retain, or store your uploaded project files, site logs, or financial tracking data for public or external model improvements.
             </p>
           </div>
 
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div>
               <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
-              <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Intelligence &amp; Reporting</p>
+              <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
               <div className="flex items-center gap-2.5">
                 <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
                 <a href="https://neuralaxislabs.online" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
