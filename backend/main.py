@@ -19,6 +19,7 @@ from progress_generator import ProgressReportGenerator
 from financial_engine import FinancialEngine
 from document_parser import DocumentParser
 from auth import clerk_verifier
+from evm_manager import EVMManager
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -43,6 +44,7 @@ analytics_engine = AnalyticsEngine(history_dir="cache/history", monthly_dir="cac
 progress_generator = ProgressReportGenerator()
 financial_engine = FinancialEngine()
 document_parser = DocumentParser(cache_dir="cache")
+evm_manager = EVMManager(cache_dir="cache")
 
 # --- AUTHENTICATION DEPENDENCIES ---
 async def get_current_user(authorization: str = Header(None)):
@@ -725,6 +727,34 @@ async def debug_cache(current_user: dict = Depends(require_admin)):
         else:
             results[folder] = "DIRECTORY_DOES_NOT_EXIST"
     return results
+
+from pydantic import BaseModel
+class EVMDataRequest(BaseModel):
+    week_name: str
+    data: dict
+
+@app.post("/api/contracts-evm")
+async def save_contracts_evm(req: EVMDataRequest, current_user: dict = Depends(require_admin)):
+    try:
+        updated_data = evm_manager.save_weekly_evm(req.week_name, req.data)
+        return {"status": "success", "msg": f"EVM data for {req.week_name} saved successfully.", "data": updated_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/contracts-evm")
+async def update_contracts_evm(req: EVMDataRequest, current_user: dict = Depends(require_admin)):
+    try:
+        updated_data = evm_manager.update_weekly_evm(req.week_name, req.data)
+        return {"status": "success", "msg": f"EVM data for {req.week_name} updated successfully.", "data": updated_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/contracts-evm")
+async def get_contracts_evm(current_user: dict = Depends(get_current_user)):
+    try:
+        return evm_manager.get_all_evm_data()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

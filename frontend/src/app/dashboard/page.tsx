@@ -43,6 +43,75 @@ export default function Home() {
   const [activeDocDetail, setActiveDocDetail] = useState<any | null>(null);
   const [docToDelete, setDocToDelete] = useState<any | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showEvmModal, setShowEvmModal] = useState(false);
+
+  // EVM States
+  const [evmWeekNum, setEvmWeekNum] = useState('');
+  const [evmStartDate, setEvmStartDate] = useState('');
+  const [evmEndDate, setEvmEndDate] = useState('');
+  const [existingEvmWeeks, setExistingEvmWeeks] = useState<string[]>([]);
+  const [evmComponents, setEvmComponents] = useState([
+    { name: 'Particular preliminaries', pctTotal: 0.33, pctContrib: '', pctDone: '' },
+    { name: 'General preliminaries', pctTotal: 1.56, pctContrib: '', pctDone: '' },
+    { name: 'Project provisions', pctTotal: 1.47, pctContrib: '', pctDone: '' },
+    { name: 'Builders work – Block Type B', pctTotal: 29.58, pctContrib: '', pctDone: '' },
+    { name: 'Builders work – Block Type C', pctTotal: 27.86, pctContrib: '', pctDone: '' },
+    { name: 'Kindergarten', pctTotal: 0.63, pctContrib: '', pctDone: '' },
+    { name: 'Commercial stalls', pctTotal: 0.00, pctContrib: '', pctDone: '' },
+    { name: 'Guard house', pctTotal: 0.07, pctContrib: '', pctDone: '' },
+    { name: 'Club house', pctTotal: 1.07, pctContrib: '', pctDone: '' },
+    { name: 'Garbage receptacle', pctTotal: 0.19, pctContrib: '', pctDone: '' },
+    { name: 'Power house', pctTotal: 0.07, pctContrib: '', pctDone: '' },
+    { name: 'Boundary wall', pctTotal: 0.11, pctContrib: '', pctDone: '' },
+    { name: 'Civil works - Roads', pctTotal: 1.23, pctContrib: '', pctDone: '' },
+    { name: 'Sewer', pctTotal: 1.48, pctContrib: '', pctDone: '' },
+    { name: 'Underground water tank', pctTotal: 0.75, pctContrib: '', pctDone: '' },
+    { name: 'Mechanical installations', pctTotal: 4.43, pctContrib: '', pctDone: '' },
+    { name: 'Electrical installation', pctTotal: 8.02, pctContrib: '', pctDone: '' },
+    { name: 'Provisional sums & P.C. sums', pctTotal: 21.16, pctContrib: '', pctDone: '' },
+    { name: 'Contingency', pctTotal: 2.00, pctContrib: '', pctDone: '' },
+  ]);
+  const [evmBlocks, setEvmBlocks] = useState([
+    { name: 'B1', pctDone: '' },
+    { name: 'B2', pctDone: '' },
+    { name: 'B3', pctDone: '' },
+    { name: 'B4', pctDone: '' },
+    { name: 'C1', pctDone: '' },
+    { name: 'C2', pctDone: '' },
+    { name: 'C3', pctDone: '' },
+    { name: 'C4', pctDone: '' },
+    { name: 'C5', pctDone: '' },
+  ]);
+  const [evmLoading, setEvmLoading] = useState(false);
+  const [evmStatus, setEvmStatus] = useState('');
+
+  useEffect(() => {
+    const num = parseInt(evmWeekNum);
+    if (!isNaN(num) && num >= 41) {
+      const diffWeeks = num - 41;
+      const anchorStart = new Date(2026, 7, 31); // Aug is 7 (0-indexed)
+      const anchorEnd = new Date(2026, 8, 6);    // Sept is 8
+      
+      const newStart = new Date(anchorStart.getTime() + diffWeeks * 7 * 24 * 60 * 60 * 1000);
+      const newEnd = new Date(anchorEnd.getTime() + diffWeeks * 7 * 24 * 60 * 60 * 1000);
+      
+      const formatDate = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      
+      setEvmStartDate(formatDate(newStart));
+      setEvmEndDate(formatDate(newEnd));
+    } else {
+      setEvmStartDate('');
+      setEvmEndDate('');
+    }
+  }, [evmWeekNum]);
+
+  const evmWeekName = evmWeekNum ? `Week ${evmWeekNum}` : '';
+  const isWeekDuplicate = existingEvmWeeks.includes(evmWeekName);
+  const isValidWeekNum = parseInt(evmWeekNum) >= 41;
+
+  const isEvmReady = isValidWeekNum && !isWeekDuplicate && evmStartDate !== '' && 
+    evmComponents.every(c => c.pctContrib.trim() !== '' && c.pctDone.trim() !== '') && 
+    evmBlocks.every(b => b.pctDone.trim() !== '');
 
   // Register UI States
   const [activeRegisterTab, setActiveRegisterTab] = useState('contractor'); // contractor | client | general
@@ -130,6 +199,22 @@ export default function Home() {
       setIsVerifyingAccess(false);
     }
   };
+
+  useEffect(() => {
+    const fetchEvmHistory = async () => {
+      try {
+         const token = await getToken();
+         const res = await fetch(`${BACKEND_URL}/api/contracts-evm`, { headers: { 'Authorization': `Bearer ${token}` } });
+         if (res.ok) {
+           const data = await res.json();
+           setExistingEvmWeeks(Object.keys(data));
+         }
+      } catch (e) {}
+    };
+    if (isLoaded && userId) {
+      fetchEvmHistory();
+    }
+  }, [isLoaded, userId]);
 
   const handleDocFileChange = (newFiles: FileList | null) => {
     if (!newFiles || newFiles.length === 0) return;
@@ -402,6 +487,50 @@ export default function Home() {
       setStatus('');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveEVM = async () => {
+    if (!isEvmReady) return;
+    setEvmLoading(true);
+    setEvmStatus('Saving EVM Data...');
+    try {
+      const token = await getToken();
+      const response = await fetch(`${BACKEND_URL}/api/contracts-evm`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          week_name: evmWeekName,
+          data: {
+            start_date: evmStartDate,
+            end_date: evmEndDate,
+            components: evmComponents,
+            blocks: evmBlocks
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save EVM data');
+      }
+
+      setEvmStatus('✅ EVM Data Saved successfully! It is now available in the Contracts & EVM page.');
+      setExistingEvmWeeks(prev => [...prev, evmWeekName]);
+      
+      // Clear form
+      setEvmWeekNum('');
+      setEvmComponents(prev => prev.map(c => ({...c, pctContrib: '', pctDone: ''})));
+      setEvmBlocks(prev => prev.map(b => ({...b, pctDone: ''})));
+
+      setShowEvmModal(true);
+    } catch (err: any) {
+      setEvmStatus('❌ Error saving EVM Data');
+      setShowEvmModal(true);
+    } finally {
+      setEvmLoading(false);
     }
   };
 
@@ -739,6 +868,165 @@ export default function Home() {
             <p className="text-vivid-tangerine-400 text-xs font-semibold uppercase tracking-widest">Document Integrity Verified</p>
           )}
         </div>
+
+        {/* EVM Section Separator */}
+        <div className="border-t-2 border-vanilla-custard-200/60 my-16" />
+
+        {/* EVM Section */}
+        <div className="mb-8 text-left">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif">
+            Contracts & EVM Weekly Data Entry
+          </h2>
+          <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">
+            Input weekly EVM percentages. This data will be securely saved and rendered in the Contracts & EVM page independently.
+          </p>
+        </div>
+
+        {isAdmin ? (
+          <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div>
+                <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Week Number</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3 text-vivid-tangerine-500 font-bold">Week</span>
+                  <input
+                    type="number"
+                    min="41"
+                    value={evmWeekNum}
+                    onChange={(e) => setEvmWeekNum(e.target.value)}
+                    className={`w-full bg-vanilla-custard-50 border-2 ${isWeekDuplicate ? 'border-red-400' : 'border-vanilla-custard-100'} rounded-xl pl-16 pr-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
+                    placeholder="41"
+                  />
+                </div>
+                {isWeekDuplicate && (
+                  <p className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider">⚠️ Duplicate: {evmWeekName} is already saved.</p>
+                )}
+                {!isValidWeekNum && evmWeekNum && (
+                  <p className="text-[10px] text-amber-500 font-bold mt-1 uppercase tracking-wider">⚠️ Minimum week is 41.</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Calculated Start Date</label>
+                <input
+                  value={evmStartDate}
+                  disabled
+                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-xl px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
+                  placeholder="e.g. 31 Aug 2026"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Calculated End Date</label>
+                <input
+                  value={evmEndDate}
+                  disabled
+                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-xl px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
+                  placeholder="e.g. 6 Sep 2026"
+                />
+              </div>
+            </div>
+            
+            <div className="mb-8 overflow-x-auto">
+              <h3 className="text-sm font-bold text-vivid-tangerine-800 mb-4 uppercase tracking-widest">Component Progress</h3>
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b-2 border-vanilla-custard-200 text-xs text-vivid-tangerine-600 uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Component</th>
+                    <th className="pb-3">% of Component to Total</th>
+                    <th className="pb-3">% Contribution of Work Done to Contract Value</th>
+                    <th className="pb-3">% of Component Done to Respective Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {evmComponents.map((comp, idx) => (
+                    <tr key={idx} className="border-b border-vanilla-custard-100 hover:bg-vanilla-custard-50 transition-colors">
+                      <td className="py-2 pl-2 font-medium text-slate-700">{comp.name}</td>
+                      <td className="py-2 text-slate-500 font-semibold">{comp.pctTotal}%</td>
+                      <td className="py-2 pr-2">
+                        <input
+                          value={comp.pctContrib}
+                          onChange={(e) => {
+                            const newArr = [...evmComponents];
+                            newArr[idx].pctContrib = e.target.value.replace(/%/g, '');
+                            setEvmComponents(newArr);
+                          }}
+                          placeholder="e.g. 0.00"
+                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                        />
+                      </td>
+                      <td className="py-2 pr-2">
+                        <input
+                          value={comp.pctDone}
+                          onChange={(e) => {
+                            const newArr = [...evmComponents];
+                            newArr[idx].pctDone = e.target.value.replace(/%/g, '');
+                            setEvmComponents(newArr);
+                          }}
+                          placeholder="e.g. 0.00"
+                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mb-8 overflow-x-auto">
+              <h3 className="text-sm font-bold text-vivid-tangerine-800 mb-4 uppercase tracking-widest">Block Progress</h3>
+              <table className="w-full md:w-1/2 text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b-2 border-vanilla-custard-200 text-xs text-vivid-tangerine-600 uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Block</th>
+                    <th className="pb-3">% Done Per Block</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {evmBlocks.map((blk, idx) => (
+                    <tr key={idx} className="border-b border-vanilla-custard-100 hover:bg-vanilla-custard-50 transition-colors">
+                      <td className="py-2 pl-2 font-medium text-slate-700">{blk.name}</td>
+                      <td className="py-2 pr-2">
+                        <input
+                          value={blk.pctDone}
+                          onChange={(e) => {
+                            const newArr = [...evmBlocks];
+                            newArr[idx].pctDone = e.target.value.replace(/%/g, '');
+                            setEvmBlocks(newArr);
+                          }}
+                          placeholder="e.g. 0.00"
+                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {!isEvmReady && !evmLoading && (
+                <p className="text-[10px] text-amber-600 uppercase tracking-widest font-bold">⚠️ Enter a valid new week (&gt;=41) and fill all percentage fields to save.</p>
+              )}
+              <button
+                onClick={handleSaveEVM}
+                disabled={evmLoading || !isEvmReady}
+                className={`self-start px-8 py-3 rounded-xl font-bold transition-all shadow-md ${(!isEvmReady || evmLoading) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
+              >
+                {evmLoading ? 'Saving...' : 'Save EVM Data'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl shadow-md border border-vanilla-custard-100 mb-10">
+            <div className="text-5xl mb-3 grayscale opacity-60">🔒</div>
+            <div className="text-base font-bold text-slate-400 mb-1">EVM Data Entry Locked</div>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed text-center">
+              This account is restricted to read-only viewer permissions. Data entry features are locked.
+            </p>
+          </div>
+        )}
+
         {/* Correspondence Separator */}
         <div className="border-t-2 border-vanilla-custard-200/60 my-16" />
 
@@ -1177,6 +1465,29 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
+                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EVM Alert Modal */}
+        {showEvmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm transition-all duration-300">
+            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden border shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
+              <h3 className={`text-lg font-bold mb-2 font-serif ${evmStatus.includes('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                {evmStatus.includes('✅') ? 'Success!' : 'Error'}
+              </h3>
+              <p className="text-xs text-vivid-tangerine-800 mb-6 leading-relaxed">
+                {evmStatus}
+              </p>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowEvmModal(false)}
                   className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
                 >
                   OK
