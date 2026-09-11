@@ -333,7 +333,6 @@ class ReportParser:
         
         # Cleanup AI hallucinations in DAILY labour totals
         if report_type == "DAILY" and "labour" in final_data and isinstance(final_data["labour"], dict):
-            import re
             labour_dict = final_data["labour"]
             sum_val = 0
             for k, v in labour_dict.items():
@@ -699,7 +698,6 @@ class ReportParser:
         Parses '13TH - 19TH APRIL 2026' into a datetime object for the Monday.
         Handles variations like 'MARCH AND APRIL'.
         """
-        import re
         from datetime import datetime, timedelta
         
         try:
