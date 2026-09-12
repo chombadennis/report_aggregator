@@ -268,7 +268,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
           <CapCard
             icon={<Icon.Scan />}
             label="Parsing Engine"
@@ -502,7 +502,7 @@ export default function LandingPage() {
             One click generates a multi-section Project Progress &amp; Site Analysis Report in Word format — pulling from all data sources automatically.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1">
           {[
             { icon: <Icon.Document />, t: "1.0 Executive Summary", d: "Auto-generated management brief reflecting current slippage level, tone-calibrated from constructive to urgent." },
             { icon: <Icon.Finance />, t: "1.1 Recalibration Progress Summary", d: "S-curve mathematical logic, variance explanation, and recalibrated monthly-end targets with weekly velocity requirement." },
