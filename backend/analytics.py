@@ -129,7 +129,8 @@ class AnalyticsEngine:
             if date_key in seen_dates: continue
             
             labour = entry.get("labour", {})
-            total_labour = self._clean_val(labour.get("TOTAL", "0"))
+            total_labour = sum(self._clean_val(val) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+            
             mat_count = len(entry.get("materials_delivered", []))
             
             w_stats = entry.get("weather", {})
@@ -414,10 +415,13 @@ class AnalyticsEngine:
             totals = []
             if isinstance(labour_data, dict):
                 for date_key_day, day_data in labour_data.items():
-                    if isinstance(day_data, dict) and "TOTAL" in day_data:
-                        totals.append(self._clean_val(day_data["TOTAL"]))
-                if not totals and "TOTAL" in labour_data:
-                    total_list = labour_data["TOTAL"]
+                    if isinstance(day_data, dict):
+                        day_total = sum(self._clean_val(val) for k, val in day_data.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+                        totals.append(day_total)
+                if not totals:
+                    t_key2 = next((k for k in labour_data.keys() if str(k).upper() == "TOTAL"), None)
+                    if t_key2:
+                        total_list = labour_data[t_key2]
                     if isinstance(total_list, list):
                         totals = [self._clean_val(v) for v in total_list if self._clean_val(v) > 0]
                     elif isinstance(total_list, (str, int, float)):
@@ -583,7 +587,7 @@ class AnalyticsEngine:
                     docs_text += "\n"
 
         prompt = f"""
-        You are a Senior Project Management Consultant for a high-value affordable housing project.
+        You are a Senior Project Management Consultant for a high-value construction project.
         
         STRICT REQUIREMENT: The Contractual Exposure Level for this report is {calculated_verdict.upper()}. 
         You MUST use "{calculated_verdict}" as the value for 'claim_verdict' in your JSON response.

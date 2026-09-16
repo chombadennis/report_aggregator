@@ -6,6 +6,8 @@ import "@fontsource/lora";
 import "@fontsource/merriweather";
 import "./globals.css";
 
+import CustomCursor from "@/components/CustomCursor";
+
 export const metadata: Metadata = {
   title: "Construction Report Aggregator",
   description: "Professional aggregation system",
@@ -25,6 +27,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased">
+          <CustomCursor />
           {children}
         </body>
       </html>

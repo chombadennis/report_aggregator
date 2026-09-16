@@ -1,5 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { Search, Loader2, PlayCircle, Save } from 'lucide-react';
+import NavigationPanel from '@/components/NavigationPanel';
+import RevealWrapper from '@/components/animations/RevealWrapper';
 import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
@@ -171,38 +174,9 @@ export default function ContractSummary() {
   }
 
   return (
-    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5 self-start">
-            <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Dashboard
-          </Link>
-          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
-            {!isAdmin ? (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Viewer Access
-              </span>
-            ) : (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Admin Access
-              </span>
-            )}
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8 sm:w-9 sm:h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
-                }
-              }}
-            />
-            <Link href="/" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
-              Home
-            </Link>
-          </div>
-        </div>
+    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-900">
+      <NavigationPanel />
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-4 sm:pt-8">
 
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 font-serif bg-gradient-to-r from-deep-space-blue-600 via-vivid-tangerine-500 to-sunflower-gold-500 bg-clip-text text-transparent break-words">
           Contracts & EVM
@@ -211,20 +185,23 @@ export default function ContractSummary() {
 
 
         {error && (
-          <div className="bg-vivid-tangerine-50 p-6 rounded-2xl border border-vivid-tangerine-200 text-vivid-tangerine-900 mb-8">
+          <div className="bg-vivid-tangerine-50 p-6 rounded-none border border-vivid-tangerine-200 text-vivid-tangerine-900 mb-8">
             <p className="font-bold">Error</p>
             <p>{error}</p>
           </div>
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-lg border border-vanilla-custard-100">
-            <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-wider animate-pulse">Fetching contract details...</p>
-          </div>
+          <RevealWrapper>
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-none shadow-lg border border-vanilla-custard-100">
+              <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-wider animate-pulse">Fetching contract details...</p>
+            </div>
+          </RevealWrapper>
         ) : summary ? (
+          <RevealWrapper direction="up" delay={0.1}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-3xl shadow-lg hover:shadow-xl border border-vanilla-custard-100 hover:border-vivid-tangerine-200 transition-all duration-300 relative overflow-hidden group">
+            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-lg hover:shadow-xl border border-vanilla-custard-100 hover:border-vivid-tangerine-200 transition-all duration-300 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                 <span className="text-lg">🏗️</span> Project Title
@@ -244,27 +221,29 @@ export default function ContractSummary() {
               { label: 'Completion Date', value: summary.completion_date },
               { label: 'Location', value: summary.location },
             ].map((item, idx) => (
-              <div key={idx} className="bg-white/90 hover:bg-gradient-to-br hover:from-white hover:to-vanilla-custard-50 p-4 sm:p-5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 border border-vanilla-custard-100 transition-all duration-300 group cursor-default relative overflow-hidden">
+              <div key={idx} className="bg-white/90 hover:bg-gradient-to-br hover:from-white hover:to-vanilla-custard-50 p-4 sm:p-5 rounded-none shadow-sm hover:shadow-md hover:-translate-y-1 border border-vanilla-custard-100 transition-all duration-300 group cursor-default relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-vanilla-custard-200/20 to-transparent rounded-bl-full transform translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500" />
                 <h3 className="text-[10px] font-bold text-vivid-tangerine-400 uppercase tracking-tighter mb-1 group-hover:text-vivid-tangerine-500 transition-colors relative z-10">{item.label}</h3>
                 <p className="text-sm sm:text-base font-semibold text-vivid-tangerine-900 break-words group-hover:text-deep-space-blue-900 transition-colors relative z-10">{item.value || 'N/A'}</p>
               </div>
             )))}
 
-            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-3xl shadow-lg hover:shadow-xl border border-vanilla-custard-100 hover:border-sunflower-gold-200 transition-all duration-300 group">
+            <RevealWrapper>
+            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-lg hover:shadow-xl border border-vanilla-custard-100 hover:border-sunflower-gold-200 transition-all duration-300 group">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="text-lg">📋</span> Scope of Works
               </h2>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {summary.scope_of_works?.map((work: string, i: number) => (
-                  <li key={i} className="flex items-center gap-3 text-sm font-medium text-vivid-tangerine-800 bg-vanilla-custard-50/50 p-2.5 rounded-xl border border-vanilla-custard-100/50 hover:bg-white transition-colors">
+                  <li key={i} className="flex items-center gap-3 text-sm font-medium text-vivid-tangerine-800 bg-vanilla-custard-50/50 p-2.5 rounded-none border border-vanilla-custard-100/50 hover:bg-white transition-colors">
                     <span className="text-sunflower-gold-500 bg-sunflower-gold-50 rounded-full p-1 shadow-sm">✔</span> {work}
                   </li>
                 ))}
               </ul>
             </div>
+            </RevealWrapper>
 
-            <div className="md:col-span-2 bg-gradient-to-br from-vivid-tangerine-600 to-vivid-tangerine-800 p-4 sm:p-8 rounded-3xl shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 text-white overflow-hidden relative group">
+            <div className="md:col-span-2 bg-gradient-to-br from-vivid-tangerine-600 to-vivid-tangerine-800 p-4 sm:p-8 rounded-none shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 text-white overflow-hidden relative group">
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-700" />
               <h2 className="text-xs font-bold text-vivid-tangerine-200 uppercase tracking-widest mb-4 flex items-center gap-2 relative z-10">
                 <span className="text-lg">🌍</span> Socio-Economic Impact
@@ -274,11 +253,12 @@ export default function ContractSummary() {
               </p>
             </div>
 
-            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-3xl shadow-lg hover:shadow-xl border border-vanilla-custard-100 transition-all duration-300">
+            <RevealWrapper>
+            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-lg hover:shadow-xl border border-vanilla-custard-100 transition-all duration-300">
               <h2 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="text-lg">🛡️</span> Insurance Policies
               </h2>
-              <div className="overflow-hidden rounded-2xl border border-vanilla-custard-100 shadow-inner">
+              <div className="overflow-hidden rounded-none border border-vanilla-custard-100 shadow-inner">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-vanilla-custard-50">
@@ -297,8 +277,9 @@ export default function ContractSummary() {
                 </table>
               </div>
             </div>
+            </RevealWrapper>
 
-            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-3xl shadow-xl hover:shadow-2xl border border-vanilla-custard-100 hover:border-vivid-tangerine-300 transition-all duration-300 relative overflow-hidden mt-8 group">
+            <div className="md:col-span-2 bg-white/80 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-xl hover:shadow-2xl border border-vanilla-custard-100 hover:border-vivid-tangerine-300 transition-all duration-300 relative overflow-hidden mt-8 group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-sunflower-gold-200/30 to-vivid-tangerine-300/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 relative z-10">
                 <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-deep-space-blue-700 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif flex items-center gap-3">
@@ -314,7 +295,7 @@ export default function ContractSummary() {
                         setIsEditing(false);
                       }
                     }}
-                    className="bg-vanilla-custard-50 border border-vanilla-custard-200 text-vivid-tangerine-900 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-vivid-tangerine-500 shadow-sm"
+                    className="bg-vanilla-custard-50 border border-vanilla-custard-200 text-vivid-tangerine-900 text-sm font-bold rounded-none px-4 py-2 outline-none focus:border-vivid-tangerine-500 shadow-sm"
                   >
                     {Object.keys(evmData).sort((a, b) => b.localeCompare(a)).map(w => (
                       <option key={w} value={w}>{w}</option>
@@ -324,7 +305,7 @@ export default function ContractSummary() {
               </div>
 
               {selectedWeek && evmData[selectedWeek] && evmData[selectedWeek].start_date && (
-                <div className="mb-6 bg-vanilla-custard-50/50 p-3 rounded-xl border border-vanilla-custard-100 inline-block">
+                <div className="mb-6 bg-vanilla-custard-50/50 p-3 rounded-none border border-vanilla-custard-100 inline-block">
                   <span className="text-[10px] font-bold text-vivid-tangerine-500 uppercase tracking-widest block mb-1">Reporting Period</span>
                   <p className="text-sm font-semibold text-vivid-tangerine-900">
                     {evmData[selectedWeek].start_date} <span className="text-vivid-tangerine-400 mx-2">➔</span> {evmData[selectedWeek].end_date}
@@ -333,12 +314,12 @@ export default function ContractSummary() {
               )}
 
               {Object.keys(evmData).length === 0 ? (
-                <div className="text-center py-10 bg-vanilla-custard-50 rounded-2xl border border-dashed border-vanilla-custard-200 text-vivid-tangerine-600 font-medium">
+                <div className="text-center py-10 bg-vanilla-custard-50 rounded-none border border-dashed border-vanilla-custard-200 text-vivid-tangerine-600 font-medium">
                   No EVM data recorded yet. Go to the Dashboard to input data.
                 </div>
               ) : selectedWeek && evmData[selectedWeek] ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-                  <div className="overflow-x-auto bg-white/90 rounded-2xl border border-vanilla-custard-100 shadow-md hover:shadow-lg transition-all duration-300">
+                  <div className="overflow-x-auto bg-white/90 rounded-none border border-vanilla-custard-100 shadow-md hover:shadow-lg transition-all duration-300">
                     <h3 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest bg-gradient-to-r from-vanilla-custard-50 to-white p-4 border-b border-vanilla-custard-100">Component Progress</h3>
                     <table className="w-full text-left border-collapse text-sm">
                       <thead>
@@ -386,7 +367,7 @@ export default function ContractSummary() {
                     </table>
                   </div>
 
-                  <div className="overflow-x-auto bg-white/90 rounded-2xl border border-vanilla-custard-100 shadow-md hover:shadow-lg transition-all duration-300 self-start">
+                  <div className="overflow-x-auto bg-white/90 rounded-none border border-vanilla-custard-100 shadow-md hover:shadow-lg transition-all duration-300 self-start">
                     <h3 className="text-xs font-bold text-vivid-tangerine-500 uppercase tracking-widest bg-gradient-to-r from-vanilla-custard-50 to-white p-4 border-b border-vanilla-custard-100">Block Progress</h3>
                     <table className="w-full text-left border-collapse text-sm">
                       <thead>
@@ -421,7 +402,7 @@ export default function ContractSummary() {
                     {isAdmin && !isEditing && (
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="px-8 py-3 rounded-xl font-bold transition-all shadow-md bg-sunflower-gold-500 text-white hover:bg-sunflower-gold-600 active:scale-95"
+                        className="px-8 py-3 rounded-none font-bold transition-all shadow-md bg-sunflower-gold-500 text-white hover:bg-sunflower-gold-600 active:scale-95"
                       >
                         Edit EVM Data
                       </button>
@@ -433,14 +414,14 @@ export default function ContractSummary() {
                             setEvmData(JSON.parse(JSON.stringify(originalEvmData)));
                             setIsEditing(false);
                           }}
-                          className="px-6 py-3 rounded-xl font-bold transition-all bg-vanilla-custard-100 text-slate-500 hover:bg-vanilla-custard-200 active:scale-95"
+                          className="px-6 py-3 rounded-none font-bold transition-all bg-vanilla-custard-100 text-slate-500 hover:bg-vanilla-custard-200 active:scale-95"
                         >
                           Discard
                         </button>
                         <button
                           onClick={handleUpdateEVM}
                           disabled={isUpdating || JSON.stringify(evmData[selectedWeek]) === JSON.stringify(originalEvmData?.[selectedWeek])}
-                          className={`px-8 py-3 rounded-xl font-bold transition-all shadow-md ${isUpdating || JSON.stringify(evmData[selectedWeek]) === JSON.stringify(originalEvmData?.[selectedWeek]) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
+                          className={`px-8 py-3 rounded-none font-bold transition-all shadow-md ${isUpdating || JSON.stringify(evmData[selectedWeek]) === JSON.stringify(originalEvmData?.[selectedWeek]) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
                         >
                           {isUpdating ? 'Updating...' : 'Update EVM Data'}
                         </button>
@@ -452,13 +433,14 @@ export default function ContractSummary() {
             </div>
 
           </div>
+          </RevealWrapper>
         ) : null}
       </div>
 
       {/* EVM Update Modal */}
       {showUpdateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm transition-all duration-300">
-          <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden border shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-none max-w-sm w-full overflow-hidden border shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
             <h3 className={`text-lg font-bold mb-2 font-serif ${updateStatus.includes('✅') ? 'text-green-600' : 'text-red-600'}`}>
               {updateStatus.includes('✅') ? 'Success!' : 'Error'}
             </h3>
@@ -469,7 +451,7 @@ export default function ContractSummary() {
               <button
                 type="button"
                 onClick={() => setShowUpdateModal(false)}
-                className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+                className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-none text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
               >
                 OK
               </button>
@@ -482,7 +464,7 @@ export default function ContractSummary() {
       <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
-            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
             <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting &amp; Analytics</p>
 
             {/* NeuralAxis Labs Branding Logo */}
@@ -507,7 +489,7 @@ export default function ContractSummary() {
           </div>
         </div>
         <div className="mt-8 text-center border-t border-vanilla-custard-100 pt-6">
-          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
+          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Vektra. All Rights Reserved.</p>
         </div>
       </footer>
     </main>

@@ -3,7 +3,23 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser, UserButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { FileText, TrendingUp, ArrowRight, Plus, Trash2 } from 'lucide-react';
+import {
+  FileText,
+  Upload,
+  Calendar,
+  Layers,
+  ArrowRight,
+  Loader2,
+  FileSearch,
+  CheckCircle2,
+  ListTodo,
+  TrendingUp,
+  AlertTriangle,
+  Plus,
+  Trash2
+} from 'lucide-react';
+import NavigationPanel from '@/components/NavigationPanel';
+import RevealWrapper from '@/components/animations/RevealWrapper';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -44,6 +60,7 @@ export default function Home() {
   const [docToDelete, setDocToDelete] = useState<any | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showEvmModal, setShowEvmModal] = useState(false);
+  const [isEvmExpanded, setIsEvmExpanded] = useState(false);
 
   // EVM States
   const [evmWeekNum, setEvmWeekNum] = useState('');
@@ -544,148 +561,133 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-955 p-4 sm:p-8 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-955 font-sans">
+      <NavigationPanel />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold py-2 bg-gradient-to-r from-sunflower-gold-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif leading-none">
-              Makindu Affordable Housing Project
+              Vektra
             </h1>
-            <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Intelligent reporting for professional site managers.</p>
-          </div>
-          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
-            {!isAdmin ? (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Viewer Access
-              </span>
-            ) : (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Admin Access
-              </span>
-            )}
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8 sm:w-9 sm:h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
-                }
-              }}
-            />
-            <Link href="/" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
-              Exit Portal
-            </Link>
+            <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Field Reporting &amp; Analytics</p>
           </div>
         </div>
 
         {/* Dashboard Navigation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-          <Link href="/contract" className="group relative bg-white p-8 rounded-3xl shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-sunflower-gold-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-sunflower-gold-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
-            <div className="flex items-start justify-between relative z-10">
-              <div className="p-3.5 bg-sunflower-gold-50 rounded-2xl border border-sunflower-gold-100 text-sunflower-gold-600 transition-transform duration-300 group-hover:scale-110">
-                <FileText className="w-6 h-6" />
+        <RevealWrapper>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            <Link href="/contract" className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-none shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-sunflower-gold-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-sunflower-gold-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
+              <div className="flex items-start justify-between relative z-10">
+                <div className="p-3.5 bg-sunflower-gold-50 rounded-none border border-sunflower-gold-100 text-sunflower-gold-600 transition-transform duration-300 group-hover:scale-110">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div className="w-8 h-8 rounded-none bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-sunflower-gold-500 group-hover:text-white group-hover:border-sunflower-gold-400">
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-sunflower-gold-500 group-hover:text-white group-hover:border-sunflower-gold-400">
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              <div className="mt-6 relative z-10">
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-sunflower-gold-700 transition-colors">Contracts & EVM Weekly</h3>
+                <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">View project scope, baseline estimates, financial breakdown, and contract timelines.</p>
               </div>
-            </div>
-            <div className="mt-6 relative z-10">
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-sunflower-gold-700 transition-colors">Contract Summary</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">View project scope, baseline estimates, financial breakdown, and contract timelines.</p>
-            </div>
-          </Link>
+            </Link>
 
-          <Link href="/trends" className="group relative bg-white p-8 rounded-3xl shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-vivid-tangerine-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
-            <div className="flex items-start justify-between relative z-10">
-              <div className="p-3.5 bg-vivid-tangerine-50 rounded-2xl border border-vivid-tangerine-100 text-vivid-tangerine-600 transition-transform duration-300 group-hover:scale-110">
-                <TrendingUp className="w-6 h-6" />
+            <Link href="/trends" className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-none shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-vivid-tangerine-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
+              <div className="flex items-start justify-between relative z-10">
+                <div className="p-3.5 bg-vivid-tangerine-50 rounded-none border border-vivid-tangerine-100 text-vivid-tangerine-600 transition-transform duration-300 group-hover:scale-110">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <div className="w-8 h-8 rounded-none bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-vivid-tangerine-500 group-hover:text-white group-hover:border-vivid-tangerine-400">
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-vivid-tangerine-500 group-hover:text-white group-hover:border-vivid-tangerine-400">
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              <div className="mt-6 relative z-10">
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-vivid-tangerine-600 transition-colors">Trend & Performance Analysis</h3>
+                <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily &amp; weekly labor trends, weather disruptions, schedule slippages, and smart diagnostics.</p>
               </div>
-            </div>
-            <div className="mt-6 relative z-10">
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-vivid-tangerine-600 transition-colors">Trend & Performance Analysis</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily &amp; weekly labor trends, weather disruptions, schedule slippages, and smart diagnostics.</p>
-            </div>
-          </Link>
-        </div>
+            </Link>
+          </div>
+        </RevealWrapper>
 
         {/* Mode Selector */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={() => { setMode('weekly'); setFiles([]); }}
-            className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md ${mode === 'weekly' ? 'bg-vivid-tangerine-600 text-white' : 'bg-white text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
-          >
-            Weekly Report
-          </button>
-          <button
-            onClick={() => { setMode('monthly'); setFiles([]); }}
-            className={`px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md ${mode === 'monthly' ? 'bg-sunflower-gold-600 text-white' : 'bg-white text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
-          >
-            Monthly Report
-          </button>
-        </div>
+        <RevealWrapper direction="up" delay={0.1}>
+          <div className="flex gap-4 mb-8">
+            <button
+              onClick={() => { setMode('weekly'); setFiles([]); }}
+              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'weekly' ? 'bg-vivid-tangerine-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
+            >
+              Weekly Report
+            </button>
+            <button
+              onClick={() => { setMode('monthly'); setFiles([]); }}
+              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'monthly' ? 'bg-sunflower-gold-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
+            >
+              Monthly Report
+            </button>
+          </div>
+        </RevealWrapper>
 
         {/* Manual Input Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 mb-8 bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
-          <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
-            <input
-              value={title} onChange={(e) => setTitle(e.target.value)}
-              disabled={!isAdmin}
-              className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-              placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "e.g. MONTHLY REPORT (APRIL 2026)"}
-            />
-            {isDuplicate && (
-              <div className="mt-2 text-vivid-tangerine-700 text-sm flex items-center gap-2 bg-vivid-tangerine-50 p-3 rounded-lg border border-vivid-tangerine-200">
-                <span>⚡</span>
-                <span>A report for "<strong>{title}</strong>" already exists. This will create an update.</span>
-              </div>
-            )}
+        <RevealWrapper direction="up" delay={0.2}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 mb-8 bg-white/90 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
+              <input
+                value={title} onChange={(e) => setTitle(e.target.value)}
+                disabled={!isAdmin}
+                className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "e.g. MONTHLY REPORT (APRIL 2026)"}
+              />
+              {isDuplicate && (
+                <div className="mt-2 text-vivid-tangerine-700 text-sm flex items-center gap-2 bg-vivid-tangerine-50 p-3 rounded-none border border-vivid-tangerine-200">
+                  <span>⚡</span>
+                  <span>A report for "<strong>{title}</strong>" already exists. This will create an update.</span>
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Reporting Period</label>
+              <input
+                value={dates} onChange={(e) => setDates(e.target.value)}
+                disabled={!isAdmin}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder={mode === 'weekly' ? "e.g. 6TH – 12TH APRIL 2026" : "e.g. APRIL 2026"}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Time Lapsed (Weeks)</label>
+              <input
+                value={timeLapsed} onChange={(e) => setTimeLapsed(e.target.value)}
+                disabled={!isAdmin}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder="e.g. 20 Weeks"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Period Elapsed</label>
+              <input
+                value={pctPeriod} onChange={(e) => setPctPeriod(e.target.value)}
+                disabled={!isAdmin}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder="e.g. 19.43%"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Work Done</label>
+              <input
+                value={pctWork} onChange={(e) => setPctWork(e.target.value)}
+                disabled={!isAdmin}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder="e.g. 7.29%"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Reporting Period</label>
-            <input
-              value={dates} onChange={(e) => setDates(e.target.value)}
-              disabled={!isAdmin}
-              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-              placeholder={mode === 'weekly' ? "e.g. 6TH – 12TH APRIL 2026" : "e.g. APRIL 2026"}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Time Lapsed (Weeks)</label>
-            <input
-              value={timeLapsed} onChange={(e) => setTimeLapsed(e.target.value)}
-              disabled={!isAdmin}
-              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-              placeholder="e.g. 20 Weeks"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Period Elapsed</label>
-            <input
-              value={pctPeriod} onChange={(e) => setPctPeriod(e.target.value)}
-              disabled={!isAdmin}
-              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-              placeholder="e.g. 19.43%"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Work Done</label>
-            <input
-              value={pctWork} onChange={(e) => setPctWork(e.target.value)}
-              disabled={!isAdmin}
-              className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-              placeholder="e.g. 7.29%"
-            />
-          </div>
-        </div>
+        </RevealWrapper>
 
         {/* Visitors Form */}
         {mode === 'monthly' && (
-          <div className="mb-8 bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
+          <div className="mb-8 bg-white p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
             <h3 className="text-lg font-bold text-vivid-tangerine-800 mb-4 uppercase tracking-widest">Visitors / Consultants on Site (Optional)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -761,7 +763,7 @@ export default function Home() {
             {isAdmin && (
               <button
                 onClick={() => setVisitors([...visitors, {name: '', org: '', date: ''}])}
-                className="mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-lg transition-colors border border-sunflower-gold-100"
+                className="mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-none transition-colors border border-sunflower-gold-100"
               >
                 <Plus className="w-4 h-4" /> Add Visitor
               </button>
@@ -771,7 +773,7 @@ export default function Home() {
 
         {/* Upload Zone */}
         <div className="space-y-4">
-          <div className={`bg-white border-2 border-dashed rounded-3xl p-4 sm:p-10 text-center transition-all shadow-lg ${isAdmin
+          <div className={`bg-white border-2 border-dashed rounded-none p-4 sm:p-10 text-center transition-all shadow-lg ${isAdmin
             ? 'border-vanilla-custard-200 hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 group'
             : 'border-slate-200 bg-slate-50/50 cursor-not-allowed'
             }`}>
@@ -808,11 +810,11 @@ export default function Home() {
 
           {/* File List */}
           {files.length > 0 && (
-            <div className="bg-white rounded-2xl p-4 shadow-md border border-vanilla-custard-100 space-y-2">
+            <div className="bg-white rounded-none p-4 shadow-md border border-vanilla-custard-100 space-y-2">
               {files.map((file, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm bg-vanilla-custard-50 p-3 rounded-xl border border-vanilla-custard-100">
+                <div key={idx} className="flex justify-between items-center text-sm bg-vanilla-custard-50 p-3 rounded-none border border-vanilla-custard-100">
                   <span className="truncate max-w-[80%] font-medium text-vivid-tangerine-800">📄 {file.name}</span>
-                  <button onClick={() => removeFile(idx)} disabled={loading} className={`p-1.5 rounded-lg transition-colors ${loading ? 'opacity-50 cursor-not-allowed text-slate-400' : 'bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100'}`}>✕</button>
+                  <button onClick={() => removeFile(idx)} disabled={loading} className={`p-1.5 rounded-none transition-colors ${loading ? 'opacity-50 cursor-not-allowed text-slate-400' : 'bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100'}`}>✕</button>
                 </div>
               ))}
             </div>
@@ -822,12 +824,12 @@ export default function Home() {
         {/* Status and Errors */}
         <div className="mt-8 space-y-4">
           {status && (
-            <div className="bg-sunflower-gold-50 border border-sunflower-gold-200 text-vivid-tangerine-900 p-4 rounded-2xl animate-pulse font-semibold text-center shadow-sm text-sm">
+            <div className="bg-sunflower-gold-50 border border-sunflower-gold-200 text-vivid-tangerine-900 p-4 rounded-none animate-pulse font-semibold text-center shadow-sm text-sm">
               {status}
             </div>
           )}
           {error && (
-            <div className="bg-vivid-tangerine-50 border border-vivid-tangerine-200 text-vivid-tangerine-900 p-4 rounded-2xl flex items-start gap-4 shadow-md text-sm">
+            <div className="bg-vivid-tangerine-50 border border-vivid-tangerine-200 text-vivid-tangerine-900 p-4 rounded-none flex items-start gap-4 shadow-md text-sm">
               <span className="text-xl">🛠️</span>
               <div>
                 <p className="font-bold">System Notification</p>
@@ -848,7 +850,7 @@ export default function Home() {
           <button
             onClick={handleUpload}
             disabled={loading || !isReady || !isAdmin}
-            className={`w-full max-w-md py-4 rounded-2xl font-bold text-lg transition-all shadow-xl ${!isAdmin
+            className={`w-full max-w-md py-4 rounded-none font-bold text-lg transition-all shadow-xl ${!isAdmin
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
               : isReady && !loading
                 ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95'
@@ -873,17 +875,27 @@ export default function Home() {
         <div className="border-t-2 border-vanilla-custard-200/60 my-16" />
 
         {/* EVM Section */}
-        <div className="mb-8 text-left">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif">
-            Contracts & EVM Weekly Data Entry
-          </h2>
-          <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">
-            Input weekly EVM percentages. This data will be securely saved and rendered in the Contracts & EVM page independently.
-          </p>
+        <div className="mb-8 text-left flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 bg-clip-text text-transparent font-serif">
+              Earned Value Management Data Weekly
+            </h2>
+            <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">
+              Input weekly EVM data.
+            </p>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={() => setIsEvmExpanded(!isEvmExpanded)}
+              className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors bg-white border border-vanilla-custard-200 px-4 py-2 rounded-none shadow-sm"
+            >
+              {isEvmExpanded ? 'Collapse Form' : 'Expand Form'}
+            </button>
+          )}
         </div>
 
-        {isAdmin ? (
-          <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
+        {isAdmin && isEvmExpanded && (
+          <div className="bg-white p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left max-h-[600px] overflow-y-auto custom-scrollbar">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div>
                 <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Week Number</label>
@@ -894,7 +906,7 @@ export default function Home() {
                     min="41"
                     value={evmWeekNum}
                     onChange={(e) => setEvmWeekNum(e.target.value)}
-                    className={`w-full bg-vanilla-custard-50 border-2 ${isWeekDuplicate ? 'border-red-400' : 'border-vanilla-custard-100'} rounded-xl pl-16 pr-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
+                    className={`w-full bg-vanilla-custard-50 border-2 ${isWeekDuplicate ? 'border-red-400' : 'border-vanilla-custard-100'} rounded-none pl-16 pr-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950`}
                     placeholder="41"
                   />
                 </div>
@@ -911,7 +923,7 @@ export default function Home() {
                 <input
                   value={evmStartDate}
                   disabled
-                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-xl px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
+                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-none px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
                   placeholder="e.g. 31 Aug 2026"
                 />
               </div>
@@ -921,7 +933,7 @@ export default function Home() {
                 <input
                   value={evmEndDate}
                   disabled
-                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-xl px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
+                  className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-none px-4 py-3 cursor-not-allowed text-slate-500 font-medium"
                   placeholder="e.g. 6 Sep 2026"
                 />
               </div>
@@ -1011,14 +1023,15 @@ export default function Home() {
               <button
                 onClick={handleSaveEVM}
                 disabled={evmLoading || !isEvmReady}
-                className={`self-start px-8 py-3 rounded-xl font-bold transition-all shadow-md ${(!isEvmReady || evmLoading) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
+                className={`self-start px-8 py-3 rounded-none font-bold transition-all shadow-md ${(!isEvmReady || evmLoading) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
               >
                 {evmLoading ? 'Saving...' : 'Save EVM Data'}
               </button>
             </div>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl shadow-md border border-vanilla-custard-100 mb-10">
+        )}
+        {!isAdmin && (
+          <div className="flex flex-col items-center justify-center py-10 bg-white rounded-none shadow-md border border-vanilla-custard-100 mb-10">
             <div className="text-5xl mb-3 grayscale opacity-60">🔒</div>
             <div className="text-base font-bold text-slate-400 mb-1">EVM Data Entry Locked</div>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed text-center">
@@ -1042,9 +1055,9 @@ export default function Home() {
 
         {/* Correspondence Ingestion Form Card */}
         {isAdmin ? (
-          <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
+          <div className="bg-white p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left">
             {/* Doc Category Selector */}
-            <div className="flex gap-2 mb-6 p-1 bg-vanilla-custard-50 rounded-xl border border-vanilla-custard-200">
+            <div className="flex gap-2 mb-6 p-1 bg-vanilla-custard-50 rounded-none border border-vanilla-custard-200">
               {(['contractor', 'client', 'general'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -1057,7 +1070,7 @@ export default function Home() {
                     setDocSender(cat === 'general' ? '' : '');
                     setDocRecipient(cat === 'contractor' ? 'Client / Project Manager' : cat === 'client' ? 'Contractor' : '');
                   }}
-                  className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${docCategory === cat
+                  className={`flex-1 py-2 rounded-none font-bold text-xs uppercase tracking-wider transition-all ${docCategory === cat
                     ? 'bg-vivid-tangerine-600 text-white shadow-md'
                     : 'text-vivid-tangerine-700 hover:bg-vanilla-custard-100'
                     }`}
@@ -1074,7 +1087,7 @@ export default function Home() {
                 <input
                   value={docTitle}
                   onChange={(e) => setDocTitle(e.target.value)}
-                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950"
+                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950"
                   placeholder="e.g. Request for EOT due to rain delays"
                 />
               </div>
@@ -1085,7 +1098,7 @@ export default function Home() {
                   value={docCategory === 'contractor' ? 'Contractor' : docCategory === 'client' ? 'Client / Project Manager' : docSender}
                   onChange={(e) => setDocSender(e.target.value)}
                   disabled={docCategory !== 'general'}
-                  className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${docCategory !== 'general' ? 'opacity-60 cursor-not-allowed bg-vanilla-custard-100/50' : ''}`}
+                  className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${docCategory !== 'general' ? 'opacity-60 cursor-not-allowed bg-vanilla-custard-100/50' : ''}`}
                   placeholder="Sender Name"
                 />
               </div>
@@ -1095,7 +1108,7 @@ export default function Home() {
                 <input
                   value={docRecipient}
                   onChange={(e) => setDocRecipient(e.target.value)}
-                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
                   placeholder={docCategory === 'contractor' ? "Client / Project Manager" : docCategory === 'client' ? "Contractor" : "Recipient Name"}
                 />
               </div>
@@ -1106,7 +1119,7 @@ export default function Home() {
                   type="date"
                   value={docDateSent}
                   onChange={(e) => setDocDateSent(e.target.value)}
-                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
+                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950"
                 />
               </div>
 
@@ -1115,7 +1128,7 @@ export default function Home() {
                 <input
                   value={new Date().toLocaleDateString()}
                   disabled
-                  className="w-full bg-vanilla-custard-100/50 opacity-60 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 cursor-not-allowed text-vivid-tangerine-950"
+                  className="w-full bg-vanilla-custard-100/50 opacity-60 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 cursor-not-allowed text-vivid-tangerine-950"
                 />
               </div>
 
@@ -1125,7 +1138,7 @@ export default function Home() {
                   value={docSummary}
                   onChange={(e) => setDocSummary(e.target.value)}
                   rows={3}
-                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-xl px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 text-sm resize-none"
+                  className="w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 text-sm resize-none"
                   placeholder="Leave blank to let the system scan the PDF and automatically summarize and analyze all key requests and EOT impacts."
                 />
               </div>
@@ -1133,7 +1146,7 @@ export default function Home() {
 
             {/* File Dropzone */}
             <div className="mt-6">
-              <div className="bg-vanilla-custard-50/50 border-2 border-dashed border-vanilla-custard-200 rounded-2xl p-4 sm:p-6 text-center hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 transition-all cursor-pointer relative">
+              <div className="bg-vanilla-custard-50/50 border-2 border-dashed border-vanilla-custard-200 rounded-none p-4 sm:p-6 text-center hover:border-vivid-tangerine-500 hover:bg-vanilla-custard-50 transition-all cursor-pointer relative">
                 <input
                   type="file"
                   accept=".pdf"
@@ -1153,12 +1166,12 @@ export default function Home() {
 
             {/* Status and Errors */}
             {docStatus && (
-              <div className="mt-6 bg-sunflower-gold-50 border border-sunflower-gold-200 text-vivid-tangerine-900 p-4 rounded-xl animate-pulse font-semibold text-center text-xs">
+              <div className="mt-6 bg-sunflower-gold-50 border border-sunflower-gold-200 text-vivid-tangerine-900 p-4 rounded-none animate-pulse font-semibold text-center text-xs">
                 {docStatus}
               </div>
             )}
             {docError && (
-              <div className="mt-6 bg-vivid-tangerine-50 border border-vivid-tangerine-200 text-vivid-tangerine-900 p-4 rounded-xl text-xs font-bold">
+              <div className="mt-6 bg-vivid-tangerine-50 border border-vivid-tangerine-200 text-vivid-tangerine-900 p-4 rounded-none text-xs font-bold">
                 ⚠️ {docError}
               </div>
             )}
@@ -1168,7 +1181,7 @@ export default function Home() {
               type="button"
               onClick={handleUploadDocument}
               disabled={docLoading || !docFile}
-              className={`w-full mt-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all shadow-md ${docFile && !docLoading
+              className={`w-full mt-6 py-4 rounded-none font-bold text-sm uppercase tracking-widest transition-all shadow-md ${docFile && !docLoading
                 ? 'bg-gradient-to-r from-deep-space-blue-600 to-vivid-tangerine-600 hover:scale-[1.01] active:scale-95 text-white'
                 : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
                 }`}
@@ -1177,7 +1190,7 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="bg-slate-900/10 border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center shadow-lg mb-10">
+          <div className="bg-slate-900/10 border-2 border-dashed border-slate-200 rounded-none p-10 text-center shadow-lg mb-10">
             <div className="text-4xl mb-4">🔒</div>
             <h3 className="text-lg font-bold text-slate-800 font-serif mb-2">Read-Only Access: Correspondence Ingestion Locked</h3>
             <p className="text-xs text-slate-500 max-w-lg mx-auto leading-relaxed mb-4 font-medium">
@@ -1200,7 +1213,7 @@ export default function Home() {
                   value={registerSearchQuery}
                   onChange={(e) => setRegisterSearchQuery(e.target.value)}
                   placeholder="Search documents..."
-                  className="w-full bg-white border border-vanilla-custard-200 rounded-xl pl-4 pr-10 py-2 text-sm text-vivid-tangerine-950 focus:border-vivid-tangerine-500 outline-none transition-colors"
+                  className="w-full bg-white border border-vanilla-custard-200 rounded-none pl-4 pr-10 py-2 text-sm text-vivid-tangerine-950 focus:border-vivid-tangerine-500 outline-none transition-colors"
                 />
                 <span className="absolute right-3 top-2.5 opacity-40">🔍</span>
               </div>
@@ -1210,13 +1223,13 @@ export default function Home() {
           {uploadedDocs.length > 0 ? (
             <>
               {/* Category Tabs */}
-              <div className="flex gap-2 mb-4 p-1 bg-vanilla-custard-50 rounded-xl border border-vanilla-custard-200 w-full sm:w-fit">
+              <div className="flex gap-2 mb-4 p-1 bg-vanilla-custard-50 rounded-none border border-vanilla-custard-200 w-full sm:w-fit">
                 {(['contractor', 'client', 'general'] as const).map((cat) => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setActiveRegisterTab(cat)}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
+                    className={`px-4 py-2 rounded-none font-bold text-xs uppercase tracking-wider transition-all ${
                       activeRegisterTab === cat
                         ? 'bg-white text-vivid-tangerine-700 shadow-sm border border-vanilla-custard-200'
                         : 'text-vivid-tangerine-600/70 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-800'
@@ -1227,7 +1240,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 gap-1 sm:gap-4">
+              <div className="grid grid-cols-1 gap-1 sm:gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
                 {[...uploadedDocs]
                   .filter(doc => doc.category === activeRegisterTab)
                   .filter(doc => {
@@ -1239,7 +1252,7 @@ export default function Home() {
                   })
                   .sort((a, b) => new Date(b.date_sent || b.date_uploaded).getTime() - new Date(a.date_sent || a.date_uploaded).getTime())
                   .map((doc) => (
-                <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-2xl border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
+                <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-none border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
                   <div className="flex-1">
                     <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
                       <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
@@ -1264,7 +1277,7 @@ export default function Home() {
                     <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words select-text">
                       From: <span className="text-vivid-tangerine-900 select-text">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900 select-text">{doc.recipient}</span>
                     </p>
-                    <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-xl border border-vanilla-custard-100 shadow-inner">
+                    <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-none border border-vanilla-custard-100 shadow-inner">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2 pb-2 border-b border-vanilla-custard-200/60">
                         <span className="text-xs font-bold text-slate-800 font-serif select-text break-words">
                           Document: {doc.title || doc.ai_analysis?.title || "Untitled Document"}
@@ -1282,14 +1295,14 @@ export default function Home() {
                   <div className="flex md:flex-col justify-end items-stretch gap-2 min-w-[150px]">
                     <button
                       onClick={() => setActiveDocDetail(doc)}
-                      className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-xl font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
+                      className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-none font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
                     >
                       🔍 View Claims Analysis
                     </button>
                     {isAdmin && (
                       <button
                         onClick={() => setDocToDelete(doc)}
-                        className="px-4 py-2 bg-vivid-tangerine-50 border border-vivid-tangerine-200 rounded-xl font-bold text-xs text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 hover:text-vivid-tangerine-750 transition-colors text-center w-full"
+                        className="px-4 py-2 bg-vivid-tangerine-50 border border-vivid-tangerine-200 rounded-none font-bold text-xs text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 hover:text-vivid-tangerine-750 transition-colors text-center w-full"
                       >
                         🗑️ Delete Document
                       </button>
@@ -1299,14 +1312,14 @@ export default function Home() {
                 ))}
                 
                 {[...uploadedDocs].filter(doc => doc.category === activeRegisterTab).length === 0 && (
-                  <div className="bg-vanilla-custard-50/50 border border-dashed border-vanilla-custard-200 rounded-2xl p-8 text-center text-vivid-tangerine-800 text-sm font-medium">
+                  <div className="bg-vanilla-custard-50/50 border border-dashed border-vanilla-custard-200 rounded-none p-8 text-center text-vivid-tangerine-800 text-sm font-medium">
                     No documents found in this category.
                   </div>
                 )}
               </div>
             </>
           ) : (
-            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm font-medium">
+            <div className="bg-slate-50 border border-dashed border-slate-200 rounded-none p-8 text-center text-slate-500 text-sm font-medium">
               No correspondence uploaded yet.
             </div>
           )}
@@ -1315,7 +1328,7 @@ export default function Home() {
         {/* AI Claims Overlay Modal */}
         {activeDocDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
-            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-vanilla-custard-200 shadow-2xl relative flex flex-col text-left">
+            <div className="bg-white rounded-none max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-vanilla-custard-200 shadow-2xl relative flex flex-col text-left">
 
               {/* Header */}
               <div className="p-6 border-b border-vanilla-custard-150 flex justify-between items-start">
@@ -1330,7 +1343,7 @@ export default function Home() {
                 </div>
                 <button
                   onClick={() => setActiveDocDetail(null)}
-                  className="p-1.5 bg-vanilla-custard-50 hover:bg-vanilla-custard-100 rounded-xl border border-vanilla-custard-200 text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors text-lg font-black leading-none"
+                  className="p-1.5 bg-vanilla-custard-50 hover:bg-vanilla-custard-100 rounded-none border border-vanilla-custard-200 text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors text-lg font-black leading-none"
                 >
                   ✕
                 </button>
@@ -1341,7 +1354,7 @@ export default function Home() {
 
                 <div>
                   <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">📜 Document Summary</h4>
-                  <div className="bg-vanilla-custard-50 p-4 rounded-2xl border border-vanilla-custard-100 font-medium">
+                  <div className="bg-vanilla-custard-50 p-4 rounded-none border border-vanilla-custard-100 font-medium">
                     {activeDocDetail.summary}
                   </div>
                 </div>
@@ -1370,7 +1383,7 @@ export default function Home() {
                     <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">⚙️ Required Action Items</h4>
                     <ul className="space-y-1.5">
                       {activeDocDetail.ai_analysis.action_items.map((action: string, i: number) => (
-                        <li key={i} className="flex gap-2 items-start bg-sunflower-gold-50/40 p-2.5 rounded-xl border border-sunflower-gold-100/60 font-medium text-vivid-tangerine-900">
+                        <li key={i} className="flex gap-2 items-start bg-sunflower-gold-50/40 p-2.5 rounded-none border border-sunflower-gold-100/60 font-medium text-vivid-tangerine-900">
                           <span className="text-sunflower-gold-600 font-black">✔</span>
                           <span>{action}</span>
                         </li>
@@ -1381,7 +1394,7 @@ export default function Home() {
 
                 <div>
                   <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">⚖️ Contractual Implications & Risks</h4>
-                  <div className="bg-vivid-tangerine-50/50 p-4 rounded-2xl border border-vivid-tangerine-100/60 font-medium text-vivid-tangerine-900">
+                  <div className="bg-vivid-tangerine-50/50 p-4 rounded-none border border-vivid-tangerine-100/60 font-medium text-vivid-tangerine-900">
                     {activeDocDetail.ai_analysis?.contractual_implications || "No specific implications noted."}
                   </div>
                 </div>
@@ -1391,7 +1404,7 @@ export default function Home() {
               <div className="p-4 bg-vanilla-custard-50 border-t border-vanilla-custard-150 flex justify-end">
                 <button
                   onClick={() => setActiveDocDetail(null)}
-                  className="px-6 py-2.5 bg-vivid-tangerine-600 hover:bg-vivid-tangerine-700 text-white font-bold rounded-xl text-xs transition-colors"
+                  className="px-6 py-2.5 bg-vivid-tangerine-600 hover:bg-vivid-tangerine-700 text-white font-bold rounded-none text-xs transition-colors"
                 >
                   Close Claims Window
                 </button>
@@ -1404,7 +1417,7 @@ export default function Home() {
         {/* Custom Premium Delete Warning Modal */}
         {docToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-md transition-all duration-300">
-            <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden border border-vivid-tangerine-200/50 shadow-2xl relative flex flex-col text-left animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-none max-w-md w-full overflow-hidden border border-vivid-tangerine-200/50 shadow-2xl relative flex flex-col text-left animate-in fade-in zoom-in duration-200">
 
               {/* Alert Header Banner */}
               <div className="bg-gradient-to-r from-red-600 to-vivid-tangerine-600 p-6 text-white flex items-center gap-4">
@@ -1420,13 +1433,13 @@ export default function Home() {
                 <p className="text-sm font-bold text-vivid-tangerine-950">
                   You are about to delete a critical project correspondence document:
                 </p>
-                <div className="bg-vivid-tangerine-50/70 p-4 rounded-xl border border-vivid-tangerine-100 text-xs font-semibold text-vivid-tangerine-950 italic">
+                <div className="bg-vivid-tangerine-50/70 p-4 rounded-none border border-vivid-tangerine-100 text-xs font-semibold text-vivid-tangerine-950 italic">
                   "{docToDelete.title}"
                 </div>
                 <p className="text-xs text-vivid-tangerine-600 font-medium leading-relaxed">
                   This action is **irreversible**. Deleting this document will permanently purge its parsed text content, contractor EOT requests, action items, and contractual delay risks from the cache.
                 </p>
-                <p className="text-xs text-red-600 font-black uppercase tracking-wider bg-red-50 p-3 rounded-lg border border-red-100 text-center">
+                <p className="text-xs text-red-600 font-black uppercase tracking-wider bg-red-50 p-3 rounded-none border border-red-100 text-center">
                    ⚠️ This document's system insights will no longer be included in weekly/monthly report aggregation.
                 </p>
               </div>
@@ -1436,14 +1449,14 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setDocToDelete(null)}
-                  className="px-5 py-2.5 bg-vanilla-custard-200 hover:bg-vanilla-custard-300 text-vivid-tangerine-900 font-bold rounded-xl text-xs transition-all uppercase tracking-wider"
+                  className="px-5 py-2.5 bg-vanilla-custard-200 hover:bg-vanilla-custard-300 text-vivid-tangerine-900 font-bold rounded-none text-xs transition-all uppercase tracking-wider"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDeleteDocument(docToDelete.id)}
-                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold rounded-xl text-xs transition-all uppercase tracking-wider shadow-md hover:shadow-lg"
+                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold rounded-none text-xs transition-all uppercase tracking-wider shadow-md hover:shadow-lg"
                 >
                   Yes, Delete Document
                 </button>
@@ -1456,7 +1469,7 @@ export default function Home() {
         {/* Success Modal */}
         {showSuccessModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm transition-all duration-300">
-            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden border border-sunflower-gold-200/40 shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-none max-w-sm w-full overflow-hidden border border-sunflower-gold-200/40 shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
               <h3 className="text-lg font-bold text-vivid-tangerine-950 mb-2 font-serif">Document Upload Successful</h3>
               <p className="text-xs text-vivid-tangerine-800 mb-6 leading-relaxed">
                 View your analysed document in the register below, or upload a new document for scanning.
@@ -1465,7 +1478,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-none text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
                 >
                   OK
                 </button>
@@ -1477,7 +1490,7 @@ export default function Home() {
         {/* EVM Alert Modal */}
         {showEvmModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm transition-all duration-300">
-            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden border shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-none max-w-sm w-full overflow-hidden border shadow-2xl relative flex flex-col text-left p-6 animate-in fade-in zoom-in duration-200">
               <h3 className={`text-lg font-bold mb-2 font-serif ${evmStatus.includes('✅') ? 'text-green-600' : 'text-red-600'}`}>
                 {evmStatus.includes('✅') ? 'Success!' : 'Error'}
               </h3>
@@ -1488,7 +1501,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowEvmModal(false)}
-                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+                  className="px-6 py-2.5 bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white font-bold rounded-none text-xs uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-98 transition-all"
                 >
                   OK
                 </button>
@@ -1502,7 +1515,7 @@ export default function Home() {
       <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
-            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
             <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting &amp; Analytics</p>
 
             {/* NeuralAxis Labs Branding Logo */}
@@ -1527,7 +1540,7 @@ export default function Home() {
           </div>
         </div>
         <div className="mt-8 text-center border-t border-vanilla-custard-100 pt-6">
-          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
+          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Vektra. All Rights Reserved.</p>
         </div>
       </footer>
     </main>

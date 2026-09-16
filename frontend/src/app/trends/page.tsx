@@ -21,6 +21,8 @@ import {
   Sparkles,
   Loader2
 } from 'lucide-react';
+import NavigationPanel from '@/components/NavigationPanel';
+import RevealWrapper from '@/components/animations/RevealWrapper';
 import {
   LineChart,
   Line,
@@ -339,10 +341,14 @@ export default function TrendsDashboard() {
 
   return (
     <main className="min-h-screen bg-[#FDFCFB] text-slate-900 font-sans pb-20">
+      {/* Navigation Header */}
+      <NavigationPanel />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-12">
         {/* Financial Command Center */}
+        <RevealWrapper>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mb-12">
-          <div className="bg-white rounded-[2.5rem] p-5 sm:p-10 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="bg-white rounded-none p-5 sm:p-10 border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4">Revenue Accrued</p>
             <div className="text-xl font-black text-slate-900 tracking-tight">
@@ -353,7 +359,7 @@ export default function TrendsDashboard() {
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">Live Ledger</span>
               </div>
-              <div className="inline-flex bg-vivid-tangerine-50 px-3 py-1.5 rounded-xl border border-vivid-tangerine-100 self-start shadow-sm">
+              <div className="inline-flex bg-vivid-tangerine-50 px-3 py-1.5 rounded-none border border-vivid-tangerine-100 self-start shadow-sm">
                 <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-700">Work Progress: {globalProgress.workStr}</span>
               </div>
             </div>
@@ -374,7 +380,7 @@ export default function TrendsDashboard() {
 
                   return (
                     <>
-                      <div className={`p-3 ${status.bg} rounded-2xl group-hover:scale-110 transition-transform`}>
+                      <div className={`p-3 ${status.bg} rounded-none group-hover:scale-110 transition-transform`}>
                         <Activity className={`w-5 h-5 ${status.text}`} />
                       </div>
                       <div className="text-right">
@@ -439,12 +445,12 @@ export default function TrendsDashboard() {
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
             <div className="p-5 sm:p-8 flex-1 flex flex-col justify-between">
               <div className="flex justify-between items-start mb-6">
-                <div className="p-3 bg-blue-50 rounded-2xl group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-blue-50 rounded-none group-hover:scale-110 transition-transform">
                   <Building2 className="w-5 h-5 text-blue-500" />
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Project Context</p>
-                  <p className="text-lg font-black text-slate-900 leading-none">Makindu Affordable Housing</p>
+                  <p className="text-lg font-black text-slate-900 leading-none">Vektra</p>
                 </div>
               </div>
               <div className="flex flex-col gap-3 mt-4">
@@ -452,13 +458,13 @@ export default function TrendsDashboard() {
                   KES 2.127B Contract Valuation
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-block bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                  <span className="inline-block bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest shadow-sm">
                     Week {(() => {
                       const pctTime = latestFinancial ? latestFinancial.pct_time : globalProgress.time;
                       return pctTime !== 0 ? Math.round((pctTime / 100) * 104) : 'N/A';
                     })()}
                   </span>
-                  <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                  <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest shadow-sm">
                     Elapsed Time: {globalProgress.timeStr}
                   </span>
                 </div>
@@ -466,50 +472,14 @@ export default function TrendsDashboard() {
             </div>
           </div>
         </div>
+        </RevealWrapper>
       </div>
-
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-3 sm:px-8 py-3 sm:py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-1.5 sm:gap-4">
-            <Link href="/" className="text-xs font-bold text-slate-600 uppercase tracking-wider bg-white hover:bg-slate-50 border border-slate-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
-              Home
-            </Link>
-            <div className="w-px h-4 bg-slate-200"></div>
-            <Link href="/dashboard" className="text-xs font-bold text-vivid-tangerine-750 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-vivid-tangerine-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Dashboard
-            </Link>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-4">
-            {!isAdmin ? (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Viewer Access
-              </span>
-            ) : (
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl shadow-sm hidden sm:inline-block">
-                Admin Access
-              </span>
-            )}
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8 sm:w-9 sm:h-9 border border-vivid-tangerine-200/80 shadow-md hover:scale-105 transition-transform duration-200",
-                }
-              }}
-            />
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-12">
         {/* Hero Section */}
         <header className="mb-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-vivid-tangerine-100 p-2 rounded-xl">
+            <div className="bg-vivid-tangerine-100 p-2 rounded-none">
               <TrendingUp className="text-vivid-tangerine-600 w-6 h-6" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900">
@@ -609,30 +579,31 @@ export default function TrendsDashboard() {
         ) : null}
 
         {/* Main Performance Chart */}
+        <RevealWrapper direction="up" delay={0.2}>
         {loading ? (
           <section className="mb-12">
-            <div className="bg-white rounded-[2rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center justify-center h-[32rem]">
+            <div className="bg-white rounded-none p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100 flex flex-col items-center justify-center h-[32rem]">
               <div className="w-12 h-12 border-4 border-vivid-tangerine-500 border-t-transparent rounded-full animate-spin mb-4" />
               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Aggregating Labour Force Momentum...</p>
             </div>
           </section>
         ) : (
           <section className="mb-12">
-            <div className="bg-white rounded-[2rem] p-4 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
+            <div className="bg-white rounded-none p-4 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 sm:mb-10">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold">Labour Force Momentum</h2>
-                    <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+                    <div className="flex bg-slate-100 p-1 rounded-none shadow-inner">
                       <button
                         onClick={() => setTimeScale('daily')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${timeScale === 'daily' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                       >
                         Daily
                       </button>
                       <button
                         onClick={() => setTimeScale('weekly')}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${timeScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                       >
                         Weekly
                       </button>
@@ -754,9 +725,9 @@ export default function TrendsDashboard() {
                                 </div>
                               </div>
 
-                              <div className="bg-white/5 rounded-2xl p-2 sm:p-3 mb-2 sm:mb-3 border border-white/5">
+                              <div className="bg-white/5 rounded-none p-2 sm:p-3 mb-2 sm:mb-3 border border-white/5">
                                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                                  <div className="p-0.5 sm:p-1 bg-blue-500/20 rounded-md">
+                                  <div className="p-0.5 sm:p-1 bg-blue-500/20 rounded-none">
                                     <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
                                   </div>
                                   <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-blue-300">Material Logistics</span>
@@ -795,16 +766,18 @@ export default function TrendsDashboard() {
               </div>
 
               <div className="mt-16 flex gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-vivid-tangerine-500 rounded-sm"></div> Normal Progress</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-500 rounded-sm"></div> Weather Impacted</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Site Closed / Weekend</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-vivid-tangerine-500 rounded-none"></div> Normal Progress</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-500 rounded-none"></div> Weather Impacted</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-200 rounded-none"></div> Site Closed / Weekend</div>
               </div>
             </div>
           </section>
         )}
+        </RevealWrapper>
 
         <div className="flex flex-col gap-12 mb-12">
           {/* SWOT Analysis */}
+          <RevealWrapper direction="up" delay={0.2}>
           <section className="bg-slate-900 rounded-[2rem] p-5 sm:p-10 text-white overflow-hidden relative">
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
@@ -817,7 +790,7 @@ export default function TrendsDashboard() {
                   <button
                     onClick={handleRegenerateInsights}
                     disabled={isRegenerating}
-                    className="relative group overflow-hidden bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-5 py-3 rounded-2xl transition-all duration-300 transform active:scale-95 flex items-center gap-2.5 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative group overflow-hidden bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-5 py-3 rounded-none transition-all duration-300 transform active:scale-95 flex items-center gap-2.5 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
                     {isRegenerating ? (
@@ -840,17 +813,17 @@ export default function TrendsDashboard() {
               )}
 
               {regenerateError && (
-                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-4 py-3 rounded-2xl mb-6">
+                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-4 py-3 rounded-none mb-6">
                   ⚠️ {regenerateError}
                 </div>
               )}
 
               {(!insights || insights.is_empty || (insights.swot?.strengths?.length === 0 && insights.swot?.weaknesses?.length === 0)) ? (
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
+                <div className="bg-white/5 border border-white/10 rounded-none p-12 text-center flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
                   <div className="absolute -right-20 -top-20 w-60 h-60 bg-sunflower-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
                   <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
+                  <div className="w-14 h-14 rounded-none bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
                     <Sparkles className="w-6 h-6 text-sunflower-gold-400 animate-pulse" />
                   </div>
 
@@ -865,7 +838,7 @@ export default function TrendsDashboard() {
                     <button
                       onClick={handleRegenerateInsights}
                       disabled={isRegenerating}
-                      className="bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-6 py-3 rounded-2xl transition-all transform active:scale-95 flex items-center gap-2.5 shadow-[0_15px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50"
+                      className="bg-gradient-to-r from-sunflower-gold-500 to-amber-500 hover:from-sunflower-gold-600 hover:to-amber-600 text-slate-900 font-black px-6 py-3 rounded-none transition-all transform active:scale-95 flex items-center gap-2.5 shadow-[0_15px_30px_-10px_rgba(245,158,11,0.5)] disabled:opacity-50"
                     >
                       {isRegenerating ? (
                         <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
@@ -880,7 +853,7 @@ export default function TrendsDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
-                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-none border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-4">Strengths</p>
                     <ul className="space-y-3">
                       {insights?.swot?.strengths?.map((s: string, i: number) => (
@@ -888,7 +861,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-none border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-4">Weaknesses</p>
                     <ul className="space-y-3">
                       {insights?.swot?.weaknesses?.map((s: string, i: number) => (
@@ -896,7 +869,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-none border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-sunflower-gold-400 uppercase tracking-widest mb-4">Opportunities</p>
                     <ul className="space-y-3">
                       {insights?.swot?.opportunities?.map((s: string, i: number) => (
@@ -904,7 +877,7 @@ export default function TrendsDashboard() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white/5 p-4 sm:p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="bg-white/5 p-4 sm:p-8 rounded-none border border-white/10 hover:bg-white/10 transition-colors">
                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Threats</p>
                     <ul className="space-y-3">
                       {insights?.swot?.threats?.map((s: string, i: number) => (
@@ -916,8 +889,10 @@ export default function TrendsDashboard() {
               )}
             </div>
           </section>
+          </RevealWrapper>
 
           {/* Production Velocity & Recalibration */}
+          <RevealWrapper>
           <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -925,7 +900,7 @@ export default function TrendsDashboard() {
                 <h2 className="text-2xl font-bold">Production Velocity & Recalibration</h2>
               </div>
               {!isAdmin && (
-                <div className="bg-amber-50 border border-amber-100 px-4 py-2.5 rounded-2xl flex items-center gap-2.5 text-xs text-amber-700 font-bold uppercase tracking-wider">
+                <div className="bg-amber-50 border border-amber-100 px-4 py-2.5 rounded-none flex items-center gap-2.5 text-xs text-amber-700 font-bold uppercase tracking-wider">
                   <span>🔒</span>
                   <span>Read-Only View: S-Curve Recalibration Locked</span>
                 </div>
@@ -951,19 +926,19 @@ export default function TrendsDashboard() {
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Last Completed Month: {completedMonth.month}</h3>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-6">
-                        <div className="bg-indigo-50 p-3.5 sm:p-6 rounded-3xl border border-indigo-100">
+                        <div className="bg-indigo-50 p-3.5 sm:p-6 rounded-none border border-indigo-100">
                           <p className="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-2">Envisaged Production</p>
                           <p className="text-lg sm:text-2xl font-black text-indigo-600">{completedMonth.envisaged_production?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-3xl border border-slate-100">
+                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-none border border-slate-100">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month Start</p>
                           <p className="text-lg sm:text-2xl font-black text-slate-900">{completedMonth.start_pct?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-3xl border border-slate-100">
+                        <div className="bg-slate-50 p-3.5 sm:p-6 rounded-none border border-slate-100">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Month End</p>
                           <p className="text-lg sm:text-2xl font-black text-slate-900">{completedMonth.end_pct?.toFixed(2)}%</p>
                         </div>
-                        <div className="bg-emerald-50 p-3.5 sm:p-6 rounded-3xl border border-emerald-100">
+                        <div className="bg-emerald-50 p-3.5 sm:p-6 rounded-none border border-emerald-100">
                           <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-2">Actual Production</p>
                           <p className="text-lg sm:text-2xl font-black text-emerald-600">+{completedMonth.actual_production?.toFixed(2)}%</p>
                         </div>
@@ -979,25 +954,25 @@ export default function TrendsDashboard() {
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Ongoing Calibration: {ongoingMonth.month}</h3>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-6">
-                        <div className="bg-slate-900 p-3.5 sm:p-6 rounded-3xl border border-slate-800 text-white shadow-2xl">
+                        <div className="bg-slate-900 p-3.5 sm:p-6 rounded-none border border-slate-800 text-white shadow-2xl">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Total Progress</p>
                           <p className="text-xl sm:text-3xl font-black text-sunflower-gold-400 break-words">{ongoingMonth.end_pct?.toFixed(2)}%</p>
                           <p className="text-[10px] font-medium text-slate-500 mt-2">Status as of latest report</p>
                         </div>
 
-                        <div className="bg-white p-3.5 sm:p-6 rounded-3xl border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
+                        <div className="bg-white p-3.5 sm:p-6 rounded-none border border-slate-100 shadow-xl group hover:border-vivid-tangerine-200 transition-all">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Baseline Month Target</p>
                           <p className="text-xl sm:text-3xl font-black text-slate-900 break-words">{ongoingMonth.target_fixed_month_end?.toFixed(2)}%</p>
                           <p className="text-[10px] font-bold text-vivid-tangerine-50 mt-2">+{ongoingMonth.production_planned_fixed?.toFixed(2)}% Required</p>
                         </div>
 
-                        <div className="bg-indigo-600 p-3.5 sm:p-6 rounded-3xl border border-indigo-500 text-white shadow-2xl group hover:scale-105 transition-all">
+                        <div className="bg-indigo-600 p-3.5 sm:p-6 rounded-none border border-indigo-500 text-white shadow-2xl group hover:scale-105 transition-all">
                           <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Recalibrated Target (Rolling)</p>
                           <p className="text-xl sm:text-3xl font-black text-white break-words">{ongoingMonth.target_rolling_month_end?.toFixed(2)}%</p>
                           <p className="text-[10px] font-bold text-indigo-200 mt-2">+{ongoingMonth.production_required_rolling?.toFixed(2)}% New Pace</p>
                         </div>
 
-                        <div className="bg-sunflower-gold-500 p-3.5 sm:p-6 rounded-3xl border border-sunflower-gold-400 text-slate-900 shadow-2xl">
+                        <div className="bg-sunflower-gold-500 p-3.5 sm:p-6 rounded-none border border-sunflower-gold-400 text-slate-900 shadow-2xl">
                           <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-2">Required Weekly Rate</p>
                           <p className="text-xl sm:text-3xl font-black text-white break-words">{ongoingMonth.required_weekly?.toFixed(2)}% <span className="text-xs sm:text-sm font-bold">/ week</span></p>
                           <p className="text-[10px] font-black text-slate-800 mt-2">RECALIBRATED VELOCITY</p>
@@ -1011,7 +986,7 @@ export default function TrendsDashboard() {
                       <TrendingUp className="w-20 h-20 text-sunflower-gold-500" />
                     </div>
                     <div className="flex items-start gap-0 sm:gap-6 relative z-10">
-                      <div className="p-3 bg-sunflower-gold-500/20 rounded-2xl hidden sm:block">
+                      <div className="p-3 bg-sunflower-gold-500/20 rounded-none hidden sm:block">
                         <AlertTriangle className="w-6 h-6 text-sunflower-gold-400" />
                       </div>
                       <div>
@@ -1041,6 +1016,7 @@ export default function TrendsDashboard() {
               );
             })()}
           </section>
+          </RevealWrapper>
 
 
           {/* ── S-CURVE PROGRESS CHARTS ───────────────────────────────── */}
@@ -1096,6 +1072,7 @@ export default function TrendsDashboard() {
             const fmtPct = (v: number) => `${v}%`;
 
             return (
+              <RevealWrapper>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-8 mb-6 lg:mb-12">
                 {/* Chart 1 — % Progress: Envisaged vs Actual */}
                 <section className="bg-white rounded-[2rem] p-4 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-slate-100">
@@ -1136,7 +1113,7 @@ export default function TrendsDashboard() {
                             const env = payload.find((p: any) => p.dataKey === 'envisaged_pct');
                             const act = payload.find((p: any) => p.dataKey === 'actual_pct');
                             return (
-                              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg px-4 py-3 text-xs">
+                              <div className="bg-white rounded-none border border-slate-100 shadow-lg px-4 py-3 text-xs">
                                 <p className="font-black text-slate-700 mb-2 uppercase tracking-wide">Week {label}</p>
                                 {env && <p className="text-indigo-500 font-bold">Envisaged: {env.value?.toFixed(2)}%</p>}
                                 {act?.value != null && <p className="text-vivid-tangerine-600 font-bold">Actual: {act.value?.toFixed(2)}%</p>}
@@ -1171,7 +1148,7 @@ export default function TrendsDashboard() {
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
+                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-none px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-vivid-tangerine-500 animate-pulse" />
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -1221,7 +1198,7 @@ export default function TrendsDashboard() {
                             const env = payload.find((p: any) => p.dataKey === 'envisaged_rev');
                             const act = payload.find((p: any) => p.dataKey === 'actual_rev');
                             return (
-                              <div className="bg-white rounded-2xl border border-slate-100 shadow-lg px-4 py-3 text-xs">
+                              <div className="bg-white rounded-none border border-slate-100 shadow-lg px-4 py-3 text-xs">
                                 <p className="font-black text-slate-700 mb-2 uppercase tracking-wide">Week {label}</p>
                                 {env && <p className="text-indigo-500 font-bold">Envisaged: {fmtM(env.value)}</p>}
                                 {act?.value != null && <p className="text-emerald-600 font-bold">Actual: {fmtM(act.value)}</p>}
@@ -1256,7 +1233,7 @@ export default function TrendsDashboard() {
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5">
+                  <div className="mt-4 flex items-center justify-between bg-slate-50 rounded-none px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Contract: KES 2.127B</span>
@@ -1267,33 +1244,35 @@ export default function TrendsDashboard() {
                   </div>
                 </section>
               </div>
+              </RevealWrapper>
             );
           })()}
 
           {/* Production Recalibration Chain Table */}
+          <RevealWrapper>
           <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <Layers className="text-vivid-tangerine-600 w-6 h-6" />
                 <h2 className="text-2xl font-bold">Production Recalibration Chain</h2>
               </div>
-              <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+              <div className="flex bg-slate-100 p-1 rounded-none shadow-inner">
                 <button
                   onClick={() => setRecalScale('weekly')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Weekly
                 </button>
                 <button
                   onClick={() => setRecalScale('monthly')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-vivid-tangerine-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Monthly
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-[2rem] border border-slate-100">
+            <div className="overflow-x-auto overflow-y-auto h-[500px] rounded-[2rem] border border-slate-100 relative">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
@@ -1328,7 +1307,7 @@ export default function TrendsDashboard() {
                           <p className="text-xs font-black text-indigo-600">{w.weekly_envisaged?.toFixed(2)}%</p>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
-                          <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-none ${w.weekly_variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                             {w.weekly_variance >= 0 ? '+' : ''}{w.weekly_variance?.toFixed(2)}%
                           </span>
                         </td>
@@ -1356,7 +1335,7 @@ export default function TrendsDashboard() {
                           <p className="text-xs font-black text-indigo-600">{m.envisaged_production?.toFixed(2)}%</p>
                         </td>
                         <td className="p-2 sm:p-4 text-right">
-                          <span className={`text-[10px] font-black px-2 py-1 rounded-md ${m.variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                          <span className={`text-[10px] font-black px-2 py-1 rounded-none ${m.variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                             {m.variance >= 0 ? '+' : ''}{m.variance?.toFixed(2)}%
                           </span>
                         </td>
@@ -1369,7 +1348,7 @@ export default function TrendsDashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="mt-6 p-4 bg-slate-900 rounded-2xl text-[10px] text-white/60 font-medium">
+            <div className="mt-6 p-4 bg-slate-900 rounded-none text-[10px] text-white/60 font-medium">
               {recalScale === 'weekly' ? (
                 <span>
                   <span className="text-sunflower-gold-400 font-black">LOGIC:</span> Actual (x) is current production. Envisaged (y) is the required rate for that week based on remaining balance. Variance (k) = x - y. Recalibrated is the new target rate for the following week.
@@ -1381,31 +1360,33 @@ export default function TrendsDashboard() {
               )}
             </div>
           </section>
+          </RevealWrapper>
 
           {/* Progress vs Time vs Slippage Table */}
+          <RevealWrapper>
           <section className="bg-white rounded-[2rem] p-4 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <Calendar className="text-blue-600 w-6 h-6" />
                 <h2 className="text-2xl font-bold">Elapsed Time vs Progress vs Slippage</h2>
               </div>
-              <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner">
+              <div className="flex bg-slate-100 p-1 rounded-none shadow-inner">
                 <button
                   onClick={() => setRecalScale('weekly')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${recalScale === 'weekly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Weekly
                 </button>
                 <button
                   onClick={() => setRecalScale('monthly')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-none text-xs font-bold transition-all ${recalScale === 'monthly' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Monthly
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-[2rem] border border-slate-100">
+            <div className="overflow-x-auto overflow-y-auto h-[500px] rounded-[2rem] border border-slate-100 relative">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
@@ -1452,7 +1433,7 @@ export default function TrendsDashboard() {
                             <p className="text-xs font-black text-slate-900">{w.end_pct?.toFixed(2)}%</p>
                           </td>
                           <td className="p-2 sm:p-4 text-right bg-rose-50/20">
-                            <span className={`text-[10px] font-black px-2 py-1 rounded-md ${w.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-none ${w.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                               {w.slippage_gap >= 0 ? '+' : ''}{w.slippage_gap?.toFixed(2)}%
                             </span>
                           </td>
@@ -1493,7 +1474,7 @@ export default function TrendsDashboard() {
                             <p className="text-xs font-black text-slate-900">{m.end_pct?.toFixed(2)}%</p>
                           </td>
                           <td className="p-2 sm:p-4 text-right bg-rose-50/20">
-                            <span className={`text-[10px] font-black px-2 py-1 rounded-md ${m.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-none ${m.slippage_gap <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                               {m.slippage_gap >= 0 ? '+' : ''}{m.slippage_gap?.toFixed(2)}%
                             </span>
                           </td>
@@ -1504,16 +1485,18 @@ export default function TrendsDashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="mt-6 p-4 bg-slate-900 rounded-2xl text-[10px] text-white/60 font-medium">
+            <div className="mt-6 p-4 bg-slate-900 rounded-none text-[10px] text-white/60 font-medium">
               <span>
                 <span className="text-blue-400 font-black">LOGIC:</span> Time Elapsed is derived mathematically based on the 731-day contract duration. Slippage = End Time % - End Progress %. Days elapsed track the total calendar days from project inception.
               </span>
             </div>
           </section>
+          </RevealWrapper>
 
         </div>
 
         {/* Stakeholder Recommendations */}
+        <RevealWrapper>
         <section className="bg-white rounded-[2rem] p-5 sm:p-12 border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
           <div className="flex items-center gap-3 mb-10">
             <Users className="text-vivid-tangerine-600 w-7 h-7" />
@@ -1528,7 +1511,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="space-y-4">
                 {insights?.recommendations?.to_client?.map((r: string, i: number) => (
-                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-slate-50 rounded-2xl border border-slate-100 items-start group hover:border-vivid-tangerine-200 transition-colors">
+                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-slate-50 rounded-none border border-slate-100 items-start group hover:border-vivid-tangerine-200 transition-colors">
                     <span className="text-vivid-tangerine-500 font-black text-lg">0{i + 1}</span>
                     <p className="text-sm text-slate-600 font-medium leading-relaxed">{r}</p>
                   </div>
@@ -1543,7 +1526,7 @@ export default function TrendsDashboard() {
               </div>
               <div className="space-y-4">
                 {insights?.recommendations?.to_contractor?.map((r: string, i: number) => (
-                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-vivid-tangerine-50/30 rounded-2xl border border-vivid-tangerine-100/50 items-start group hover:border-vivid-tangerine-300 transition-colors">
+                  <div key={i} className="flex gap-2.5 sm:gap-4 p-3.5 sm:p-5 bg-vivid-tangerine-50/30 rounded-none border border-vivid-tangerine-100/50 items-start group hover:border-vivid-tangerine-300 transition-colors">
                     <span className="text-vivid-tangerine-600 font-black text-lg">0{i + 1}</span>
                     <p className="text-sm text-slate-600 font-medium leading-relaxed">{r}</p>
                   </div>
@@ -1552,8 +1535,10 @@ export default function TrendsDashboard() {
             </div>
           </div>
         </section>
+        </RevealWrapper>
 
         {/* Global Verdict Card */}
+        <RevealWrapper direction="up" delay={0.1}>
         <section className="mt-12">
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] p-5 sm:p-12 text-white flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-vivid-tangerine-500/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
@@ -1569,7 +1554,7 @@ export default function TrendsDashboard() {
               <button
                 onClick={handleGenerateProgress}
                 disabled={generatingProgress || !isAdmin}
-                className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${!isAdmin
+                className={`px-8 py-3 rounded-none font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${!isAdmin
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
                   : 'bg-white text-slate-900 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
                   }`}
@@ -1600,6 +1585,7 @@ export default function TrendsDashboard() {
             </div>
           </div>
         </section>
+        </RevealWrapper>
       </div>
 
       {/* Progress Intelligence Modal */}
@@ -1627,13 +1613,13 @@ export default function TrendsDashboard() {
 
             <div className="p-10 overflow-y-auto custom-scrollbar flex-1">
               <div className="grid grid-cols-2 gap-6 mb-10">
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                <div className="bg-slate-50 p-6 rounded-none border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Risk Verdict</p>
                   <p className={`text-2xl font-black ${insights?.claim_verdict === 'Critical' || insights?.claim_verdict === 'High' ? 'text-rose-500' : insights?.claim_verdict === 'Moderate' ? 'text-sunflower-gold-500' : 'text-emerald-400'}`}>
                     {insights?.claim_verdict}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                <div className="bg-slate-50 p-6 rounded-none border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Slippage Progress Analysis</p>
                   <p className="text-2xl font-black text-slate-900">
                     {currentSlippage.toFixed(2)}%
@@ -1653,7 +1639,7 @@ export default function TrendsDashboard() {
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Detailed Progress Scan</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+                    <div className="bg-emerald-50/50 p-6 rounded-none border border-emerald-100">
                       <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-3">Strengths</p>
                       <ul className="space-y-2">
                         {insights?.swot?.strengths?.map((s: string, i: number) => (
@@ -1661,7 +1647,7 @@ export default function TrendsDashboard() {
                         ))}
                       </ul>
                     </div>
-                    <div className="bg-rose-50/50 p-6 rounded-2xl border border-rose-100">
+                    <div className="bg-rose-50/50 p-6 rounded-none border border-rose-100">
                       <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest mb-3">Threats</p>
                       <ul className="space-y-2">
                         {insights?.swot?.threats?.map((s: string, i: number) => (
@@ -1669,7 +1655,7 @@ export default function TrendsDashboard() {
                         ))}
                       </ul>
                     </div>
-                    <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100">
+                    <div className="bg-amber-50/50 p-6 rounded-none border border-amber-100">
                       <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-3">Weaknesses</p>
                       <ul className="space-y-2">
                         {insights?.swot?.weaknesses?.map((s: string, i: number) => (
@@ -1677,7 +1663,7 @@ export default function TrendsDashboard() {
                         ))}
                       </ul>
                     </div>
-                    <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                    <div className="bg-blue-50/50 p-6 rounded-none border border-blue-100">
                       <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-3">Opportunities</p>
                       <ul className="space-y-2">
                         {insights?.swot?.opportunities?.map((s: string, i: number) => (
@@ -1775,7 +1761,7 @@ export default function TrendsDashboard() {
       <footer className="mt-20 border-t border-slate-100 pt-12 pb-8 max-w-7xl mx-auto px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left">
-            <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">Vektra</p>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting & Analytics</p>
 
             {/* NeuralAxis Labs Branding Logo */}
@@ -1800,7 +1786,7 @@ export default function TrendsDashboard() {
           </div>
         </div>
         <div className="mt-8 text-center border-t border-slate-50 pt-6">
-          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">&copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.</p>
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">&copy; 2026 Vektra. All Rights Reserved.</p>
         </div>
       </footer>
 
@@ -1811,7 +1797,7 @@ export default function TrendsDashboard() {
             <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="relative z-10">
-              <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-2xl relative overflow-hidden">
+              <div className="w-20 h-20 rounded-none bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-sunflower-gold-500/20 to-vivid-tangerine-500/20 animate-pulse" />
                 <Loader2 className="w-10 h-10 text-sunflower-gold-400 animate-spin relative z-10" />
               </div>

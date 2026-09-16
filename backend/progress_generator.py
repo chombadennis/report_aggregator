@@ -350,7 +350,7 @@ class ProgressReportGenerator:
         
         for i in range(5): doc.add_paragraph() # Spacer
         
-        info = doc.add_paragraph(f"Generated for: Makindu Affordable Housing Project")
+        info = doc.add_paragraph(f"Generated for: Construction Project")
         info.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         date_para = doc.add_paragraph(f"Report Date: {datetime.now().strftime('%B %d, %Y')}")

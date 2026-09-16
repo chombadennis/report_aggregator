@@ -13,6 +13,7 @@
     "@fontsource-variable/lexend": "^5.2.11",
     "@fontsource/lora": "^5.2.8",
     "@fontsource/merriweather": "^5.2.11",
+    "framer-motion": "^13.3.0",
     "lucide-react": "^0.344.0",
     "next": "14.1.0",
     "react": "^18.2.0",

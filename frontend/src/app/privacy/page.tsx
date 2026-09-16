@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import RevealWrapper from '@/components/animations/RevealWrapper';
 
 export default function PrivacyPage() {
   return (
@@ -27,12 +28,13 @@ export default function PrivacyPage() {
         </div>
 
         {/* Content Container */}
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 text-left space-y-8">
+        <RevealWrapper direction="up">
+        <div className="bg-white p-8 md:p-12 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 text-left space-y-8">
           
           <div>
             <p className="text-xs text-vivid-tangerine-500 font-bold uppercase tracking-wider mb-2">Effective Date: May 20, 2026</p>
             <p className="text-sm text-vivid-tangerine-800 leading-relaxed font-medium">
-              The Makindu Affordable Housing Project Report Aggregator is an internal platform developed for knowledge sharing, site progress tracking, checking, and internal analysis. This is not an official reporting service, nor does it constitute any consultancy service or formal contract with the client, project contractors, or consultants. This Privacy Policy details how we handle, process, and secure project documents, logs, and internal site information.
+              The Vektra Report Aggregator is an internal platform developed for knowledge sharing, site progress tracking, checking, and internal analysis. This is not an official reporting service, nor does it constitute any consultancy service or formal contract with the client, project contractors, or consultants. This Privacy Policy details how we handle, process, and secure project documents, logs, and internal site information.
             </p>
           </div>
 
@@ -61,7 +63,7 @@ export default function PrivacyPage() {
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
               When a document is uploaded, it is processed securely using our integrated analytics engine to extract key updates and tracking points.
             </p>
-            <p className="text-xs text-vivid-tangerine-800 leading-relaxed font-bold bg-vanilla-custard-50 p-3.5 rounded-xl border border-vanilla-custard-150">
+            <p className="text-xs text-vivid-tangerine-800 leading-relaxed font-bold bg-vanilla-custard-50 p-3.5 rounded-none border border-vanilla-custard-150">
               🔒 Zero Data Training Guarantee: All processing is conducted securely under enterprise data privacy standards. The processing models used do not train on, retain, or store your uploaded project files, site logs, or financial tracking data for public or external model improvements.
             </p>
           </div>
@@ -105,12 +107,13 @@ export default function PrivacyPage() {
           </div>
 
         </div>
+        </RevealWrapper>
 
         {/* Footer */}
         <footer className="border-t border-vanilla-custard-200 pt-12 pb-8 mt-16 w-full text-left">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div>
-              <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+              <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
               <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
               <div className="flex items-center gap-2.5">
                 <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
@@ -135,7 +138,7 @@ export default function PrivacyPage() {
           </div>
           <div className="mt-8 border-t border-vanilla-custard-100 pt-6 text-center">
             <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">
-              &copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.
+              &copy; 2026 Vektra. All Rights Reserved.
             </p>
           </div>
         </footer>

@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import NavigationPanel from '@/components/NavigationPanel';
+import RevealWrapper from "@/components/animations/RevealWrapper";
 
 /* ─── SVG icon library ───────────────────────────────── */
 const Icon = {
@@ -42,10 +44,9 @@ const Icon = {
       <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   ),
-  Correlation: () => (
+  EVM: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <circle cx="7" cy="17" r="1.5" /><circle cx="12" cy="11" r="1.5" /><circle cx="17" cy="6" r="1.5" />
-      <circle cx="5" cy="10" r="1.5" /><circle cx="14" cy="16" r="1.5" /><circle cx="20" cy="9" r="1.5" />
+      <path d="M3 3v18h18" /><path d="M18 9l-5 5-3-3-5 5" /><circle cx="18" cy="9" r="2" />
     </svg>
   ),
   Contract: () => (
@@ -96,39 +97,43 @@ const CapCard = ({
   tags: string[];
   accent: string;
 }) => (
-  <div className={`group relative bg-white border border-vanilla-custard-100 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm hover:shadow-2xl hover:shadow-vivid-tangerine-100 hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
-    <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 group-hover:opacity-15 transition-opacity duration-500 ${accent}`} />
-    <div className="flex items-start gap-4 mb-4">
-      <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-2xl ${accent} bg-opacity-10 text-vivid-tangerine-600`}>
-        {icon}
+  <RevealWrapper>
+    <div className={`group relative bg-white/90 backdrop-blur border border-vanilla-custard-200 rounded-none p-4 sm:p-7 shadow-sm hover:shadow-xl hover:shadow-vivid-tangerine-100/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden`}>
+      <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full blur-2xl opacity-0 group-hover:opacity-15 transition-opacity duration-500 ${accent}`} />
+      <div className="flex items-start gap-4 mb-4">
+        <div className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-none ${accent} bg-opacity-10 text-vivid-tangerine-600`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-0.5">{label}</p>
+          <h3 className="text-base font-bold text-vivid-tangerine-950">{title}</h3>
+        </div>
       </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-0.5">{label}</p>
-        <h3 className="text-base font-bold text-vivid-tangerine-950">{title}</h3>
+      <p className="text-sm text-vivid-tangerine-700 leading-relaxed mb-4">{desc}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {tags.map((t) => (
+          <span key={t} className="text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 bg-vanilla-custard-50 text-vivid-tangerine-700 rounded-none border border-vanilla-custard-200">
+            {t}
+          </span>
+        ))}
       </div>
     </div>
-    <p className="text-sm text-vivid-tangerine-700 leading-relaxed mb-4">{desc}</p>
-    <div className="flex flex-wrap gap-1.5">
-      {tags.map((t) => (
-        <span key={t} className="text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 bg-vanilla-custard-100 text-vivid-tangerine-700 rounded-full border border-vanilla-custard-200">
-          {t}
-        </span>
-      ))}
-    </div>
-  </div>
+  </RevealWrapper>
 );
 
 /* ─── Pipeline step ─── */
 const Step = ({ num, title, desc }: { num: string; title: string; desc: string }) => (
-  <div className="flex gap-5 items-start">
-    <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-sunflower-gold-400 to-vivid-tangerine-500 flex items-center justify-center shadow-lg shadow-vivid-tangerine-200">
-      <span className="text-white font-black text-sm">{num}</span>
+  <RevealWrapper direction="up">
+    <div className="flex gap-5 items-start group">
+      <div className="flex-shrink-0 w-10 h-10 rounded-none bg-gradient-to-br from-sunflower-gold-400 to-vivid-tangerine-500 flex items-center justify-center shadow-md shadow-vivid-tangerine-200/50 group-hover:scale-105 transition-transform">
+        <span className="text-white font-black text-sm">{num}</span>
+      </div>
+      <div>
+        <h4 className="font-bold text-vivid-tangerine-950 mb-1">{title}</h4>
+        <p className="text-sm text-vivid-tangerine-700 leading-relaxed">{desc}</p>
+      </div>
     </div>
-    <div>
-      <h4 className="font-bold text-vivid-tangerine-950 mb-1">{title}</h4>
-      <p className="text-sm text-vivid-tangerine-700 leading-relaxed">{desc}</p>
-    </div>
-  </div>
+  </RevealWrapper>
 );
 
 /* ─── Stat ─── */
@@ -141,10 +146,12 @@ const Stat = ({ value, label }: { value: string; label: string }) => (
 
 /* ─── Doc type pill ─── */
 const DocPill = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
-  <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-vanilla-custard-200 rounded-2xl shadow-sm">
-    <span className="text-vivid-tangerine-500">{icon}</span>
-    <span className="text-xs font-bold text-vivid-tangerine-800">{label}</span>
-  </div>
+  <RevealWrapper direction="up">
+    <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-vanilla-custard-200 rounded-none shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+      <span className="text-vivid-tangerine-500">{icon}</span>
+      <span className="text-xs font-bold text-vivid-tangerine-800">{label}</span>
+    </div>
+  </RevealWrapper>
 );
 
 /* ═══════════════════════════════════════════════════════ */
@@ -177,20 +184,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-vanilla-custard-50 text-vivid-tangerine-950 font-sans overflow-x-hidden">
 
       {/* ── NAV ─────────────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-lg border-b border-vanilla-custard-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-sm font-black uppercase tracking-widest text-vivid-tangerine-950">
-            MAKS<span className="text-vivid-tangerine-500"> AHP</span>
-          </span>
-          <div className="flex items-center gap-5">
-            <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-900 transition-colors hidden sm:block">Trends</Link>
-            <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-900 transition-colors hidden sm:block">Contract</Link>
-            <Link href="/dashboard" className="px-5 py-2 bg-vivid-tangerine-600 text-white rounded-xl text-xs font-black shadow-md shadow-vivid-tangerine-200 hover:bg-vivid-tangerine-700 hover:scale-[1.03] transition-all">
-              Dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <NavigationPanel />
 
       {/* ── HERO ────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white pt-14">
@@ -209,35 +203,37 @@ export default function LandingPage() {
             Field Reporting &amp; Site Analytics Platform
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight font-serif bg-gradient-to-r from-sunflower-gold-600 via-vivid-tangerine-500 to-vivid-tangerine-700 bg-clip-text text-transparent py-2 leading-[1.15]">
-            Makindu Affordable&nbsp;Housing Project
+          <h1 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight font-serif bg-gradient-to-r from-sunflower-gold-600 via-vivid-tangerine-500 to-vivid-tangerine-700 bg-clip-text text-transparent py-2 leading-[1.15]">
+            Vektra
             <br />
-            <span className="text-3xl md:text-4xl font-serif font-semibold">Report Aggregator</span>
+            <span className="text-2xl md:text-3xl font-serif font-semibold">Report Aggregator</span>
           </h1>
 
           <p className="text-base md:text-lg text-vivid-tangerine-800 mb-4 max-w-2xl mx-auto font-medium leading-relaxed">
-            A unified smart platform for site reporting — parsing daily logs, generating weekly and monthly reports,
+            A unified smart platform for site reporting, parsing daily logs, generating weekly and monthly reports,
             tracking S-curve production analytics, evaluating project finances, and analysing contractor correspondence,
             EOT claims, and legal documents.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "S-Curve Analytics", "Claims Analysis", "Document Analysis"].map((t) => (
-              <span key={t} className="text-[10px] font-black uppercase tracking-wide px-3 py-1.5 bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-600 rounded-full">
+            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "EVM", "S-Curve Analytics", "Claims Analysis", "Document Analysis"].map((t) => (
+              <span key={t} className="text-[10px] font-black uppercase tracking-wide px-3 py-1.5 bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-600 rounded-none">
                 {t}
               </span>
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard" className="group flex items-center gap-2 px-8 py-3.5 bg-vivid-tangerine-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-vivid-tangerine-200 hover:bg-vivid-tangerine-700 hover:scale-[1.03] transition-all">
-              Launch Dashboard
-              <span className="group-hover:translate-x-1 transition-transform"><Icon.ChevronRight /></span>
-            </Link>
-            <Link href="/trends" className="px-8 py-3.5 bg-white/80 backdrop-blur text-vivid-tangerine-700 border border-vanilla-custard-200 rounded-2xl font-bold text-sm hover:bg-vanilla-custard-50 transition-all shadow-sm">
-              View Trends
-            </Link>
-          </div>
+          <RevealWrapper direction="up" delay={0.2}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/dashboard" className="group flex items-center gap-2 px-8 py-3.5 bg-vivid-tangerine-600 text-white rounded-none font-bold text-sm shadow-lg shadow-vivid-tangerine-200/50 hover:bg-vivid-tangerine-700 hover:scale-[1.02] transition-all">
+                Launch Dashboard
+                <span className="group-hover:translate-x-1 transition-transform"><Icon.ChevronRight /></span>
+              </Link>
+              <Link href="/trends" className="px-8 py-3.5 bg-white/80 backdrop-blur text-vivid-tangerine-700 border border-vanilla-custard-200 rounded-none font-bold text-sm hover:bg-vanilla-custard-50 hover:shadow-md transition-all shadow-sm">
+                View Trends
+              </Link>
+            </div>
+          </RevealWrapper>
         </div>
 
         <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-vanilla-custard-50 to-transparent pointer-events-none" />
@@ -245,15 +241,17 @@ export default function LandingPage() {
 
       {/* ── STATS ───────────────────────────────────── */}
       <section className="relative z-10 -mt-1 bg-vanilla-custard-50 py-14">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-vanilla-custard-100 shadow-lg py-8 px-4 grid grid-cols-2 md:grid-cols-5 gap-6">
-            <Stat value="3" label="Report types" />
-            <Stat value="S-Curve" label="Production model" />
-            <Stat value="OCR" label="Vision + NLP" />
-            <Stat value="Word" label="Export format" />
-            <Stat value="Live" label="Financial engine" />
+        <RevealWrapper>
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="bg-white/90 backdrop-blur-xl rounded-none border border-vanilla-custard-200 shadow-xl py-8 px-4 grid grid-cols-2 md:grid-cols-5 gap-6">
+              <Stat value="3" label="Report types" />
+              <Stat value="S-Curve" label="Production model" />
+              <Stat value="OCR" label="Vision + NLP" />
+              <Stat value="Word" label="Export format" />
+              <Stat value="Live" label="Financial engine" />
+            </div>
           </div>
-        </div>
+        </RevealWrapper>
       </section>
 
       {/* ── CAPABILITIES GRID ───────────────────────── */}
@@ -310,11 +308,11 @@ export default function LandingPage() {
             accent="bg-flag-red-200"
           />
           <CapCard
-            icon={<Icon.Correlation />}
-            label="Analytics"
-            title="Correlation &amp; Scatter Analysis"
-            desc="Computes a statistical correlation matrix between average labour turnover, cumulative work progress, and slippage gap. Produces scatter plot datasets for Labour vs. Slippage and Labour vs. Progress visualizations using a custom average labour turnover formula."
-            tags={["Correlation Matrix", "Scatter Plots", "Labour Formula", "Heatmaps"]}
+            icon={<Icon.EVM />}
+            label="Project Performance"
+            title="Earned Value Management (EVM)"
+            desc="Monitors project performance against the baseline schedule. It tracks component-level completion and schedule variance to provide quantitative metrics on project health."
+            tags={["Component Tracking", "Progress Benchmarking", "Schedule Variance", "Structural Assessment"]}
             accent="bg-sunflower-gold-200"
           />
           <CapCard
@@ -370,33 +368,35 @@ export default function LandingPage() {
             </div>
 
             {/* Mock document card */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-sunflower-gold-100 to-vanilla-custard-100 opacity-60" />
-              <div className="relative rounded-3xl border border-vanilla-custard-200 overflow-hidden shadow-2xl shadow-vanilla-custard-300/50 bg-white/90 backdrop-blur p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Project Correspondence</p>
-                    <p className="text-sm font-bold text-vivid-tangerine-950 mt-0.5">Communication Log Summary</p>
+            <RevealWrapper direction="left">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-none bg-gradient-to-br from-sunflower-gold-100 to-vanilla-custard-100 opacity-60" />
+                <div className="relative rounded-none border border-vanilla-custard-200 overflow-hidden shadow-xl shadow-vanilla-custard-300/30 bg-white/95 backdrop-blur-md p-6 space-y-4 hover:-translate-y-1 transition-transform duration-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Project Correspondence</p>
+                      <p className="text-sm font-bold text-vivid-tangerine-950 mt-0.5">Communication Log Summary</p>
+                    </div>
+                    <span className="text-[10px] font-black bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-none uppercase tracking-wide">Processed</span>
                   </div>
-                  <span className="text-[10px] font-black bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-full uppercase tracking-wide">Processed</span>
-                </div>
-                <div className="h-px bg-vanilla-custard-100" />
-                {[
-                  { label: "Requests Made", val: "Clarification requested regarding site deliverables" },
-                  { label: "Action Required", val: "Project team to review milestones and verify progress" },
-                  { label: "Contractual Risk", val: "Associated deliverables and key milestones successfully logged" },
-                ].map((r) => (
-                  <div key={r.label}>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-0.5">{r.label}</p>
-                    <p className="text-xs text-vivid-tangerine-800 leading-relaxed">{r.val}</p>
+                  <div className="h-px bg-vanilla-custard-100" />
+                  {[
+                    { label: "Requests Made", val: "Clarification requested regarding site deliverables" },
+                    { label: "Action Required", val: "Project team to review milestones and verify progress" },
+                    { label: "Contractual Risk", val: "Associated deliverables and key milestones successfully logged" },
+                  ].map((r) => (
+                    <div key={r.label}>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-0.5">{r.label}</p>
+                      <p className="text-xs text-vivid-tangerine-800 leading-relaxed">{r.val}</p>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between pt-2 border-t border-vanilla-custard-100">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Analysed by Document Engine</span>
+                    <span className="text-[10px] font-bold text-vivid-tangerine-700 bg-vanilla-custard-100 px-3 py-1 rounded-none">May 2026</span>
                   </div>
-                ))}
-                <div className="flex items-center justify-between pt-2 border-t border-vanilla-custard-100">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Analysed by Document Engine</span>
-                  <span className="text-[10px] font-bold text-vivid-tangerine-700 bg-vanilla-custard-100 px-3 py-1 rounded-full">May 2026</span>
                 </div>
               </div>
-            </div>
+            </RevealWrapper>
           </div>
         </div>
       </section>
@@ -428,38 +428,40 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-14 items-center">
             {/* mock table panel */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-sunflower-gold-50 to-vanilla-custard-100 opacity-70" />
-              <div className="relative rounded-3xl border border-vanilla-custard-200 overflow-hidden shadow-2xl bg-white/90 backdrop-blur p-6">
-                <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-4">Monthly Production Calibration</p>
-                <div className="space-y-4">
-                  {[
-                    { m: "January 2026", actual: "4.21%", env: "3.87%", k: "+0.34%", ok: true },
-                    { m: "February 2026", actual: "3.98%", env: "4.19%", k: "-0.21%", ok: false },
-                    { m: "March 2026", actual: "3.72%", env: "4.52%", k: "-0.80%", ok: false },
-                    { m: "April 2026", actual: "4.10%", env: "4.83%", k: "-0.73%", ok: false },
-                  ].map((row) => (
-                    <div key={row.m}>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-xs font-bold text-vivid-tangerine-800">{row.m}</span>
-                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.ok ? "bg-green-50 text-green-700" : "bg-flag-red-50 text-flag-red-600"}`}>{row.k}</span>
+            <RevealWrapper direction="right">
+              <div className="relative hidden md:block">
+                <div className="absolute inset-0 rounded-none bg-gradient-to-br from-sunflower-gold-50 to-vanilla-custard-100 opacity-70" />
+                <div className="relative rounded-none border border-vanilla-custard-200 overflow-hidden shadow-xl shadow-vanilla-custard-200/50 bg-white/95 backdrop-blur-md p-6 hover:-translate-y-1 transition-transform duration-500">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400 mb-4">Monthly Production Calibration</p>
+                  <div className="space-y-4">
+                    {[
+                      { m: "January 2026", actual: "4.21%", env: "3.87%", k: "+0.34%", ok: true },
+                      { m: "February 2026", actual: "3.98%", env: "4.19%", k: "-0.21%", ok: false },
+                      { m: "March 2026", actual: "3.72%", env: "4.52%", k: "-0.80%", ok: false },
+                      { m: "April 2026", actual: "4.10%", env: "4.83%", k: "-0.73%", ok: false },
+                    ].map((row) => (
+                      <div key={row.m}>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-xs font-bold text-vivid-tangerine-800">{row.m}</span>
+                          <span className={`text-xs font-black px-2 py-0.5 rounded-none ${row.ok ? "bg-green-50 text-green-700" : "bg-flag-red-50 text-flag-red-600"}`}>{row.k}</span>
+                        </div>
+                        <div className="h-2 rounded-none bg-vanilla-custard-100 overflow-hidden">
+                          <div className="h-full rounded-none bg-gradient-to-r from-sunflower-gold-400 to-vivid-tangerine-500 transition-all duration-700" style={{ width: row.actual }} />
+                        </div>
+                        <div className="flex justify-between mt-0.5">
+                          <span className="text-[9px] text-vivid-tangerine-500">Actual: {row.actual}</span>
+                          <span className="text-[9px] text-vivid-tangerine-400">Envisaged: {row.env}</span>
+                        </div>
                       </div>
-                      <div className="h-2 rounded-full bg-vanilla-custard-100 overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-sunflower-gold-400 to-vivid-tangerine-500 transition-all duration-700" style={{ width: row.actual }} />
-                      </div>
-                      <div className="flex justify-between mt-0.5">
-                        <span className="text-[9px] text-vivid-tangerine-500">Actual: {row.actual}</span>
-                        <span className="text-[9px] text-vivid-tangerine-400">Envisaged: {row.env}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 pt-4 border-t border-vanilla-custard-100 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Required velocity</span>
-                  <span className="text-sm font-black text-vivid-tangerine-700">1.14% / week</span>
+                    ))}
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-vanilla-custard-100 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-vivid-tangerine-400">Required velocity</span>
+                    <span className="text-sm font-black text-vivid-tangerine-700">1.14% / week</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </RevealWrapper>
 
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-vivid-tangerine-500 mb-2">Financial Engine</p>
@@ -512,44 +514,48 @@ export default function LandingPage() {
             { icon: <Icon.AI />, t: "5.0 Strategic Recommendations", d: "Separate actionable recommendations issued to project leads and administrators based on current data." },
             { icon: <Icon.Claim />, t: "6.0 Correspondence Register", d: "Full register of all uploaded documents and correspondence with auto-generated summaries and key implications." },
           ].map((item) => (
-            <div key={item.t} className="bg-white border border-vanilla-custard-100 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-vivid-tangerine-500">{item.icon}</span>
-                <h4 className="text-sm font-bold text-vivid-tangerine-950">{item.t}</h4>
+            <RevealWrapper key={item.t} direction="up">
+              <div className="bg-white/90 backdrop-blur-sm border border-vanilla-custard-200 rounded-none p-4 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-vivid-tangerine-500">{item.icon}</span>
+                  <h4 className="text-sm font-bold text-vivid-tangerine-950">{item.t}</h4>
+                </div>
+                <p className="text-xs text-vivid-tangerine-700 leading-relaxed">{item.d}</p>
               </div>
-              <p className="text-xs text-vivid-tangerine-700 leading-relaxed">{item.d}</p>
-            </div>
+            </RevealWrapper>
           ))}
         </div>
       </section>
 
       {/* ── CTA ─────────────────────────────────────── */}
       <section className="py-20 max-w-7xl mx-auto px-6">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-sunflower-gold-500 to-vivid-tangerine-600 p-12 text-center shadow-2xl shadow-vivid-tangerine-300/50">
-          <Orb className="w-80 h-80 bg-white top-[-60px] left-[-60px]" />
-          <Orb className="w-80 h-80 bg-white bottom-[-60px] right-[-60px]" />
-          <div className="relative z-10 flex items-center justify-center gap-3 mb-4">
-            <Icon.Shield />
-            <p className="text-white/90 text-xs font-black uppercase tracking-widest">Trusted by the project team</p>
+        <RevealWrapper>
+          <div className="relative rounded-none overflow-hidden bg-gradient-to-br from-sunflower-gold-500 to-vivid-tangerine-600 p-12 text-center shadow-xl shadow-vivid-tangerine-400/30">
+            <Orb className="w-80 h-80 bg-white top-[-60px] left-[-60px]" />
+            <Orb className="w-80 h-80 bg-white bottom-[-60px] right-[-60px]" />
+            <div className="relative z-10 flex items-center justify-center gap-3 mb-4">
+              <Icon.Shield />
+              <p className="text-white/90 text-xs font-black uppercase tracking-widest">Trusted by the project team</p>
+            </div>
+            <h2 className="relative z-10 text-2xl md:text-4xl font-bold font-serif text-white mb-4">
+              Ready to replace manual reporting?
+            </h2>
+            <p className="relative z-10 text-white/80 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
+              Open the dashboard, upload this week's logs or any project document, and get a professional report — or a full progress report — generated within minutes.
+            </p>
+            <Link href="/dashboard" className="relative z-10 inline-flex items-center gap-2 px-10 py-3.5 bg-white/95 backdrop-blur text-vivid-tangerine-800 rounded-none font-black text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
+              Open Dashboard
+              <Icon.ChevronRight />
+            </Link>
           </div>
-          <h2 className="relative z-10 text-2xl md:text-4xl font-bold font-serif text-white mb-4">
-            Ready to replace manual reporting?
-          </h2>
-          <p className="relative z-10 text-white/80 text-sm mb-8 max-w-xl mx-auto leading-relaxed">
-            Open the dashboard, upload this week's logs or any project document, and get a professional report — or a full progress report — generated within minutes.
-          </p>
-          <Link href="/dashboard" className="relative z-10 inline-flex items-center gap-2 px-10 py-3.5 bg-white text-vivid-tangerine-700 rounded-2xl font-black text-sm shadow-lg hover:scale-[1.03] transition-all">
-            Open Dashboard
-            <Icon.ChevronRight />
-          </Link>
-        </div>
+        </RevealWrapper>
       </section>
 
       {/* ── FOOTER ──────────────────────────────────── */}
       <footer className="border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-start gap-8">
           <div>
-            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
             <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
             <div className="flex items-center gap-2.5">
               <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
@@ -574,7 +580,7 @@ export default function LandingPage() {
         </div>
         <div className="mt-8 border-t border-vanilla-custard-100 pt-6 text-center">
           <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">
-            &copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.
+            &copy; 2026 Vektra. All Rights Reserved.
           </p>
         </div>
       </footer>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
+import RevealWrapper from "@/components/animations/RevealWrapper";
 
 export default function LoginPage() {
   const [redirectUrl, setRedirectUrl] = useState("/dashboard");
@@ -34,7 +35,7 @@ export default function LoginPage() {
           <span className="text-[10px] font-black uppercase text-vivid-tangerine-300 tracking-wider">Back to Home</span>
         </Link>
         <h1 className="text-3xl font-black font-serif text-white tracking-tight leading-none mb-2">
-          MAKINDU <span className="bg-gradient-to-r from-sunflower-gold-400 to-vivid-tangerine-500 bg-clip-text text-transparent">AHP</span>
+          Vektra <span className="bg-gradient-to-r from-sunflower-gold-400 to-vivid-tangerine-500 bg-clip-text text-transparent"></span>
         </h1>
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Field Reporting &amp; Analytics Portal
@@ -42,8 +43,9 @@ export default function LoginPage() {
       </div>
 
       {/* Glassmorphic Container for Clerk SignIn */}
-      <div className="relative z-10 w-full max-w-[440px] rounded-3xl p-1 bg-gradient-to-br from-white/10 via-white/5 to-white/0 shadow-2xl backdrop-blur-xl border border-white/10">
-        <div className="bg-slate-900/60 rounded-[22px] overflow-hidden flex flex-col justify-center items-center py-4 sm:py-6 px-3 sm:px-4">
+      <RevealWrapper direction="up">
+        <div className="relative z-10 w-full max-w-[440px] rounded-none p-1 bg-gradient-to-br from-white/10 via-white/5 to-white/0 shadow-2xl backdrop-blur-xl border border-white/10">
+          <div className="bg-slate-900/60 rounded-none overflow-hidden flex flex-col justify-center items-center py-4 sm:py-6 px-3 sm:px-4">
           <SignIn
             routing="hash"
             afterSignInUrl={redirectUrl}
@@ -61,10 +63,10 @@ export default function LoginPage() {
                 card: "bg-transparent shadow-none w-full border-none",
                 headerTitle: "text-white text-xl font-bold font-serif",
                 headerSubtitle: "text-slate-400 text-xs",
-                socialButtonsBlockButton: "border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white transition-all rounded-xl",
-                formButtonPrimary: "bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 hover:opacity-95 text-white font-bold text-sm py-2.5 rounded-xl transition-all shadow-lg shadow-vivid-tangerine-500/20 border-none",
+                socialButtonsBlockButton: "border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white transition-all rounded-none",
+                formButtonPrimary: "bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 hover:opacity-95 text-white font-bold text-sm py-2.5 rounded-none transition-all shadow-lg shadow-vivid-tangerine-500/20 border-none",
                 formFieldLabel: "text-slate-300 text-xs font-semibold mb-1",
-                formFieldInput: "bg-slate-950 border border-slate-700 focus:border-vivid-tangerine-500 focus:ring-1 focus:ring-vivid-tangerine-500 rounded-xl py-2 px-3 text-sm text-white placeholder-slate-600 transition-all",
+                formFieldInput: "bg-slate-950 border border-slate-700 focus:border-vivid-tangerine-500 focus:ring-1 focus:ring-vivid-tangerine-500 rounded-none py-2 px-3 text-sm text-white placeholder-slate-600 transition-all",
                 footerActionText: "text-slate-400 text-xs",
                 footerActionLink: "text-vivid-tangerine-400 hover:text-vivid-tangerine-300 font-bold transition-colors",
                 identityPreviewText: "text-white",
@@ -75,6 +77,7 @@ export default function LoginPage() {
           />
         </div>
       </div>
+      </RevealWrapper>
 
       <div className="relative z-10 mt-4 sm:mt-8 text-center">
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">

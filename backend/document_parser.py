@@ -57,7 +57,7 @@ class DocumentParser:
         You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Compliance Review AI for high-value housing projects.
         
         Analyze the attached project document (which could be a letter, formal request, EOT claim, site instruction, warning, or general report/minutes/lab tests) 
-        for the Makindu Affordable Housing Project.
+        for the Vektra.
         {context_str}
         
         INSTRUCTIONS FOR DETERMINING THE UNDERLYING THEME & EVALUATING THE DOCUMENT:
@@ -140,7 +140,7 @@ class DocumentParser:
             fallback_prompt = f"""
             You are an expert Construction Claim Analyst, Project Management Consultant, and Legal Compliance Review AI for high-value housing projects.
             
-            Analyze the following text content of a project document for the Makindu Affordable Housing Project.
+            Analyze the following text content of a project document for the Vektra.
             {context_str}
             
             INSTRUCTIONS FOR DETERMINING THE UNDERLYING THEME & EVALUATING THE DOCUMENT:

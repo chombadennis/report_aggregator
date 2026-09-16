@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import RevealWrapper from '@/components/animations/RevealWrapper';
 
 export default function TermsPage() {
   return (
@@ -27,12 +28,13 @@ export default function TermsPage() {
         </div>
 
         {/* Content Container */}
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 text-left space-y-8">
+        <RevealWrapper direction="up">
+        <div className="bg-white p-8 md:p-12 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 text-left space-y-8">
           
           <div>
             <p className="text-xs text-vivid-tangerine-500 font-bold uppercase tracking-wider mb-2">Effective Date: May 20, 2026</p>
             <p className="text-sm text-vivid-tangerine-800 leading-relaxed font-medium">
-              Welcome to the Makindu Affordable Housing Project Report Aggregator. This internal platform is designed purely for knowledge sharing, site progress analysis, checking, and tracking. It does not constitute or replace official reporting, nor does it represent a consultancy service or establish any contractual relationship with the client, project contractors, or consultants. By accessing or using this system, you agree to comply with and be bound by the following Terms and Conditions.
+              Welcome to the Vektra Report Aggregator. This internal platform is designed purely for knowledge sharing, site progress analysis, checking, and tracking. It does not constitute or replace official reporting, nor does it represent a consultancy service or establish any contractual relationship with the client, project contractors, or consultants. By accessing or using this system, you agree to comply with and be bound by the following Terms and Conditions.
             </p>
           </div>
 
@@ -72,7 +74,7 @@ export default function TermsPage() {
             <p className="text-xs text-vivid-tangerine-800 leading-relaxed">
               This system uses advanced language and analytical models to process uploaded site records and assist in internal progress checking. While these analytical outputs are highly detailed, they are intended solely for informational reference and internal knowledge.
             </p>
-            <p className="text-xs text-red-600 font-bold bg-red-50 p-4 rounded-2xl border border-red-100">
+            <p className="text-xs text-red-600 font-bold bg-red-50 p-4 rounded-none border border-red-100">
               IMPORTANT: Automated analytics insights are purely for internal information checking and do not constitute professional advice, direct physical inspection, certified quantity surveys, or qualified legal counsel. This platform is not for official reporting, and outputs must not be used for official dissemination or contractual claims.
             </p>
           </div>
@@ -98,12 +100,13 @@ export default function TermsPage() {
           </div>
 
         </div>
+        </RevealWrapper>
 
         {/* Footer */}
         <footer className="border-t border-vanilla-custard-200 pt-12 pb-8 mt-16 w-full text-left">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div>
-              <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Makindu Affordable Housing Project</p>
+              <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
               <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4">Field Reporting &amp; Analytics</p>
               <div className="flex items-center gap-2.5">
                 <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
@@ -128,7 +131,7 @@ export default function TermsPage() {
           </div>
           <div className="mt-8 border-t border-vanilla-custard-100 pt-6 text-center">
             <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">
-              &copy; 2026 Makindu Affordable Housing Project. All Rights Reserved.
+              &copy; 2026 Vektra. All Rights Reserved.
             </p>
           </div>
         </footer>

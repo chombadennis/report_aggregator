@@ -47,6 +47,7 @@ document_parser = DocumentParser(cache_dir="cache")
 evm_manager = EVMManager(cache_dir="cache")
 
 # --- AUTHENTICATION DEPENDENCIES ---
+USER_EMAIL_CACHE = {}
 async def get_current_user(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
@@ -69,33 +70,41 @@ async def get_current_user(authorization: str = Header(None)):
     # Fallback: Query Clerk Backend API if email not in token claims
     user_id = payload.get("sub")
     if not email and user_id:
-        clerk_secret_key = os.getenv("CLERK_SECRET_KEY")
-        if clerk_secret_key:
-            try:
-                import httpx
-                headers = {"Authorization": f"Bearer {clerk_secret_key}"}
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(f"https://api.clerk.com/v1/users/{user_id}", headers=headers)
-                    if response.status_code == 200:
-                        user_data = response.json()
-                        email_addresses = user_data.get("email_addresses", [])
-                        primary_email_id = user_data.get("primary_email_address_id")
-                        
-                        # Match primary email ID
-                        for e_addr in email_addresses:
-                            if e_addr.get("id") == primary_email_id:
-                                email = e_addr.get("email_address")
-                                break
-                        
-                        # Fallback to the first email if primary not matched
-                        if not email and email_addresses:
-                            email = email_addresses[0].get("email_address")
+        if user_id in USER_EMAIL_CACHE:
+            email = USER_EMAIL_CACHE[user_id]
+            print(f"--- DEBUG AUTH: Resolved email '{email}' from CACHE for user '{user_id}' ---")
+        else:
+            clerk_secret_key = os.getenv("CLERK_SECRET_KEY")
+            if clerk_secret_key:
+                try:
+                    import httpx
+                    headers = {"Authorization": f"Bearer {clerk_secret_key}"}
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(f"https://api.clerk.com/v1/users/{user_id}", headers=headers, timeout=10.0)
+                        if response.status_code == 200:
+                            user_data = response.json()
+                            email_addresses = user_data.get("email_addresses", [])
+                            primary_email_id = user_data.get("primary_email_address_id")
                             
-                        print(f"--- DEBUG AUTH: Resolved email '{email}' from Clerk API for user '{user_id}' ---")
-                    else:
-                        print(f"--- DEBUG AUTH: Failed to fetch user from Clerk API. Status: {response.status_code}, Body: {response.text} ---")
-            except Exception as ex:
-                print(f"--- DEBUG AUTH: Exception when fetching user from Clerk API: {ex} ---")
+                            # Match primary email ID
+                            for e_addr in email_addresses:
+                                if e_addr.get("id") == primary_email_id:
+                                    email = e_addr.get("email_address")
+                                    break
+                            
+                            # Fallback to the first email if primary not matched
+                            if not email and email_addresses:
+                                email = email_addresses[0].get("email_address")
+                                
+                            if email:
+                                USER_EMAIL_CACHE[user_id] = email
+                            print(f"--- DEBUG AUTH: Resolved email '{email}' from Clerk API for user '{user_id}' ---")
+                        else:
+                            print(f"--- DEBUG AUTH: Failed to fetch user from Clerk API. Status: {response.status_code}, Body: {response.text} ---")
+                except Exception as ex:
+                    import traceback
+                    print(f"--- DEBUG AUTH: Exception when fetching user from Clerk API: {ex} ---")
+                    traceback.print_exc()
     # --- ALLOWED EMAILS CHECK (LAYER 2) ---
     allowed_emails_env = os.getenv("ALLOWED_EMAILS", "")
     if allowed_emails_env:

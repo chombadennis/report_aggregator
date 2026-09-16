@@ -1,6 +1,6 @@
 @echo off
 echo ===================================================
-echo   Starting Makindu Affordable Housing Local Server
+echo   Starting The Project Local Server
 echo ===================================================
 
 echo Starting Python Backend...
