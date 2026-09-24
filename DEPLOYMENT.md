@@ -22,7 +22,7 @@ graph TD
 
 ## 🌐 1. Backend Deployment (Render)
 
-Render is ideal for deploying FastAPI applications. We will configure it as a **Web Service** with a **Persistent Disk** to ensure report downloads and SWOT cache files are retained between redeployments.
+Render is ideal for deploying FastAPI applications. We have configured it as a **Web Service** with a **Persistent Disk** to ensure report downloads and SWOT cache files are retained between redeployments.
 
 ### Step 1: Create a New Web Service
 1. Connect your GitHub repository to Render.
@@ -47,7 +47,7 @@ In the **Environment** tab of your Render Web Service, add the following variabl
 | `CLERK_JWKS_URL` | Clerk JWKS endpoint to retrieve signature verification keys | `https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json` |
 
 > [!NOTE]
-> Ensure that `GOOGLE_CREDENTIALS_JSON` (and optionally `GOOGLE_CREDENTIALS_JSON_2` for load balancing) are properly configured as environment variables in Render production. The backend application authenticates to Google Vertex AI via Service Account OAuth2 credentials, and does not use direct `GEMINI_API_KEY` developer keys.
+> Ensure that `GOOGLE_CREDENTIALS_JSON` (and optionally `GOOGLE_CREDENTIALS_JSON_2` for load balancing) are properly configured as environment variables in Render production. The backend application authenticates to Google Vertex AI via Service Account OAuth2 credentials.
 
 ### Step 3: Attach Persistent Storage (Recommended)
 Since the backend compiles reports, summaries, and correspondence into files under `backend/cache` and `backend/temp_uploads`, deploying on a standard ephemeral server means files are deleted on restarts.
@@ -75,7 +75,7 @@ In the project settings, add the following **Environment Variables**:
 
 | Variable Name | Description | Recommended Value |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_BACKEND_URL` | Production URL of your Render backend | `https://report-aggregator-backend.onrender.com` |
+| `NEXT_PUBLIC_BACKEND_URL` | Production URL of your Render backend | `https://---.onrender.com` |
 | `NEXT_PUBLIC_ADMIN_EMAIL` | Designated Admin Email (matches backend) | `--@_mail.com` |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk frontend publishable key | `pk_test_...` |
 | `CLERK_SECRET_KEY` | Clerk backend secret key | `sk_test_...` |
