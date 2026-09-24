@@ -76,7 +76,7 @@ In the project settings, add the following **Environment Variables**:
 | Variable Name | Description | Recommended Value |
 | :--- | :--- | :--- |
 | `NEXT_PUBLIC_BACKEND_URL` | Production URL of your Render backend | `https://report-aggregator-backend.onrender.com` |
-| `NEXT_PUBLIC_ADMIN_EMAIL` | Designated Admin Email (matches backend) | `dennis.cmuhnene@gmail.com` |
+| `NEXT_PUBLIC_ADMIN_EMAIL` | Designated Admin Email (matches backend) | `--@_mail.com` |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk frontend publishable key | `pk_test_...` |
 | `CLERK_SECRET_KEY` | Clerk backend secret key | `sk_test_...` |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Clerk Redirect sign-in path | `/login` |
