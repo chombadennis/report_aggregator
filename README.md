@@ -1,4 +1,4 @@
-# Project Field Intelligence & Reporting
+# Project Site Analytics & Reporting
 
 A comprehensive full-stack enterprise intelligence system for automating construction site report compilation, scheduling progress reviews, and performance analytics. It processes daily PDF site reports, letters, and Program of Works (PoW) plans using AI-powered vision parsing to generate consolidated weekly and monthly Word documents, perform dynamic financial calibrations, and compile executive contract compliance reviews.
 
