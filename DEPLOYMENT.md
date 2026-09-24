@@ -86,18 +86,3 @@ In the project settings, add the following **Environment Variables**:
 Click **Deploy**. Vercel will build the frontend, optimize visual structures, and serve the application globally.
 
 ---
-
-## 🔒 3. CORS & Authentication Verification
-
-### High-Fidelity Bearer Token flow
-We have verified that `backend/main.py` is configured with:
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-- **Why this works**: By setting `allow_origins=["*"]` without credentials, Vercel can securely communicate with Render. Since the frontend passes all JWT tokens inside the `Authorization: Bearer <token>` header (rather than using cookies), the browser will **never** block requests due to cross-origin resource sharing policies.
-- **Clock Skew Cushion**: The backend token verification incorporates a `120s` leeway buffer. This shields your production server from minor clock discrepancies between Clerk's servers and Render's instances, preventing random `401 Unauthorized` errors.
