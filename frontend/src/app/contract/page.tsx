@@ -25,6 +25,7 @@ export default function ContractSummary() {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [originalEvmData, setOriginalEvmData] = useState<any>(null);
+  const [financials, setFinancials] = useState<any>(null);
   const [isVerifyingAccess, setIsVerifyingAccess] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('allowed_user');
@@ -113,6 +114,19 @@ export default function ContractSummary() {
           }
         } catch (evmErr) {
           console.error("Failed to fetch EVM data", evmErr);
+        }
+
+        // Fetch Financials Analytics for Progress %
+        try {
+          const finResp = await fetch(`${BACKEND_URL}/api/analytics/financials`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (finResp.ok) {
+            const finJson = await finResp.json();
+            setFinancials(finJson);
+          }
+        } catch (finErr) {
+          console.error("Failed to fetch financials data", finErr);
         }
 
         if (typeof window !== 'undefined' && userId) {
@@ -305,11 +319,45 @@ export default function ContractSummary() {
               </div>
 
               {selectedWeek && evmData[selectedWeek] && evmData[selectedWeek].start_date && (
-                <div className="mb-6 bg-vanilla-custard-50/50 p-3 rounded-none border border-vanilla-custard-100 inline-block">
-                  <span className="text-[10px] font-bold text-vivid-tangerine-500 uppercase tracking-widest block mb-1">Reporting Period</span>
-                  <p className="text-sm font-semibold text-vivid-tangerine-900">
-                    {evmData[selectedWeek].start_date} <span className="text-vivid-tangerine-400 mx-2">➔</span> {evmData[selectedWeek].end_date}
-                  </p>
+                <div className="mb-6 flex flex-wrap gap-4">
+                  <div className="bg-vanilla-custard-50/50 p-3 rounded-none border border-vanilla-custard-100 inline-block">
+                    <span className="text-[10px] font-bold text-vivid-tangerine-500 uppercase tracking-widest block mb-1">Reporting Period</span>
+                    <p className="text-sm font-semibold text-vivid-tangerine-900">
+                      {evmData[selectedWeek].start_date} <span className="text-vivid-tangerine-400 mx-2">➔</span> {evmData[selectedWeek].end_date}
+                    </p>
+                  </div>
+                  
+                  {/* Overall Progress Indicator */}
+                  {(() => {
+                    let matchedWeek = null;
+                    if (financials?.weekly_financials && evmData[selectedWeek]?.start_date) {
+                      const startDateStr = evmData[selectedWeek].start_date;
+                      const dayMatch = startDateStr.match(/(\d+)/);
+                      const monthMatch = startDateStr.match(/[a-zA-Z]+/);
+                      
+                      if (dayMatch && monthMatch) {
+                        const day = dayMatch[0];
+                        const month = monthMatch[0].toLowerCase().substring(0, 3);
+                        
+                        matchedWeek = financials.weekly_financials.find((w: any) => {
+                          if (!w.label) return false;
+                          const lbl = w.label.toLowerCase();
+                          const hasMonth = lbl.includes(month);
+                          const dayRegex = new RegExp(`(^|\\D)${day}(st|nd|rd|th)?(\\D|$)`, 'i');
+                          return hasMonth && dayRegex.test(lbl);
+                        });
+                      }
+                    }
+                    
+                    return (
+                      <div className="bg-white/80 p-3 rounded-none border border-vanilla-custard-100 inline-block shadow-sm">
+                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-1">Overall Progress</span>
+                        <p className="text-sm font-black text-emerald-700">
+                          {matchedWeek?.end_pct != null ? `${matchedWeek.end_pct.toFixed(2)}%` : 'Pending'}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
