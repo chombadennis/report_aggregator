@@ -14,14 +14,23 @@ class AnalyticsEngine:
         self.history_dir = history_dir
         self.monthly_dir = monthly_dir
 
-    def _clean_val(self, v: Any) -> int:
+    def _clean_val(self, v: Any, expected_day: str = None) -> int:
         """Extracts the first number from a string (e.g. '4(m)' -> 4), or sums Day/Night values if dict or string."""
         if isinstance(v, dict):
             day_sum = 0
             night_sum = 0
+            days_of_week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
             for key, val in v.items():
                 key_lower = str(key).lower()
-                val_int = self._clean_val(val)
+                
+                # If expected_day is provided, filter out other days
+                if expected_day:
+                    exp_lower = expected_day.lower()[:3]
+                    found_day = next((d for d in days_of_week if d in key_lower), None)
+                    if found_day and found_day != exp_lower:
+                        continue
+                        
+                val_int = self._clean_val(val, expected_day)
                 if "night" in key_lower:
                     night_sum += val_int
                 elif "day" in key_lower:
@@ -39,7 +48,7 @@ class AnalyticsEngine:
                 import ast
                 parsed_val = ast.literal_eval(val_str)
                 if isinstance(parsed_val, dict):
-                    return self._clean_val(parsed_val)
+                    return self._clean_val(parsed_val, expected_day)
             except:
                 pass
 
@@ -128,8 +137,9 @@ class AnalyticsEngine:
             date_key = dt.strftime("%Y-%m-%d")
             if date_key in seen_dates: continue
             
+            expected_day = dt.strftime("%A")
             labour = entry.get("labour", {})
-            total_labour = sum(self._clean_val(val) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+            total_labour = sum(self._clean_val(val, expected_day) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
             
             mat_count = len(entry.get("materials_delivered", []))
             
@@ -179,8 +189,16 @@ class AnalyticsEngine:
             
             for day, categories in daily_labour.items():
                 if not isinstance(categories, dict): continue
+                
+                expected_day_weekly = None
+                try:
+                    d_obj = datetime.strptime(day, "%Y-%m-%d")
+                    expected_day_weekly = d_obj.strftime("%A")
+                except:
+                    pass
+
                 for cat_name, cat_val in categories.items():
-                    val = self._clean_val(cat_val)
+                    val = self._clean_val(cat_val, expected_day_weekly)
                     if cat_name == "TOTAL":
                         total_labour_week += val
                     else:
@@ -416,7 +434,14 @@ class AnalyticsEngine:
             if isinstance(labour_data, dict):
                 for date_key_day, day_data in labour_data.items():
                     if isinstance(day_data, dict):
-                        day_total = sum(self._clean_val(val) for k, val in day_data.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+                        expected_day_weekly = None
+                        try:
+                            d_obj = datetime.strptime(date_key_day, "%Y-%m-%d")
+                            expected_day_weekly = d_obj.strftime("%A")
+                        except:
+                            if date_key_day.lower() in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
+                                expected_day_weekly = date_key_day
+                        day_total = sum(self._clean_val(val, expected_day_weekly) for k, val in day_data.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
                         totals.append(day_total)
                 if not totals:
                     t_key2 = next((k for k in labour_data.keys() if str(k).upper() == "TOTAL"), None)
