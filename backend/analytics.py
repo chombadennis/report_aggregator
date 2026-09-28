@@ -99,9 +99,17 @@ class AnalyticsEngine:
 
     def get_daily_trends(self):
         raw_dailies = self._get_all_data(source="daily")
+        raw_weeklies = self._get_all_data(source="weekly")
         
         daily_timeline = []
         seen_dates = set()
+        
+        compiled_labour_lookup = {}
+        for w in raw_weeklies:
+            l_daily = w.get("labour_daily", {})
+            if isinstance(l_daily, dict):
+                for date_key, day_data in l_daily.items():
+                    compiled_labour_lookup[date_key] = day_data
         
         def _parse_daily_date(date_str):
             import re
@@ -138,7 +146,7 @@ class AnalyticsEngine:
             if date_key in seen_dates: continue
             
             expected_day = dt.strftime("%A")
-            labour = entry.get("labour", {})
+            labour = compiled_labour_lookup.get(date_key) or entry.get("labour", {})
             total_labour = sum(self._clean_val(val, expected_day) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
             
             mat_count = len(entry.get("materials_delivered", []))
