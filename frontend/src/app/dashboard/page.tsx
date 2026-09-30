@@ -41,7 +41,7 @@ export default function Home() {
   const [pctPeriod, setPctPeriod] = useState('');
   const [pctWork, setPctWork] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
-  const [visitors, setVisitors] = useState<{name: string, org: string, date: string}[]>([{name: '', org: '', date: ''}]);
+  const [visitors, setVisitors] = useState<{ name: string, org: string, date: string }[]>([{ name: '', org: '', date: '' }]);
 
   // Correspondence & Document States
   const [docCategory, setDocCategory] = useState('contractor'); // contractor | client | general
@@ -61,6 +61,13 @@ export default function Home() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showEvmModal, setShowEvmModal] = useState(false);
   const [isEvmExpanded, setIsEvmExpanded] = useState(false);
+  const [toast, setToast] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [pdfModalUrl, setPdfModalUrl] = useState<string | null>(null);
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 5000);
+  };
 
   // EVM States
   const [evmWeekNum, setEvmWeekNum] = useState('');
@@ -102,18 +109,28 @@ export default function Home() {
   const [evmLoading, setEvmLoading] = useState(false);
   const [evmStatus, setEvmStatus] = useState('');
 
+  // OneDrive States
+  const [oneDriveLinked, setOneDriveLinked] = useState(false);
+  const [oneDriveFile, setOneDriveFile] = useState<string | null>(null);
+  const [oneDriveFiles, setOneDriveFiles] = useState<any[]>([]);
+  const [folderPath, setFolderPath] = useState<{id: string, name: string}[]>([]);
+  const [showFilePicker, setShowFilePicker] = useState(false);
+  const [oneDriveSyncing, setOneDriveSyncing] = useState(false);
+  const [oneDriveLoading, setOneDriveLoading] = useState(false);
+  const [isEvmSynced, setIsEvmSynced] = useState(false);
+
   useEffect(() => {
     const num = parseInt(evmWeekNum);
     if (!isNaN(num) && num >= 41) {
       const diffWeeks = num - 41;
       const anchorStart = new Date(2026, 7, 31); // Aug is 7 (0-indexed)
       const anchorEnd = new Date(2026, 8, 6);    // Sept is 8
-      
+
       const newStart = new Date(anchorStart.getTime() + diffWeeks * 7 * 24 * 60 * 60 * 1000);
       const newEnd = new Date(anchorEnd.getTime() + diffWeeks * 7 * 24 * 60 * 60 * 1000);
-      
+
       const formatDate = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      
+
       setEvmStartDate(formatDate(newStart));
       setEvmEndDate(formatDate(newEnd));
     } else {
@@ -124,11 +141,30 @@ export default function Home() {
 
   const evmWeekName = evmWeekNum ? `Week ${evmWeekNum}` : '';
   const isWeekDuplicate = existingEvmWeeks.includes(evmWeekName);
-  const isValidWeekNum = parseInt(evmWeekNum) >= 41;
+  const parsedWeekNum = parseInt(evmWeekNum);
+  const isValidWeekNum = parsedWeekNum >= 41;
 
-  const isEvmReady = isValidWeekNum && !isWeekDuplicate && evmStartDate !== '' && 
-    evmComponents.every(c => c.pctContrib.trim() !== '' && c.pctDone.trim() !== '') && 
+  const existingWeekNums = existingEvmWeeks.map(w => parseInt(w.replace('Week ', ''))).filter(n => !isNaN(n));
+  const maxExistingWeek = existingWeekNums.length > 0 ? Math.max(...existingWeekNums) : 40;
+  const expectedNextWeek = maxExistingWeek + 1;
+  const isSequential = isNaN(parsedWeekNum) || parsedWeekNum === expectedNextWeek;
+
+  let isDateReached = true;
+  if (isValidWeekNum) {
+    const diffWeeks = parsedWeekNum - 41;
+    const anchorEnd = new Date(2026, 8, 6); // Sept 6, 2026
+    const newEnd = new Date(anchorEnd.getTime() + diffWeeks * 7 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    newEnd.setHours(0, 0, 0, 0);
+    isDateReached = today.getTime() >= newEnd.getTime();
+  }
+
+  const isEvmReady = isValidWeekNum && !isWeekDuplicate && isSequential && evmStartDate !== '' &&
+    evmComponents.every(c => c.pctContrib.trim() !== '' && c.pctDone.trim() !== '') &&
     evmBlocks.every(b => b.pctDone.trim() !== '');
+    
+  const hasData = evmComponents.some(c => c.pctContrib.trim() !== '' || c.pctDone.trim() !== '') || evmBlocks.some(b => b.pctDone.trim() !== '');
 
   // Register UI States
   const [activeRegisterTab, setActiveRegisterTab] = useState('contractor'); // contractor | client | general
@@ -220,16 +256,29 @@ export default function Home() {
   useEffect(() => {
     const fetchEvmHistory = async () => {
       try {
-         const token = await getToken();
-         const res = await fetch(`${BACKEND_URL}/api/contracts-evm`, { headers: { 'Authorization': `Bearer ${token}` } });
-         if (res.ok) {
-           const data = await res.json();
-           setExistingEvmWeeks(Object.keys(data));
-         }
-      } catch (e) {}
+        const token = await getToken();
+        const res = await fetch(`${BACKEND_URL}/api/contracts-evm`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          setExistingEvmWeeks(Object.keys(data));
+        }
+      } catch (e) { }
     };
+
+    const checkOneDrive = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/onedrive/status`);
+        if (res.ok) {
+          const data = await res.json();
+          setOneDriveLinked(data.is_linked);
+          setOneDriveFile(data.selected_file);
+        }
+      } catch (e) { }
+    };
+
     if (isLoaded && userId) {
       fetchEvmHistory();
+      checkOneDrive();
     }
   }, [isLoaded, userId]);
 
@@ -306,6 +355,63 @@ export default function Home() {
       setDocStatus('');
     } finally {
       setDocLoading(false);
+    }
+  };
+
+  const handleViewDocument = async (docId: string) => {
+    try {
+      const token = await getToken();
+      const response = await fetch(`${BACKEND_URL}/api/project-documents/${docId}/view`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        setPdfModalUrl(url);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showToast('error', errorData.detail || 'The linked document could not be found. It may have been moved or deleted.');
+
+        if (response.status === 404) {
+          // Update the UI immediately to revert back to the 'Link Local Path' button
+          setUploadedDocs(prev => prev.map(d => d.id === docId ? { ...d, external_pdf_path: null } : d));
+          // Tell the backend to persistently clear the broken link from the metadata
+          fetch(`${BACKEND_URL}/api/project-documents/${docId}/unlink`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).catch(console.error);
+        }
+      }
+    } catch (e) {
+      console.error('View failed', e);
+      showToast('error', 'Network error while attempting to view the document.');
+    }
+  };
+
+  const handleLinkDocument = async (docId: string) => {
+    try {
+      const token = await getToken();
+      // This will trigger a native Windows file picker dialog on your machine!
+      const response = await fetch(`${BACKEND_URL}/api/project-documents/${docId}/pick-link`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'cancelled') return;
+        showToast('success', 'Document linked successfully! You can now view the original PDF.');
+        await fetchDocs();
+      } else {
+        const err = await response.json().catch(() => ({}));
+        showToast('error', err.detail || 'Failed to link document.');
+      }
+    } catch (e) {
+      console.error('Link failed', e);
+      showToast('error', 'An error occurred while opening the file picker.');
     }
   };
 
@@ -491,7 +597,7 @@ export default function Home() {
           setTimeLapsed('');
           setPctPeriod('');
           setPctWork('');
-          setVisitors([{name: '', org: '', date: ''}]);
+          setVisitors([{ name: '', org: '', date: '' }]);
           setFiles([]);
         }, 2000);
       }
@@ -536,11 +642,11 @@ export default function Home() {
 
       setEvmStatus('✅ EVM Data Saved successfully! It is now available in the Contracts & EVM page.');
       setExistingEvmWeeks(prev => [...prev, evmWeekName]);
-      
+
       // Clear form
       setEvmWeekNum('');
-      setEvmComponents(prev => prev.map(c => ({...c, pctContrib: '', pctDone: ''})));
-      setEvmBlocks(prev => prev.map(b => ({...b, pctDone: ''})));
+      setEvmComponents(prev => prev.map(c => ({ ...c, pctContrib: '', pctDone: '' })));
+      setEvmBlocks(prev => prev.map(b => ({ ...b, pctDone: '' })));
 
       setShowEvmModal(true);
     } catch (err: any) {
@@ -548,6 +654,147 @@ export default function Home() {
       setShowEvmModal(true);
     } finally {
       setEvmLoading(false);
+    }
+  };
+
+  const handleOneDriveLink = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/onedrive/auth-url`);
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (e) {
+      showToast('error', 'Failed to get OneDrive auth URL');
+    }
+  };
+
+  const openOneDriveFilePicker = async (folderId?: string, folderName?: string) => {
+    try {
+      setOneDriveLoading(true);
+      const url = folderId ? `${BACKEND_URL}/api/onedrive/files?folder_id=${folderId}` : `${BACKEND_URL}/api/onedrive/files`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setOneDriveFiles(data);
+        if (folderId && folderName) {
+           setFolderPath(prev => {
+             const idx = prev.findIndex(f => f.id === folderId);
+             if (idx !== -1) return prev.slice(0, idx + 1);
+             return [...prev, { id: folderId, name: folderName }];
+           });
+        } else if (!folderId) {
+           setFolderPath([]);
+        }
+        setShowFilePicker(true);
+      } else {
+        showToast('error', 'Failed to fetch OneDrive files');
+      }
+    } catch (e) {
+      showToast('error', 'Network error while fetching OneDrive files');
+    } finally {
+      setOneDriveLoading(false);
+    }
+  };
+
+  const handleSelectOneDriveFile = async (fileId: string, fileName: string) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/onedrive/select-file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: fileId, file_name: fileName })
+      });
+      if (res.ok) {
+        setOneDriveFile(fileName);
+        setShowFilePicker(false);
+        showToast('success', `Linked file: ${fileName}`);
+      }
+    } catch (e) {
+      showToast('error', 'Failed to save file selection');
+    }
+  };
+
+  const normalizeStr = (s: string) => (s || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  const formatVal = (v: any) => {
+    if (v === null || v === undefined || v === '') return '';
+    const num = parseFloat(v);
+    if (isNaN(num)) return v;
+    return (num * 100).toFixed(2);
+  };
+
+  const handleClearEvmData = () => {
+    setEvmComponents(prev => prev.map(c => ({ ...c, pctContrib: '', pctDone: '' })));
+    setEvmBlocks(prev => prev.map(b => ({ ...b, pctDone: '' })));
+    setIsEvmSynced(false);
+    setEvmStatus('');
+    showToast('success', 'EVM Data cleared.');
+  };
+
+  const handleOneDriveSync = async () => {
+    if (!evmWeekNum) {
+      showToast('error', 'Please enter a Week Number first before syncing.');
+      return;
+    }
+    if (hasData) {
+      showToast('error', 'Please clear existing data before syncing.');
+      return;
+    }
+    try {
+      setOneDriveSyncing(true);
+      setEvmStatus('Syncing from OneDrive...');
+      const res = await fetch(`${BACKEND_URL}/api/onedrive/sync-evm`, { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to sync');
+      }
+
+      const data = await res.json();
+
+      // Update components
+      if (data.main_table && data.main_table.length > 0) {
+        setEvmComponents(prev => prev.map(comp => {
+          const nComp = normalizeStr(comp.name);
+          const matched = data.main_table.find((t: any) => {
+            const nT = normalizeStr(t.description);
+            return nT.includes(nComp) || nComp.includes(nT);
+          });
+          if (matched) {
+            return {
+              ...comp,
+              pctContrib: formatVal(matched.contribution_to_contract),
+              pctDone: formatVal(matched.component_done)
+            };
+          }
+          return comp;
+        }));
+      }
+
+      // Update blocks
+      if (data.blocks_table && data.blocks_table.length > 0) {
+        setEvmBlocks(prev => prev.map(block => {
+          const nBlock = normalizeStr(block.name);
+          const matched = data.blocks_table.find((t: any) => {
+            const nT = normalizeStr(t.block);
+            return nT === nBlock || nT.includes(nBlock);
+          });
+          if (matched) {
+            return {
+              ...block,
+              pctDone: formatVal(matched.done_per_block)
+            };
+          }
+          return block;
+        }));
+      }
+
+      setIsEvmSynced(true);
+      setEvmStatus('✅ Sync complete! Please review the populated data before saving.');
+      showToast('success', 'EVM Data synced successfully from OneDrive');
+    } catch (e: any) {
+      showToast('error', `Sync failed: ${e.message}`);
+      setEvmStatus(`❌ Sync failed: ${e.message}`);
+    } finally {
+      setOneDriveSyncing(false);
     }
   };
 
@@ -747,7 +994,7 @@ export default function Home() {
                         <button
                           onClick={() => {
                             const newV = visitors.filter((_, idx) => idx !== i);
-                            setVisitors(newV.length ? newV : [{name: '', org: '', date: ''}]);
+                            setVisitors(newV.length ? newV : [{ name: '', org: '', date: '' }]);
                           }}
                           disabled={!isAdmin}
                           className="text-vivid-tangerine-400 hover:text-red-500 transition-colors p-1"
@@ -762,7 +1009,7 @@ export default function Home() {
             </div>
             {isAdmin && (
               <button
-                onClick={() => setVisitors([...visitors, {name: '', org: '', date: ''}])}
+                onClick={() => setVisitors([...visitors, { name: '', org: '', date: '' }])}
                 className="mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-none transition-colors border border-sunflower-gold-100"
               >
                 <Plus className="w-4 h-4" /> Add Visitor
@@ -895,7 +1142,130 @@ export default function Home() {
         </div>
 
         {isAdmin && isEvmExpanded && (
-          <div className="bg-white p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left max-h-[600px] overflow-y-auto custom-scrollbar">
+          <div className="bg-white p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200 mb-10 text-left max-h-[600px] overflow-y-auto custom-scrollbar relative">
+            {/* OneDrive Integration Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-vanilla-custard-50 p-4 border border-vanilla-custard-200 mb-6 gap-4">
+              <div>
+                <h4 className="font-bold text-sm text-vivid-tangerine-900">OneDrive Integration</h4>
+                <p className="text-xs text-vivid-tangerine-700">Sync EVM Data automatically from Excel</p>
+                {oneDriveLinked && (
+                  <p className="text-[10px] font-bold text-green-600 mt-1 uppercase tracking-widest">
+                    ✓ Linked {oneDriveFile ? `- ${oneDriveFile}` : ''}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex gap-2">
+                  {!oneDriveLinked ? (
+                    <button onClick={handleOneDriveLink} className="px-4 py-2 bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors shadow-sm">
+                      Link OneDrive
+                    </button>
+                  ) : (
+                    <>
+                      <button onClick={() => openOneDriveFilePicker()} disabled={oneDriveLoading} className="px-4 py-2 bg-white border border-vanilla-custard-300 text-vivid-tangerine-700 text-xs font-bold uppercase tracking-wider hover:bg-vanilla-custard-100 transition-colors shadow-sm">
+                        {oneDriveLoading ? 'Loading...' : oneDriveFile ? 'Change File' : 'Select File'}
+                      </button>
+                      <button onClick={handleOneDriveSync} disabled={!oneDriveFile || oneDriveSyncing || !evmWeekNum || !isValidWeekNum || isWeekDuplicate || !isSequential || !isDateReached} className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm ${(!oneDriveFile || oneDriveSyncing || !evmWeekNum || !isValidWeekNum || isWeekDuplicate || !isSequential || !isDateReached) ? 'bg-vanilla-custard-200 text-vanilla-custard-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                        {oneDriveSyncing ? 'Syncing...' : 'Sync Data'}
+                      </button>
+                    </>
+                  )}
+                </div>
+                {oneDriveLinked && (!oneDriveFile || !evmWeekNum || !isValidWeekNum || isWeekDuplicate || !isSequential || !isDateReached) && (
+                  <div className="text-[10px] text-vivid-tangerine-600 font-bold bg-vivid-tangerine-50 px-3 py-1.5 rounded-sm border border-vivid-tangerine-200 shadow-sm animate-in fade-in text-right max-w-sm">
+                    {!oneDriveFile ? 'Please select an Excel file to sync from.' :
+                     !evmWeekNum ? 'Please enter a Week Number in the form.' :
+                     !isValidWeekNum ? 'Week Number must be 41 or greater.' :
+                     isWeekDuplicate ? 'Data for this week has already been synced and saved.' :
+                     !isSequential ? `Week must be sequential (Expected: Week ${expectedNextWeek}).` :
+                     !isDateReached ? `Cannot sync yet. Week ${evmWeekNum} ends on ${evmEndDate}. Available from this date onwards.` : ''}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* File Picker Modal */}
+            {showFilePicker && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in fade-in">
+                <div className="bg-slate-900 rounded-2xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-700/50 max-h-[90vh] flex flex-col relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1 tracking-tight">Select OneDrive File</h2>
+                      <p className="text-xs text-slate-400 font-medium">Choose the Excel file containing your EVM data</p>
+                    </div>
+                    <button onClick={() => setShowFilePicker(false)} className="text-slate-400 hover:text-white transition-colors bg-slate-800/50 hover:bg-slate-700 p-2 rounded-xl">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="mb-4 bg-indigo-900/20 border border-indigo-500/30 rounded-lg p-2.5 text-xs text-indigo-200 leading-relaxed">
+                    <span className="font-bold">OneDrive Format:</span> Microsoft OneDrive integration only supports native Excel Workbooks (<code className="font-mono bg-indigo-950 px-1 rounded text-[11px] text-indigo-300">.xlsx</code>). CSV files are not supported and are hidden from this list.
+                  </div>
+
+                  <div className="mb-4 text-[11px] flex flex-wrap items-center gap-1.5 px-2">
+                    <span className="font-semibold text-slate-500">Path:</span>
+                    <span
+                      onClick={() => openOneDriveFilePicker()}
+                      className="font-semibold text-slate-300 cursor-pointer hover:text-indigo-400 transition-colors"
+                    >
+                      Home
+                    </span>
+                    {folderPath.map((folder) => (
+                      <React.Fragment key={folder.id}>
+                        <span className="text-slate-600">/</span>
+                        <span
+                          onClick={() => openOneDriveFilePicker(folder.id, folder.name)}
+                          className="font-semibold text-slate-300 cursor-pointer hover:text-indigo-400 transition-colors"
+                        >
+                          {folder.name}
+                        </span>
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  <div className="w-full h-64 border border-slate-700/50 rounded-xl overflow-y-auto divide-y divide-slate-700/50 bg-slate-900/50 custom-scrollbar relative">
+                    {oneDriveLoading && (
+                      <div className="absolute inset-0 bg-slate-900/50 flex flex-col items-center justify-center text-slate-400 space-y-2 z-10 backdrop-blur-sm">
+                        <svg className="w-6 h-6 animate-spin text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span className="text-xs font-medium">Scanning folder...</span>
+                      </div>
+                    )}
+                    
+                    {!oneDriveLoading && oneDriveFiles.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-xs text-slate-500 p-6 text-center space-y-2">
+                        <span className="font-semibold text-slate-400">No supported files found in this folder.</span>
+                      </div>
+                    ) : (
+                      oneDriveFiles.map((file) => {
+                        const isFolder = file.type === 'folder';
+                        return (
+                          <div
+                            key={file.id}
+                            onClick={() => isFolder ? openOneDriveFilePicker(file.id, file.name) : handleSelectOneDriveFile(file.id, file.name)}
+                            className="flex items-center justify-between p-3 transition-all duration-150 hover:bg-slate-800/50 text-slate-300 font-medium cursor-pointer"
+                          >
+                            <div className="flex-1 flex items-center space-x-3 min-w-0">
+                              {isFolder ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-amber-500 fill-amber-100 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                              ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                              )}
+                              <span className="text-xs truncate">{file.name}</span>
+                            </div>
+                            {isFolder && (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500 hover:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div>
                 <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Week Number</label>
@@ -916,8 +1286,13 @@ export default function Home() {
                 {!isValidWeekNum && evmWeekNum && (
                   <p className="text-[10px] text-amber-500 font-bold mt-1 uppercase tracking-wider">⚠️ Minimum week is 41.</p>
                 )}
+                {isValidWeekNum && !isWeekDuplicate && !isSequential && evmWeekNum && (
+                  <p className="text-[10px] text-amber-600 font-bold mt-1 uppercase tracking-wider">
+                    ⚠️ Sequential Entry Required: Please enter Week {expectedNextWeek} first.
+                  </p>
+                )}
               </div>
-              
+
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Calculated Start Date</label>
                 <input
@@ -938,7 +1313,7 @@ export default function Home() {
                 />
               </div>
             </div>
-            
+
             <div className="mb-8 overflow-x-auto">
               <h3 className="text-sm font-bold text-vivid-tangerine-800 mb-4 uppercase tracking-widest">Component Progress</h3>
               <table className="w-full text-left border-collapse text-sm">
@@ -958,25 +1333,27 @@ export default function Home() {
                       <td className="py-2 pr-2">
                         <input
                           value={comp.pctContrib}
+                          disabled={oneDriveSyncing}
                           onChange={(e) => {
                             const newArr = [...evmComponents];
                             newArr[idx].pctContrib = e.target.value.replace(/%/g, '');
                             setEvmComponents(newArr);
                           }}
                           placeholder="e.g. 0.00"
-                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                          className={`w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950 ${oneDriveSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
                         />
                       </td>
                       <td className="py-2 pr-2">
                         <input
                           value={comp.pctDone}
+                          disabled={oneDriveSyncing}
                           onChange={(e) => {
                             const newArr = [...evmComponents];
                             newArr[idx].pctDone = e.target.value.replace(/%/g, '');
                             setEvmComponents(newArr);
                           }}
                           placeholder="e.g. 0.00"
-                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                          className={`w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950 ${oneDriveSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
                         />
                       </td>
                     </tr>
@@ -1001,13 +1378,14 @@ export default function Home() {
                       <td className="py-2 pr-2">
                         <input
                           value={blk.pctDone}
+                          disabled={oneDriveSyncing}
                           onChange={(e) => {
                             const newArr = [...evmBlocks];
                             newArr[idx].pctDone = e.target.value.replace(/%/g, '');
                             setEvmBlocks(newArr);
                           }}
                           placeholder="e.g. 0.00"
-                          className="w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950"
+                          className={`w-24 bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-vivid-tangerine-950 ${oneDriveSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
                         />
                       </td>
                     </tr>
@@ -1020,13 +1398,24 @@ export default function Home() {
               {!isEvmReady && !evmLoading && (
                 <p className="text-[10px] text-amber-600 uppercase tracking-widest font-bold">⚠️ Enter a valid new week (&gt;=41) and fill all percentage fields to save.</p>
               )}
-              <button
-                onClick={handleSaveEVM}
-                disabled={evmLoading || !isEvmReady}
-                className={`self-start px-8 py-3 rounded-none font-bold transition-all shadow-md ${(!isEvmReady || evmLoading) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
-              >
-                {evmLoading ? 'Saving...' : 'Save EVM Data'}
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleSaveEVM}
+                  disabled={evmLoading || !isEvmReady}
+                  className={`self-start px-8 py-3 rounded-none font-bold transition-all shadow-md ${(!isEvmReady || evmLoading) ? 'bg-vanilla-custard-300 text-vanilla-custard-500 cursor-not-allowed' : 'bg-vivid-tangerine-600 text-white hover:bg-vivid-tangerine-700 active:scale-95'}`}
+                >
+                  {evmLoading ? 'Saving...' : 'Save EVM Data'}
+                </button>
+                {hasData && (
+                  <button
+                    onClick={handleClearEvmData}
+                    disabled={evmLoading}
+                    className="self-start px-8 py-3 bg-white border border-red-200 text-red-600 font-bold hover:bg-red-50 hover:text-red-700 transition-colors shadow-sm rounded-none uppercase tracking-widest text-xs flex items-center h-[48px]"
+                  >
+                    Clear Data
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1208,8 +1597,8 @@ export default function Home() {
             <h3 className="text-sm font-bold text-vivid-tangerine-800 uppercase tracking-widest">Ingested Correspondence Register</h3>
             {uploadedDocs.length > 0 && (
               <div className="relative w-full sm:w-64">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={registerSearchQuery}
                   onChange={(e) => setRegisterSearchQuery(e.target.value)}
                   placeholder="Search documents..."
@@ -1229,11 +1618,10 @@ export default function Home() {
                     key={cat}
                     type="button"
                     onClick={() => setActiveRegisterTab(cat)}
-                    className={`px-4 py-2 rounded-none font-bold text-xs uppercase tracking-wider transition-all ${
-                      activeRegisterTab === cat
+                    className={`px-4 py-2 rounded-none font-bold text-xs uppercase tracking-wider transition-all ${activeRegisterTab === cat
                         ? 'bg-white text-vivid-tangerine-700 shadow-sm border border-vanilla-custard-200'
                         : 'text-vivid-tangerine-600/70 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-800'
-                    }`}
+                      }`}
                   >
                     {cat === 'contractor' ? '👷 Contractor' : cat === 'client' ? '🏢 Client / PM' : '📚 General'}
                   </button>
@@ -1252,65 +1640,80 @@ export default function Home() {
                   })
                   .sort((a, b) => new Date(b.date_sent || b.date_uploaded).getTime() - new Date(a.date_sent || a.date_uploaded).getTime())
                   .map((doc) => (
-                <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-none border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
-                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
-                        ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
-                        : doc.category === 'client'
-                          ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700'
-                          : 'bg-vanilla-custard-50 border-vanilla-custard-200 text-vanilla-custard-700'
-                        }`}>
-                        {doc.category === 'contractor' ? '👷 Contractor' : doc.category === 'client' ? '🏢 Client / PM' : '📚 General'}
-                      </span>
-                      <span className="text-[10px] text-vivid-tangerine-400 font-bold bg-vanilla-custard-50 px-2 py-0.5 rounded-full">
-                        📅 Sent: {doc.date_sent}
-                      </span>
-                      <span className="text-[10px] text-vivid-tangerine-400 font-bold bg-vanilla-custard-50 px-2 py-0.5 rounded-full">
-                        📤 Uploaded: {doc.date_uploaded.split(' ')[0]}
-                      </span>
-                    </div>
+                    <div key={doc.id} className="bg-white p-4 sm:p-6 rounded-none border border-vanilla-custard-100 shadow-md flex flex-col md:flex-row justify-between gap-2 sm:gap-4 transition-all hover:shadow-lg text-left">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1 sm:gap-2 mb-2 flex-wrap">
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${doc.category === 'contractor'
+                            ? 'bg-vivid-tangerine-50 border-vivid-tangerine-200 text-vivid-tangerine-700'
+                            : doc.category === 'client'
+                              ? 'bg-deep-space-blue-50 border-deep-space-blue-200 text-deep-space-blue-700'
+                              : 'bg-vanilla-custard-50 border-vanilla-custard-200 text-vanilla-custard-700'
+                            }`}>
+                            {doc.category === 'contractor' ? '👷 Contractor' : doc.category === 'client' ? '🏢 Client / PM' : '📚 General'}
+                          </span>
+                          <span className="text-[10px] text-vivid-tangerine-400 font-bold bg-vanilla-custard-50 px-2 py-0.5 rounded-full">
+                            📅 Sent: {doc.date_sent}
+                          </span>
+                          <span className="text-[10px] text-vivid-tangerine-400 font-bold bg-vanilla-custard-50 px-2 py-0.5 rounded-full">
+                            📤 Uploaded: {doc.date_uploaded.split(' ')[0]}
+                          </span>
+                        </div>
 
-                    <h4 className="font-bold text-vivid-tangerine-955 text-sm sm:text-base mb-1 break-words select-text">
-                      {doc.title || doc.ai_analysis?.title || "Untitled Document"}
-                    </h4>
-                    <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words select-text">
-                      From: <span className="text-vivid-tangerine-900 select-text">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900 select-text">{doc.recipient}</span>
-                    </p>
-                    <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-none border border-vanilla-custard-100 shadow-inner">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2 pb-2 border-b border-vanilla-custard-200/60">
-                        <span className="text-xs font-bold text-slate-800 font-serif select-text break-words">
-                          Document: {doc.title || doc.ai_analysis?.title || "Untitled Document"}
-                        </span>
-                        <span className="text-[8px] font-black uppercase text-vivid-tangerine-600 tracking-widest whitespace-nowrap">
-                          Summary Preview
-                        </span>
+                        <h4 className="font-bold text-vivid-tangerine-955 text-sm sm:text-base mb-1 break-words select-text">
+                          {doc.title || doc.ai_analysis?.title || "Untitled Document"}
+                        </h4>
+                        <p className="text-[10px] sm:text-xs text-vivid-tangerine-600 font-bold uppercase tracking-wider mb-2 break-words select-text">
+                          From: <span className="text-vivid-tangerine-900 select-text">{doc.sender}</span> &rarr; To: <span className="text-vivid-tangerine-900 select-text">{doc.recipient}</span>
+                        </p>
+                        <div className="mt-3 bg-vanilla-custard-50/50 p-3.5 rounded-none border border-vanilla-custard-100 shadow-inner">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2 pb-2 border-b border-vanilla-custard-200/60">
+                            <span className="text-xs font-bold text-slate-800 font-serif select-text break-words">
+                              Document: {doc.title || doc.ai_analysis?.title || "Untitled Document"}
+                            </span>
+                            <span className="text-[8px] font-black uppercase text-vivid-tangerine-600 tracking-widest whitespace-nowrap">
+                              Summary Preview
+                            </span>
+                          </div>
+                          <p className="text-xs text-vivid-tangerine-900 leading-relaxed font-medium line-clamp-3 md:line-clamp-4">
+                            {doc.summary || "No summary preview available."}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs text-vivid-tangerine-900 leading-relaxed font-medium line-clamp-3 md:line-clamp-4">
-                        {doc.summary || "No summary preview available."}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex md:flex-col justify-end items-stretch gap-2 min-w-[150px]">
-                    <button
-                      onClick={() => setActiveDocDetail(doc)}
-                      className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-none font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
-                    >
-                      🔍 View Claims Analysis
-                    </button>
-                    {isAdmin && (
-                      <button
-                        onClick={() => setDocToDelete(doc)}
-                        className="px-4 py-2 bg-vivid-tangerine-50 border border-vivid-tangerine-200 rounded-none font-bold text-xs text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 hover:text-vivid-tangerine-750 transition-colors text-center w-full"
-                      >
-                        🗑️ Delete Document
-                      </button>
-                    )}
-                  </div>
-                  </div>
-                ))}
-                
+                      <div className="flex md:flex-col justify-end items-stretch gap-2 min-w-[150px]">
+                        {!doc.external_pdf_path ? (
+                          <button
+                            onClick={() => handleLinkDocument(doc.id)}
+                            className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-none font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
+                          >
+                            🔗 Link Local Path
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleViewDocument(doc.id)}
+                            className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-none font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
+                          >
+                            📄 View Linked PDF
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setActiveDocDetail(doc)}
+                          className="px-4 py-2 bg-vanilla-custard-50 border border-vanilla-custard-200 rounded-none font-bold text-xs text-vivid-tangerine-700 hover:bg-vanilla-custard-100 hover:text-vivid-tangerine-900 transition-colors text-center w-full"
+                        >
+                          🔍 View Claims Analysis
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setDocToDelete(doc)}
+                            className="px-4 py-2 bg-vivid-tangerine-50 border border-vivid-tangerine-200 rounded-none font-bold text-xs text-vivid-tangerine-600 hover:bg-vivid-tangerine-100 hover:text-vivid-tangerine-750 transition-colors text-center w-full"
+                          >
+                            🗑️ Delete Document
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
                 {[...uploadedDocs].filter(doc => doc.category === activeRegisterTab).length === 0 && (
                   <div className="bg-vanilla-custard-50/50 border border-dashed border-vanilla-custard-200 rounded-none p-8 text-center text-vivid-tangerine-800 text-sm font-medium">
                     No documents found in this category.
@@ -1360,7 +1763,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                   <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">🧠 Detailed Analysis</h4>
+                  <h4 className="font-bold text-vivid-tangerine-950 uppercase tracking-widest text-xs mb-2">🧠 Detailed Analysis</h4>
                   <p className="whitespace-pre-wrap text-vivid-tangerine-800">{activeDocDetail.ai_analysis?.detailed_analysis || "No detailed analysis available."}</p>
                 </div>
 
@@ -1440,7 +1843,7 @@ export default function Home() {
                   This action is **irreversible**. Deleting this document will permanently purge its parsed text content, contractor EOT requests, action items, and contractual delay risks from the cache.
                 </p>
                 <p className="text-xs text-red-600 font-black uppercase tracking-wider bg-red-50 p-3 rounded-none border border-red-100 text-center">
-                   ⚠️ This document's system insights will no longer be included in weekly/monthly report aggregation.
+                  ⚠️ This document's system insights will no longer be included in weekly/monthly report aggregation.
                 </p>
               </div>
 
@@ -1543,6 +1946,58 @@ export default function Home() {
           <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Vektra. All Rights Reserved.</p>
         </div>
       </footer>
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className={`px-6 py-4 rounded-none shadow-2xl border flex items-center gap-3 ${toast.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+            }`}>
+            <span className="text-xl">{toast.type === 'success' ? '✅' : '⚠️'}</span>
+            <p className="text-sm font-bold">{toast.message}</p>
+            <button
+              onClick={() => setToast(null)}
+              className={`ml-4 p-1 hover:bg-black/5 rounded transition-colors ${toast.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+      {/* PDF Viewer Modal */}
+      {pdfModalUrl && (
+        <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
+          <div className="bg-white w-full h-full max-w-7xl max-h-[90vh] rounded-none shadow-2xl flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <span className="text-xl">📄</span> Document Preview
+              </h3>
+              <div className="flex items-center gap-4">
+                <a
+                  href={pdfModalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] uppercase tracking-wider font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors bg-vivid-tangerine-50 px-3 py-1.5"
+                >
+                  Open External ↗
+                </a>
+                <button
+                  onClick={() => setPdfModalUrl(null)}
+                  className="p-1.5 hover:bg-slate-200 transition-colors text-slate-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 w-full bg-slate-100">
+              <iframe
+                src={`${pdfModalUrl}#toolbar=0`}
+                className="w-full h-full border-0"
+                title="PDF Document Viewer"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

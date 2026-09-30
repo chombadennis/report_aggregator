@@ -20,6 +20,9 @@ from financial_engine import FinancialEngine
 from document_parser import DocumentParser
 from auth import clerk_verifier
 from evm_manager import EVMManager
+import tkinter as tk
+from tkinter import filedialog
+from onedrive_integration import router as onedrive_router
 
 app = FastAPI(title="Construction Report Aggregator")
 
@@ -30,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(onedrive_router)
 
 TEMP_DIR = "temp_uploads"
 INSIGHTS_CACHE_PATH = os.path.join("cache", "ai_insights.json")
@@ -586,6 +591,87 @@ async def get_project_documents(current_user: dict = Depends(get_current_user)):
                     
         documents.sort(key=lambda x: x.get("date_sent", ""), reverse=True)
         return documents
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/project-documents/{doc_id}/view")
+async def view_project_document(doc_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        docs_dir = os.path.join("cache", "project_documents")
+        metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
+        
+        pdf_path = None
+        if os.path.exists(metadata_path):
+            with open(metadata_path, "r") as f:
+                doc_data = json.load(f)
+                pdf_path = doc_data.get("external_pdf_path")
+                
+        if not pdf_path or not os.path.exists(pdf_path):
+            # Fallback to local cache if no external path is linked or if external path is invalid
+            pdf_path = os.path.join(docs_dir, "pdfs", f"{doc_id}.pdf")
+            
+        if not os.path.exists(pdf_path):
+            raise HTTPException(status_code=404, detail="Document not found. Please link a valid path.")
+            
+        return FileResponse(pdf_path, media_type="application/pdf")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def open_file_dialog():
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    file_path = filedialog.askopenfilename(
+        title="Select PDF Document",
+        filetypes=[("PDF files", "*.pdf")]
+    )
+    root.destroy()
+    return file_path
+
+@app.post("/api/project-documents/{doc_id}/pick-link")
+async def pick_link_document(doc_id: str, current_user: dict = Depends(require_admin)):
+    try:
+        docs_dir = os.path.join("cache", "project_documents")
+        metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
+        
+        if not os.path.exists(metadata_path):
+            raise HTTPException(status_code=404, detail="Document metadata not found.")
+            
+        # Run tkinter in a separate thread
+        file_path = await asyncio.to_thread(open_file_dialog)
+        
+        if not file_path:
+            return {"status": "cancelled", "msg": "No file selected."}
+            
+        with open(metadata_path, "r") as f:
+            doc_data = json.load(f)
+            
+        doc_data["external_pdf_path"] = file_path
+        
+        with open(metadata_path, "w") as f:
+            json.dump(doc_data, f, indent=2)
+            
+        return {"status": "success", "msg": f"Successfully linked document.", "path": file_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/project-documents/{doc_id}/unlink")
+async def unlink_project_document(doc_id: str, current_user: dict = Depends(require_admin)):
+    try:
+        docs_dir = os.path.join("cache", "project_documents")
+        metadata_path = os.path.join(docs_dir, f"{doc_id}.json")
+        
+        if os.path.exists(metadata_path):
+            with open(metadata_path, "r") as f:
+                doc_data = json.load(f)
+                
+            if "external_pdf_path" in doc_data:
+                del doc_data["external_pdf_path"]
+                with open(metadata_path, "w") as f:
+                    json.dump(doc_data, f, indent=2)
+                    
+        return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
