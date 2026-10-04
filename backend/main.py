@@ -24,6 +24,18 @@ import tkinter as tk
 from tkinter import filedialog
 from onedrive_integration import router as onedrive_router
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "standalone_scripts"))
+from variance_logic import (
+    load_schedule, 
+    save_weekly_snapshot, 
+    get_snapshots_for_week,
+    get_cumulative_progress,
+    get_locked_weeks,
+    lock_week
+)
+from pydantic import BaseModel
+
 app = FastAPI(title="Construction Report Aggregator")
 
 # Enable CORS for Next.js frontend
@@ -35,6 +47,18 @@ app.add_middleware(
 )
 
 app.include_router(onedrive_router)
+
+class TaskProgress(BaseModel):
+    task_name: str
+    percentage: float
+    path: str = ""
+
+class SnapshotRequest(BaseModel):
+    week_number: int
+    report_date_str: str
+    component: str
+    tasks: List[TaskProgress]
+    notes: str = ""
 
 TEMP_DIR = "temp_uploads"
 INSIGHTS_CACHE_PATH = os.path.join("cache", "ai_insights.json")
@@ -157,6 +181,58 @@ async def ping():
 async def check_duplicate(title: str, current_user: dict = Depends(get_current_user)):
     exists = aggregator.check_duplicate(title)
     return {"exists": exists}
+
+@app.get("/api/variance/schedules/{component}")
+async def get_schedule(component: str, week_number: int = None, current_user: dict = Depends(get_current_user)):
+    try:
+        schedule = load_schedule(component)
+        if week_number:
+            cumulative = get_cumulative_progress(component, week_number)
+            def annotate(tasks):
+                for t in tasks:
+                    if t['name'] in cumulative:
+                        t['previous_percentage'] = cumulative[t['name']]
+                    if t.get('children'):
+                        annotate(t['children'])
+            annotate(schedule)
+        return schedule
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Schedule not found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/variance/snapshot")
+async def save_snapshot(req: SnapshotRequest, current_user: dict = Depends(require_admin)):
+    try:
+        record = save_weekly_snapshot(
+            week_number=req.week_number,
+            report_date_str=req.report_date_str,
+            component=req.component,
+            tasks=[{"task_name": t.task_name, "percentage": t.percentage, "path": t.path} for t in req.tasks],
+            notes=req.notes
+        )
+        return {"status": "success", "record": record}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/variance/snapshots/{week_number}")
+async def get_snapshots(week_number: int, current_user: dict = Depends(get_current_user)):
+    try:
+        snapshots = get_snapshots_for_week(week_number)
+        return snapshots
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/variance/locked_weeks")
+async def get_locked_weeks_api(current_user: dict = Depends(get_current_user)):
+    return get_locked_weeks()
+
+@app.post("/api/variance/lock_week/{week_number}")
+async def lock_week_api(week_number: int, current_user: dict = Depends(require_admin)):
+    try:
+        return lock_week(week_number)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-weekly-stream")
 async def generate_weekly_stream(

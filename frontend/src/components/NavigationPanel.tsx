@@ -14,8 +14,10 @@ export default function NavigationPanel() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-vanilla-custard-200 px-3 sm:px-8 py-3 sm:py-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-1.5 sm:gap-4">
+      <div className="max-w-7xl mx-auto flex items-center">
+        
+        {/* Left Side: Navigation / Home */}
+        <div className="flex items-center gap-1.5 sm:gap-4 w-1/4 sm:w-1/3">
           {pathname !== '/' && (
             <Link href="/" className="text-xs font-bold text-vivid-tangerine-950 uppercase tracking-wider bg-white hover:bg-vanilla-custard-50 hover:text-vivid-tangerine-600 border border-vanilla-custard-200 px-2.5 sm:px-4 py-2 rounded-none shadow-sm hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center">
               Home
@@ -33,7 +35,26 @@ export default function NavigationPanel() {
             </Link>
           )}
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-4">
+
+        {/* Center: Action Buttons */}
+        <div className="flex-1 flex items-center justify-center gap-1.5 sm:gap-4">
+          {isLoaded && userId && (
+            <>
+              <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-none shadow-sm hover:shadow-md transition-all active:scale-[0.98] hidden sm:inline-flex items-center">
+                Contracts
+              </Link>
+              <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-none shadow-sm hover:shadow-md transition-all active:scale-[0.98] hidden sm:inline-flex items-center">
+                Trends
+              </Link>
+              <Link href="/variance-tracker" className="text-xs font-bold text-vivid-tangerine-700 uppercase tracking-wider bg-white hover:bg-vivid-tangerine-50 border border-vivid-tangerine-200/80 px-2.5 sm:px-4 py-2 rounded-none shadow-sm hover:shadow-md transition-all active:scale-[0.98] hidden lg:inline-flex items-center">
+                Schedule Variance
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Right Side: Profile */}
+        <div className="flex items-center justify-end gap-1.5 sm:gap-4 w-1/4 sm:w-1/3">
           {isLoaded && userId && (
             !isAdmin ? (
               <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50/80 border border-amber-200 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-none shadow-sm hidden sm:inline-block">

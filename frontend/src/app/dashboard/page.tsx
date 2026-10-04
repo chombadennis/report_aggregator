@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import NavigationPanel from '@/components/NavigationPanel';
 import RevealWrapper from '@/components/animations/RevealWrapper';
+import Footer from '@/components/Footer';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -819,43 +820,6 @@ export default function Home() {
             <p className="text-vivid-tangerine-800 text-sm font-medium mt-1">Field Reporting &amp; Analytics</p>
           </div>
         </div>
-
-        {/* Dashboard Navigation */}
-        <RevealWrapper>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-            <Link href="/contract" className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-none shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-sunflower-gold-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-sunflower-gold-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
-              <div className="flex items-start justify-between relative z-10">
-                <div className="p-3.5 bg-sunflower-gold-50 rounded-none border border-sunflower-gold-100 text-sunflower-gold-600 transition-transform duration-300 group-hover:scale-110">
-                  <FileText className="w-6 h-6" />
-                </div>
-                <div className="w-8 h-8 rounded-none bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-sunflower-gold-500 group-hover:text-white group-hover:border-sunflower-gold-400">
-                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </div>
-              </div>
-              <div className="mt-6 relative z-10">
-                <h3 className="text-lg font-bold text-slate-900 group-hover:text-sunflower-gold-700 transition-colors">Contracts & EVM Weekly</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">View project scope, baseline estimates, financial breakdown, and contract timelines.</p>
-              </div>
-            </Link>
-
-            <Link href="/trends" className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-none shadow-[0_15px_30px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-vivid-tangerine-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)] transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[180px]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-vivid-tangerine-500/5 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-110"></div>
-              <div className="flex items-start justify-between relative z-10">
-                <div className="p-3.5 bg-vivid-tangerine-50 rounded-none border border-vivid-tangerine-100 text-vivid-tangerine-600 transition-transform duration-300 group-hover:scale-110">
-                  <TrendingUp className="w-6 h-6" />
-                </div>
-                <div className="w-8 h-8 rounded-none bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 transition-all duration-300 group-hover:bg-vivid-tangerine-500 group-hover:text-white group-hover:border-vivid-tangerine-400">
-                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </div>
-              </div>
-              <div className="mt-6 relative z-10">
-                <h3 className="text-lg font-bold text-slate-900 group-hover:text-vivid-tangerine-600 transition-colors">Trend & Performance Analysis</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Analyze daily &amp; weekly labor trends, weather disruptions, schedule slippages, and smart diagnostics.</p>
-              </div>
-            </Link>
-          </div>
-        </RevealWrapper>
 
         {/* Mode Selector */}
         <RevealWrapper direction="up" delay={0.1}>
@@ -1915,37 +1879,7 @@ export default function Home() {
       </div>
 
       {/* Footer Panel */}
-      <footer className="mt-20 border-t border-vanilla-custard-200 pt-12 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-left">
-            <p className="text-xs font-black text-vivid-tangerine-950 uppercase tracking-widest mb-1">Vektra</p>
-            <p className="text-[10px] text-vivid-tangerine-400 font-bold uppercase tracking-tighter mb-4 md:mb-0">Field Reporting &amp; Analytics</p>
-
-            {/* NeuralAxis Labs Branding Logo */}
-            <div className="flex items-center gap-2.5 mt-4">
-              <span className="text-[10px] font-black uppercase text-vivid-tangerine-600 tracking-wider">Developed by</span>
-              <a href="https://neuralaxislabs.online" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <img src="/neuralaxis-logo.png" alt="NeuralAxis Labs Logo" className="h-7 w-7 rounded-full aspect-square object-cover shadow-sm" />
-                <span className="text-xs font-black text-vivid-tangerine-950 tracking-tight">NeuralAxis Labs</span>
-              </a>
-            </div>
-          </div>
-          <div className="flex flex-col items-stretch md:items-end gap-3">
-            <div className="flex justify-center md:justify-end gap-4">
-              <Link href="/" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Home</Link>
-              <Link href="/contract" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Contract</Link>
-              <Link href="/trends" className="text-xs font-bold text-vivid-tangerine-600 hover:text-vivid-tangerine-800 transition-colors">Trends</Link>
-            </div>
-            <div className="flex justify-center md:justify-end gap-3">
-              <Link href="/terms" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-vanilla-custard-100/30 border border-vanilla-custard-200 px-3 py-1 rounded-full">Terms</Link>
-              <Link href="/privacy" className="text-[10px] font-black text-vivid-tangerine-500 uppercase tracking-widest hover:text-vivid-tangerine-800 transition-colors bg-vanilla-custard-100/30 border border-vanilla-custard-200 px-3 py-1 rounded-full">Privacy</Link>
-            </div>
-          </div>
-        </div>
-        <div className="mt-8 text-center border-t border-vanilla-custard-100 pt-6">
-          <p className="text-[10px] text-vanilla-custard-400 font-bold uppercase tracking-widest">&copy; 2026 Vektra. All Rights Reserved.</p>
-        </div>
-      </footer>
+      <Footer />
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div className={`px-6 py-4 rounded-none shadow-2xl border flex items-center gap-3 ${toast.type === 'success'

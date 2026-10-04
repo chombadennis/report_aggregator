@@ -1,0 +1,51 @@
+[
+  {
+    "name": "AUXILIARY FACILITIES",
+    "start_date": "2027-09-22",
+    "finish_date": "2027-11-22",
+    "children": [
+      {
+        "name": "Guard House",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      },
+      {
+        "name": "Garbage Receptacle",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      },
+      {
+        "name": "Power House",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      },
+      {
+        "name": "Civil Works",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      },
+      {
+        "name": "Sewer Works",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      },
+      {
+        "name": "Underground Water Tank",
+        "start_date": "2027-09-22",
+        "finish_date": "2027-11-22",
+        "children": []
+      }
+    ]
+  },
+  {
+    "name": "Commissioning and Handing Over",
+    "start_date": "2027-11-23",
+    "finish_date": "2027-11-24",
+    "children": []
+  }
+]

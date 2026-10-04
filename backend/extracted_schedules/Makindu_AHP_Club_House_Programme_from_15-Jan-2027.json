@@ -1,0 +1,630 @@
+[
+  {
+    "name": "CLUB HOUSE",
+    "start_date": "2027-01-15",
+    "finish_date": "2027-07-19",
+    "children": [
+      {
+        "name": "EARTHWORKS",
+        "start_date": "2027-01-15",
+        "finish_date": "2027-01-19",
+        "children": [
+          {
+            "name": "Site Clearance",
+            "start_date": "2027-01-15",
+            "finish_date": "2027-01-15",
+            "children": []
+          },
+          {
+            "name": "Excavation Works",
+            "start_date": "2027-01-16",
+            "finish_date": "2027-01-19",
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "SUB-STRUCTURE WORKS",
+        "start_date": "2027-01-20",
+        "finish_date": "2027-02-08",
+        "children": [
+          {
+            "name": "Bases & Strip footing",
+            "start_date": "2027-01-20",
+            "finish_date": "2027-01-25",
+            "children": [
+              {
+                "name": "Blinding to bases & Strip footing",
+                "start_date": "2027-01-20",
+                "finish_date": "2027-01-21",
+                "children": []
+              },
+              {
+                "name": "Fixing of steel Reinforcement",
+                "start_date": "2027-01-22",
+                "finish_date": "2027-01-23",
+                "children": []
+              },
+              {
+                "name": "Fixing of formwork",
+                "start_date": "2027-01-24",
+                "finish_date": "2027-01-24",
+                "children": []
+              },
+              {
+                "name": "Concrete Casting",
+                "start_date": "2027-01-25",
+                "finish_date": "2027-01-25",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Foundation Columns",
+            "start_date": "2027-01-26",
+            "finish_date": "2027-01-28",
+            "children": [
+              {
+                "name": "Fixing of steel Reinforcement",
+                "start_date": "2027-01-26",
+                "finish_date": "2027-01-26",
+                "children": []
+              },
+              {
+                "name": "Fixing of formwork",
+                "start_date": "2027-01-27",
+                "finish_date": "2027-01-27",
+                "children": []
+              },
+              {
+                "name": "Concrete Casting",
+                "start_date": "2027-01-28",
+                "finish_date": "2027-01-28",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Foundation walling",
+            "start_date": "2027-01-29",
+            "finish_date": "2027-02-01",
+            "children": []
+          },
+          {
+            "name": "Backfilling",
+            "start_date": "2027-02-02",
+            "finish_date": "2027-02-03",
+            "children": []
+          },
+          {
+            "name": "Floor Bed",
+            "start_date": "2027-02-04",
+            "finish_date": "2027-02-08",
+            "children": [
+              {
+                "name": "Hardcore and Murram filling & Anti-termite treatment",
+                "start_date": "2027-02-04",
+                "finish_date": "2027-02-05",
+                "children": []
+              },
+              {
+                "name": "BRC Reinforcement",
+                "start_date": "2027-02-06",
+                "finish_date": "2027-02-06",
+                "children": []
+              },
+              {
+                "name": "Plumbing pipes installation",
+                "start_date": "2027-02-07",
+                "finish_date": "2027-02-07",
+                "children": []
+              },
+              {
+                "name": "Concrete Casting",
+                "start_date": "2027-02-08",
+                "finish_date": "2027-02-08",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "SUPERSTRUCTURE",
+        "start_date": "2027-02-09",
+        "finish_date": "2027-07-19",
+        "children": [
+          {
+            "name": "STRUCTURE WORKS",
+            "start_date": "2027-02-09",
+            "finish_date": "2027-04-08",
+            "children": [
+              {
+                "name": "GROUND FLOOR",
+                "start_date": "2027-02-09",
+                "finish_date": "2027-02-22",
+                "children": [
+                  {
+                    "name": "Masonry Blocks walls installation",
+                    "start_date": "2027-02-09",
+                    "finish_date": "2027-02-13",
+                    "children": []
+                  },
+                  {
+                    "name": "Columns",
+                    "start_date": "2027-02-14",
+                    "finish_date": "2027-02-16",
+                    "children": [
+                      {
+                        "name": "Fixing of steel Reinforcement",
+                        "start_date": "2027-02-14",
+                        "finish_date": "2027-02-14",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork",
+                        "start_date": "2027-02-15",
+                        "finish_date": "2027-02-15",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting",
+                        "start_date": "2027-02-16",
+                        "finish_date": "2027-02-16",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Top Slab & Staircase & Ring beam",
+                    "start_date": "2027-02-17",
+                    "finish_date": "2027-02-22",
+                    "children": [
+                      {
+                        "name": "Fixing of formwork to soffit of slab and sides of beams",
+                        "start_date": "2027-02-17",
+                        "finish_date": "2027-02-18",
+                        "children": []
+                      },
+                      {
+                        "name": "Reinforcement of suspended slab and beams",
+                        "start_date": "2027-02-19",
+                        "finish_date": "2027-02-20",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork to sides of slab",
+                        "start_date": "2027-02-20",
+                        "finish_date": "2027-02-20",
+                        "children": []
+                      },
+                      {
+                        "name": "Electrical duct installation",
+                        "start_date": "2027-02-21",
+                        "finish_date": "2027-02-21",
+                        "children": []
+                      },
+                      {
+                        "name": "Plumbing pipe installation",
+                        "start_date": "2027-02-21",
+                        "finish_date": "2027-02-21",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting of suspended slab and beams",
+                        "start_date": "2027-02-22",
+                        "finish_date": "2027-02-22",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "FIRST FLOOR",
+                "start_date": "2027-02-23",
+                "finish_date": "2027-03-09",
+                "children": [
+                  {
+                    "name": "Masonry Blocks walls installation",
+                    "start_date": "2027-02-23",
+                    "finish_date": "2027-02-27",
+                    "children": []
+                  },
+                  {
+                    "name": "Columns",
+                    "start_date": "2027-02-28",
+                    "finish_date": "2027-03-03",
+                    "children": [
+                      {
+                        "name": "Fixing of steel Reinforcement",
+                        "start_date": "2027-02-28",
+                        "finish_date": "2027-03-01",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork",
+                        "start_date": "2027-03-02",
+                        "finish_date": "2027-03-02",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting",
+                        "start_date": "2027-03-03",
+                        "finish_date": "2027-03-03",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Top Slab & Staircase & Ring beam",
+                    "start_date": "2027-03-04",
+                    "finish_date": "2027-03-09",
+                    "children": [
+                      {
+                        "name": "Fixing of formwork to soffit of slab and sides of beams",
+                        "start_date": "2027-03-04",
+                        "finish_date": "2027-03-05",
+                        "children": []
+                      },
+                      {
+                        "name": "Reinforcement of suspended slab and beams",
+                        "start_date": "2027-03-06",
+                        "finish_date": "2027-03-07",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork to sides of slab",
+                        "start_date": "2027-03-07",
+                        "finish_date": "2027-03-07",
+                        "children": []
+                      },
+                      {
+                        "name": "Electrical duct installation",
+                        "start_date": "2027-03-08",
+                        "finish_date": "2027-03-08",
+                        "children": []
+                      },
+                      {
+                        "name": "Plumbing pipe installation",
+                        "start_date": "2027-03-08",
+                        "finish_date": "2027-03-08",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting of suspended slab and beams",
+                        "start_date": "2027-03-09",
+                        "finish_date": "2027-03-09",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "SECOND FLOOR",
+                "start_date": "2027-03-10",
+                "finish_date": "2027-04-08",
+                "children": [
+                  {
+                    "name": "Masonry Blocks walls installation",
+                    "start_date": "2027-03-10",
+                    "finish_date": "2027-03-14",
+                    "children": []
+                  },
+                  {
+                    "name": "Columns",
+                    "start_date": "2027-03-15",
+                    "finish_date": "2027-03-18",
+                    "children": [
+                      {
+                        "name": "Fixing of steel Reinforcement",
+                        "start_date": "2027-03-15",
+                        "finish_date": "2027-03-16",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork",
+                        "start_date": "2027-03-17",
+                        "finish_date": "2027-03-17",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting",
+                        "start_date": "2027-03-18",
+                        "finish_date": "2027-03-18",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Top Slab & Staircase & Ring beam",
+                    "start_date": "2027-03-19",
+                    "finish_date": "2027-03-24",
+                    "children": [
+                      {
+                        "name": "Fixing of formwork to soffit of slab and sides of beams",
+                        "start_date": "2027-03-19",
+                        "finish_date": "2027-03-20",
+                        "children": []
+                      },
+                      {
+                        "name": "Reinforcement of suspended slab and beams",
+                        "start_date": "2027-03-21",
+                        "finish_date": "2027-03-22",
+                        "children": []
+                      },
+                      {
+                        "name": "Fixing of formwork to sides of slab",
+                        "start_date": "2027-03-22",
+                        "finish_date": "2027-03-22",
+                        "children": []
+                      },
+                      {
+                        "name": "Electrical duct installation",
+                        "start_date": "2027-03-23",
+                        "finish_date": "2027-03-23",
+                        "children": []
+                      },
+                      {
+                        "name": "Plumbing pipe installation",
+                        "start_date": "2027-03-23",
+                        "finish_date": "2027-03-23",
+                        "children": []
+                      },
+                      {
+                        "name": "Casting of suspended slab and beams",
+                        "start_date": "2027-03-24",
+                        "finish_date": "2027-03-24",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Roof Structure, Covering & Rain Water Goods",
+                "start_date": "2027-03-25",
+                "finish_date": "2027-04-08",
+                "children": [
+                  {
+                    "name": "Fixing Roof Structure",
+                    "start_date": "2027-03-25",
+                    "finish_date": "2027-03-31",
+                    "children": []
+                  },
+                  {
+                    "name": "Fixing roof covering",
+                    "start_date": "2027-04-01",
+                    "finish_date": "2027-04-05",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical duct installation",
+                    "start_date": "2027-04-06",
+                    "finish_date": "2027-04-06",
+                    "children": []
+                  },
+                  {
+                    "name": "Paintwork",
+                    "start_date": "2027-04-07",
+                    "finish_date": "2027-04-07",
+                    "children": []
+                  },
+                  {
+                    "name": "Fixing rain water goods",
+                    "start_date": "2027-04-08",
+                    "finish_date": "2027-04-08",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "FINISHES",
+            "start_date": "2027-04-09",
+            "finish_date": "2027-07-19",
+            "children": [
+              {
+                "name": "GROUND FLOOR",
+                "start_date": "2027-04-09",
+                "finish_date": "2027-05-03",
+                "children": [
+                  {
+                    "name": "Wall plaster, Floor screeding, Mechanical & Electrical 1st fix",
+                    "start_date": "2027-04-09",
+                    "finish_date": "2027-04-13",
+                    "children": []
+                  },
+                  {
+                    "name": "Steel Casement windows, Steel doors fixing & Balustrades",
+                    "start_date": "2027-04-14",
+                    "finish_date": "2027-04-16",
+                    "children": []
+                  },
+                  {
+                    "name": "Timber flush doors fixing",
+                    "start_date": "2027-04-17",
+                    "finish_date": "2027-04-19",
+                    "children": []
+                  },
+                  {
+                    "name": "Tiling Works",
+                    "start_date": "2027-04-20",
+                    "finish_date": "2027-04-23",
+                    "children": []
+                  },
+                  {
+                    "name": "Windows & doors glazing works",
+                    "start_date": "2027-04-24",
+                    "finish_date": "2027-04-25",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical Cable Pulling",
+                    "start_date": "2027-04-26",
+                    "finish_date": "2027-04-27",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical fittings",
+                    "start_date": "2027-04-28",
+                    "finish_date": "2027-04-28",
+                    "children": []
+                  },
+                  {
+                    "name": "Mechanical Fittings",
+                    "start_date": "2027-04-26",
+                    "finish_date": "2027-04-28",
+                    "children": []
+                  },
+                  {
+                    "name": "Internal Paintwork",
+                    "start_date": "2027-04-29",
+                    "finish_date": "2027-05-03",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FIRST FLOOR",
+                "start_date": "2027-05-04",
+                "finish_date": "2027-05-28",
+                "children": [
+                  {
+                    "name": "Wall plaster, Floor screeding, Mechanical & Electrical 1st fix",
+                    "start_date": "2027-05-04",
+                    "finish_date": "2027-05-08",
+                    "children": []
+                  },
+                  {
+                    "name": "Steel Casement windows, Steel doors fixing & Balustrades",
+                    "start_date": "2027-05-09",
+                    "finish_date": "2027-05-11",
+                    "children": []
+                  },
+                  {
+                    "name": "Timber flush doors fixing",
+                    "start_date": "2027-05-12",
+                    "finish_date": "2027-05-14",
+                    "children": []
+                  },
+                  {
+                    "name": "Tiling Works",
+                    "start_date": "2027-05-15",
+                    "finish_date": "2027-05-18",
+                    "children": []
+                  },
+                  {
+                    "name": "Windows & doors glazing works",
+                    "start_date": "2027-05-19",
+                    "finish_date": "2027-05-20",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical Cable Pulling",
+                    "start_date": "2027-05-21",
+                    "finish_date": "2027-05-22",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical fittings",
+                    "start_date": "2027-05-23",
+                    "finish_date": "2027-05-23",
+                    "children": []
+                  },
+                  {
+                    "name": "Mechanical Fittings",
+                    "start_date": "2027-05-21",
+                    "finish_date": "2027-05-23",
+                    "children": []
+                  },
+                  {
+                    "name": "Internal Paintwork",
+                    "start_date": "2027-05-24",
+                    "finish_date": "2027-05-28",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "SECOND FLOOR",
+                "start_date": "2027-05-29",
+                "finish_date": "2027-07-19",
+                "children": [
+                  {
+                    "name": "Wall plaster, Floor screeding, Mechanical & Electrical 1st fix",
+                    "start_date": "2027-05-29",
+                    "finish_date": "2027-06-02",
+                    "children": []
+                  },
+                  {
+                    "name": "Steel Casement windows, Steel doors fixing & Balustrades",
+                    "start_date": "2027-06-03",
+                    "finish_date": "2027-06-07",
+                    "children": []
+                  },
+                  {
+                    "name": "Timber flush doors fixing",
+                    "start_date": "2027-06-08",
+                    "finish_date": "2027-06-11",
+                    "children": []
+                  },
+                  {
+                    "name": "Gypsum Ceiling Fixing",
+                    "start_date": "2027-06-12",
+                    "finish_date": "2027-06-19",
+                    "children": []
+                  },
+                  {
+                    "name": "Tiling & Waterproofing Works",
+                    "start_date": "2027-06-20",
+                    "finish_date": "2027-06-29",
+                    "children": []
+                  },
+                  {
+                    "name": "Windows & doors glazing works",
+                    "start_date": "2027-06-30",
+                    "finish_date": "2027-07-01",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical Cable Pulling",
+                    "start_date": "2027-07-02",
+                    "finish_date": "2027-07-03",
+                    "children": []
+                  },
+                  {
+                    "name": "Electrical fittings",
+                    "start_date": "2027-07-04",
+                    "finish_date": "2027-07-04",
+                    "children": []
+                  },
+                  {
+                    "name": "Mechanical Fittings",
+                    "start_date": "2027-07-02",
+                    "finish_date": "2027-07-04",
+                    "children": []
+                  },
+                  {
+                    "name": "Internal Paintwork",
+                    "start_date": "2027-07-05",
+                    "finish_date": "2027-07-09",
+                    "children": []
+                  },
+                  {
+                    "name": "External Paint Work",
+                    "start_date": "2027-07-10",
+                    "finish_date": "2027-07-19",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
