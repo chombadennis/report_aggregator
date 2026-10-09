@@ -32,3 +32,6 @@ backend/tests/tests_output/
 backend/tests_monthly/monthly_test_outputs/
 backend/history_monthly_test/
 
+# --- Local State & Dynamic Data ---
+backend/standalone_scripts/locked_weeks.json
+backend/standalone_scripts/weekly_snapshots.json

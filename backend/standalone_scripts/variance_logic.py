@@ -20,9 +20,11 @@ def get_cumulative_progress(component, up_to_week):
         if snap['component'] == component and snap['week_number'] < up_to_week:
             for task in snap.get('tasks', []):
                 name = task['task_name']
+                path = task.get('path', '')
+                key = f"{path}::{name}" if path else name
                 pct = task['percentage']
-                if name not in cumulative or pct > cumulative[name]:
-                    cumulative[name] = pct
+                if key not in cumulative or pct > cumulative[key]:
+                    cumulative[key] = pct
     return cumulative
 
 def get_locked_weeks():
@@ -50,62 +52,65 @@ def load_schedule(component_name):
     with open(filepath, 'r') as f:
         return json.load(f)
 
-def find_task_in_hierarchy(tasks, target_name):
-    """Recursively searches for a task by name in the hierarchical schedule."""
+def find_task_in_hierarchy(tasks, target_name, target_path, current_path=""):
+    """Recursively searches for a task by name and path in the hierarchical schedule."""
     for task in tasks:
-        if task['name'].strip() == target_name.strip():
+        if task['name'].strip() == target_name.strip() and (current_path or "") == (target_path or ""):
             return task
         if task.get('children'):
-            found = find_task_in_hierarchy(task['children'], target_name)
+            new_path = f"{current_path} > {task['name']}" if current_path else task['name']
+            found = find_task_in_hierarchy(task['children'], target_name, target_path, new_path)
             if found:
                 return found
     return None
 
-def calculate_planned_date(start_date_str, finish_date_str, percentage):
+def calculate_variance_days(start_date_str, finish_date_str, report_date_str, percentage):
     """
-    Interpolates the planned date based on start date, finish date, and % complete.
-    If 100%, it returns finish_date. If 50%, it returns the midway date.
+    Calculates the variance in days based on specific reporting rules:
+    - If 100% complete, check against finish date.
+    - If started early (report < start), days ahead = start - report.
+    - If ongoing within timeline (start <= report <= finish), variance = 0 (On track).
+    - If ongoing but late (report > finish), days behind = finish - report.
     """
-    if percentage >= 100:
-        return datetime.strptime(finish_date_str, '%Y-%m-%d')
-    if percentage <= 0:
-        return datetime.strptime(start_date_str, '%Y-%m-%d')
-        
     start = datetime.strptime(start_date_str, '%Y-%m-%d')
     finish = datetime.strptime(finish_date_str, '%Y-%m-%d')
+    report = datetime.strptime(report_date_str, '%Y-%m-%d')
     
-    total_days = (finish - start).days
-    days_to_add = total_days * (percentage / 100.0)
+    if percentage >= 100:
+        if report < finish:
+            # Finished earlier than the planned finish date
+            return (finish - report).days
+        else:
+            # report >= finish: We know it was done by the reporting date, but don't know exactly when. Show Completed.
+            return "Completed"
     
-    return start + timedelta(days=days_to_add)
+    if percentage > 0:
+        if report < start:
+            return (start - report).days
+        elif report > finish:
+            return (finish - report).days
+        else:
+            return 0
+    
+    return 0
 
-def calculate_variance(planned_date, report_date_str):
-    """
-    Calculates the variance in days.
-    Variance = Planned Date - Report Date
-    Positive means ahead of schedule. Negative means behind schedule.
-    """
-    report_date = datetime.strptime(report_date_str, '%Y-%m-%d')
-    variance = (planned_date - report_date).days
-    return variance
-
-def save_weekly_snapshot(week_number, report_date_str, component, tasks, notes):
+def save_weekly_snapshot(week_number, report_date_str, component, tasks, notes, source_id=None):
     """
     Calculates variance, creates a snapshot record, and saves it to the JSON datastore.
     """
     # 1. Load the corresponding schedule
-    schedule = load_schedule(component)
+    schedule_file_name = source_id if source_id else component
+    schedule = load_schedule(schedule_file_name)
     
     task_records = []
-    total_variance = 0
-    valid_tasks = 0
 
     for t in tasks:
         task_name = t['task_name']
         percentage = t['percentage']
         
+        task_path = t.get('path', '')
         # 2. Find the task
-        task = find_task_in_hierarchy(schedule, task_name)
+        task = find_task_in_hierarchy(schedule, task_name, task_path)
         if not task:
             continue
             
@@ -115,30 +120,23 @@ def save_weekly_snapshot(week_number, report_date_str, component, tasks, notes):
         if not start or not finish:
             continue
             
-        # 3. Calculate Planned Date & Variance
-        planned_date = calculate_planned_date(start, finish, percentage)
-        variance_days = calculate_variance(planned_date, report_date_str)
+        # 3. Calculate Variance
+        variance_days = calculate_variance_days(start, finish, report_date_str, percentage)
         
         task_records.append({
             "task_name": task_name,
             "percentage": percentage,
             "path": t.get('path', ''),
-            "planned_date": planned_date.strftime('%Y-%m-%d'),
+            "planned_date": finish, # Keeping finish date as a reference
             "variance_days": variance_days
         })
-        
-        total_variance += variance_days
-        valid_tasks += 1
 
-    overall_variance = round(total_variance / valid_tasks) if valid_tasks > 0 else 0
-    
     # 4. Create record
     record = {
         "week_number": week_number,
         "report_date": report_date_str,
         "component": component,
         "tasks": task_records,
-        "variance_days": overall_variance,
         "notes": notes,
         "timestamp": datetime.now().isoformat()
     }

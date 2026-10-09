@@ -6,7 +6,7 @@ import os
 import uuid
 import asyncio
 import json
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from parser import ReportParser
 from aggregator import Aggregator
@@ -57,6 +57,7 @@ class SnapshotRequest(BaseModel):
     week_number: int
     report_date_str: str
     component: str
+    source_id: Optional[str] = None
     tasks: List[TaskProgress]
     notes: str = ""
 
@@ -182,18 +183,25 @@ async def check_duplicate(title: str, current_user: dict = Depends(get_current_u
     exists = aggregator.check_duplicate(title)
     return {"exists": exists}
 
-@app.get("/api/variance/schedules/{component}")
-async def get_schedule(component: str, week_number: int = None, current_user: dict = Depends(get_current_user)):
+@app.get("/api/variance/schedules/{source_id}")
+async def get_schedule(source_id: str, component_id: str = None, week_number: int = None, current_user: dict = Depends(get_current_user)):
     try:
-        schedule = load_schedule(component)
-        if week_number:
-            cumulative = get_cumulative_progress(component, week_number)
-            def annotate(tasks):
+        schedule = load_schedule(source_id)
+        if week_number and component_id:
+            cumulative = get_cumulative_progress(component_id, week_number)
+            def annotate(tasks, current_path=""):
                 for t in tasks:
-                    if t['name'] in cumulative:
-                        t['previous_percentage'] = cumulative[t['name']]
+                    t_name = t['name']
+                    key = f"{current_path}::{t_name}" if current_path else t_name
+                    if key in cumulative:
+                        t['previous_percentage'] = cumulative[key]
+                    elif t_name in cumulative:
+                        # Fallback for older snapshots without path
+                        t['previous_percentage'] = cumulative[t_name]
+
                     if t.get('children'):
-                        annotate(t['children'])
+                        new_path = f"{current_path} > {t_name}" if current_path else t_name
+                        annotate(t['children'], new_path)
             annotate(schedule)
         return schedule
     except FileNotFoundError:
@@ -209,7 +217,8 @@ async def save_snapshot(req: SnapshotRequest, current_user: dict = Depends(requi
             report_date_str=req.report_date_str,
             component=req.component,
             tasks=[{"task_name": t.task_name, "percentage": t.percentage, "path": t.path} for t in req.tasks],
-            notes=req.notes
+            notes=req.notes,
+            source_id=req.source_id
         )
         return {"status": "success", "record": record}
     except Exception as e:

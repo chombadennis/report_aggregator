@@ -11,16 +11,34 @@ def parse_excel_schedule(filepath):
     wb = openpyxl.load_workbook(filepath, data_only=True)
     sheet = wb.active
     
-    # We assume columns: [Task Name, Start Date, Finish Date]
-    rows = list(sheet.iter_rows(min_row=2, max_col=3))
+    # Find columns dynamically based on header
+    header_row = list(sheet.iter_rows(min_row=1, max_row=1))[0]
+    headers = [str(cell.value).strip().lower() if cell.value else "" for cell in header_row]
+    
+    # Defaults for older excel files without proper headers or different columns
+    task_col_idx = 0
+    start_col_idx = 1
+    finish_col_idx = 2
+    
+    if 'task name' in headers:
+        task_col_idx = headers.index('task name')
+    if 'start date' in headers:
+        start_col_idx = headers.index('start date')
+    if 'finish date' in headers:
+        finish_col_idx = headers.index('finish date')
+
+    rows = list(sheet.iter_rows(min_row=2))
     
     root_tasks = []
     stack = []  # will hold tuples of (node_dict, indent_level)
     
     for row in rows:
-        task_cell = row[0]
-        start_cell = row[1]
-        finish_cell = row[2]
+        if len(row) <= max(task_col_idx, start_col_idx, finish_col_idx):
+            continue
+
+        task_cell = row[task_col_idx]
+        start_cell = row[start_col_idx]
+        finish_cell = row[finish_col_idx]
         
         if not task_cell.value:
             continue
