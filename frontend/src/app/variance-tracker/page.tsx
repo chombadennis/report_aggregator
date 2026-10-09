@@ -507,10 +507,12 @@ export default function VarianceTracker() {
   if (!isLoaded || !userId) return null;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <NavigationPanel />
+    <main className={`min-h-screen bg-slate-50 text-slate-900 font-sans ${reportModalOpen ? 'print:bg-white' : ''}`}>
+      <div className={reportModalOpen ? 'print:hidden' : ''}>
+        <NavigationPanel />
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 ${reportModalOpen ? 'print:hidden' : ''}`}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Schedule Variance Tracker</h1>
           <p className="text-slate-500 mt-2">Track time-based schedule performance per component</p>
@@ -922,14 +924,14 @@ export default function VarianceTracker() {
       )}
 
       {reportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white p-8 max-w-6xl w-full shadow-lg border border-slate-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:static print:bg-transparent print:p-0 print:block">
+          <div className="bg-white p-8 max-w-6xl w-full shadow-lg border border-slate-200 flex flex-col max-h-[90vh] print:max-w-none print:w-full print:max-h-none print:h-auto print:shadow-none print:border-none print:block print:p-0">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-800">Weekly Summary Report: Week {selectedWeek} (Ending {getDisplayDateForWeek(selectedWeek)})</h2>
-              <button onClick={() => setReportModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+              <button onClick={() => setReportModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-2xl font-bold print:hidden">&times;</button>
             </div>
 
-            <div className="overflow-y-auto flex-1 mb-6 pr-2">
+            <div className="overflow-y-auto flex-1 mb-6 pr-2 print:overflow-visible print:h-auto print:mb-0 print:pr-0">
               <table className="w-full text-left border-collapse text-sm">
                 <thead className="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider sticky top-0 z-10 shadow-sm">
                   <tr>
@@ -984,7 +986,7 @@ export default function VarianceTracker() {
               </table>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex justify-end">
+            <div className="pt-4 border-t border-slate-100 flex justify-end print:hidden">
               <button
                 onClick={() => window.print()}
                 className="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-sm mr-4"
@@ -1003,7 +1005,9 @@ export default function VarianceTracker() {
       )}
 
       {/* Footer Panel */}
-      <Footer />
+      <div className={reportModalOpen ? 'print:hidden' : ''}>
+        <Footer />
+      </div>
     </main>
   );
 }
