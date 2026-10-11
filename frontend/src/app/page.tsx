@@ -186,57 +186,229 @@ export default function LandingPage() {
       {/* ── NAV ─────────────────────────────────────── */}
       <NavigationPanel />
 
-      {/* ── HERO ────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white pt-14">
+      {/* ── HERO (Full-Width Arrakis Defense AI Inspired Split Layout) ── */}
+      <section className="relative w-full overflow-hidden bg-white pt-8 pb-16 lg:py-20 border-b border-stone-200/70">
+        {/* Ambient background glows */}
         <div ref={heroRef} className="absolute inset-0 pointer-events-none will-change-transform">
-          <Orb className="w-[620px] h-[620px] bg-sunflower-gold-200 top-[-140px] left-[-180px] animate-pulse" />
-          <Orb className="w-[520px] h-[520px] bg-vivid-tangerine-200 bottom-[-100px] right-[-120px] animate-pulse [animation-delay:1.5s]" />
-          <Orb className="w-[280px] h-[280px] bg-vanilla-custard-300 top-1/3 left-1/2 -translate-x-1/2 animate-pulse [animation-delay:3s]" />
+          <Orb className="w-[720px] h-[720px] bg-sunflower-gold-200/60 top-[-160px] left-[-140px] animate-pulse" />
+          <Orb className="w-[640px] h-[640px] bg-vivid-tangerine-200/50 bottom-[-120px] right-[-100px] animate-pulse [animation-delay:1.5s]" />
+          <Orb className="w-[360px] h-[360px] bg-vanilla-custard-300/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse [animation-delay:3s]" />
         </div>
-        <div className="absolute inset-0 pointer-events-none opacity-[0.032]"
-          style={{ backgroundImage: "linear-gradient(#994f00 1px,transparent 1px),linear-gradient(90deg,#994f00 1px,transparent 1px)", backgroundSize: "40px 40px" }}
+
+        {/* Subtle high-tech blueprint grid */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.035]"
+          style={{
+            backgroundImage: "linear-gradient(#994f00 1px,transparent 1px),linear-gradient(90deg,#994f00 1px,transparent 1px)",
+            backgroundSize: "48px 48px"
+          }}
         />
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 py-28 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-700 text-xs font-bold uppercase tracking-widest mb-8 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-vivid-tangerine-500 animate-pulse" />
-            Field Reporting &amp; Site Analytics Platform
-          </div>
+        {/* Full-width container spanning the screen */}
+        <div className="relative z-10 w-full max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
+          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-10 xl:gap-14">
 
-          <h1 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight font-serif bg-gradient-to-r from-sunflower-gold-600 via-vivid-tangerine-500 to-vivid-tangerine-700 bg-clip-text text-transparent py-2 leading-[1.15]">
-            Vektra
-            <br />
-            <span className="text-2xl md:text-3xl font-serif font-semibold">Report Aggregator</span>
-          </h1>
+            {/* Left Column: Command & Content */}
+            <div className="flex-1 flex flex-col justify-between py-2 sm:py-4">
+              <div>
+                {/* Main Headline */}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold tracking-tight font-serif bg-gradient-to-r from-sunflower-gold-600 via-vivid-tangerine-500 to-vivid-tangerine-700 bg-clip-text text-transparent leading-[1.15] mb-5">
+                  Vektra
+                  <span className="text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-stone-800 block mt-1.5 tracking-normal">
+                    Field Reporting &amp; Site Analytics Platform
+                  </span>
+                </h1>
 
-          <p className="text-base md:text-lg text-vivid-tangerine-800 mb-4 max-w-2xl mx-auto font-medium leading-relaxed">
-            A unified smart platform for site reporting, parsing daily logs, generating weekly and monthly reports,
-            tracking S-curve production analytics, evaluating project finances, and analysing contractor correspondence,
-            EOT claims, and legal documents.
-          </p>
+                {/* Description */}
+                <p className="text-base sm:text-lg text-vivid-tangerine-800 font-medium leading-relaxed max-w-2xl mb-8">
+                  A unified smart platform for site reporting, parsing daily logs, generating weekly and monthly reports,
+                  tracking S-curve production analytics, evaluating project finances, and analysing contractor correspondence,
+                  EOT claims, and other documents.
+                </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-            {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "EVM", "S-Curve Analytics", "Claims Analysis", "Document Analysis"].map((t) => (
-              <span key={t} className="text-[10px] font-black uppercase tracking-wide px-3 py-1.5 bg-vanilla-custard-100 border border-vanilla-custard-200 text-vivid-tangerine-600 rounded-none">
-                {t}
-              </span>
-            ))}
-          </div>
+                {/* Primary CTA Buttons */}
+                <RevealWrapper direction="up" delay={0.15}>
+                  <div className="flex flex-wrap items-center gap-3.5 mb-10">
+                    <Link
+                      href="/dashboard"
+                      className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-vivid-tangerine-600 hover:bg-vivid-tangerine-700 text-white rounded-lg font-bold text-sm shadow-md shadow-vivid-tangerine-500/20 hover:shadow-lg hover:shadow-vivid-tangerine-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150"
+                    >
+                      <span>Launch Dashboard</span>
+                      <span className="group-hover:translate-x-1 transition-transform duration-150">
+                        <Icon.ChevronRight />
+                      </span>
+                    </Link>
+                    <Link
+                      href="/trends"
+                      className="inline-flex items-center px-7 py-3.5 bg-white/90 hover:bg-vanilla-custard-50 text-vivid-tangerine-700 border border-stone-200/80 rounded-lg font-bold text-sm hover:border-vivid-tangerine-300 hover:shadow-sm transition-all duration-150"
+                    >
+                      View Trends
+                    </Link>
+                  </div>
+                </RevealWrapper>
+              </div>
 
-          <RevealWrapper direction="up" delay={0.2}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/dashboard" className="group flex items-center gap-2 px-8 py-3.5 bg-vivid-tangerine-600 text-white rounded-none font-bold text-sm shadow-lg shadow-vivid-tangerine-200/50 hover:bg-vivid-tangerine-700 hover:scale-[1.02] transition-all">
-                Launch Dashboard
-                <span className="group-hover:translate-x-1 transition-transform"><Icon.ChevronRight /></span>
-              </Link>
-              <Link href="/trends" className="px-8 py-3.5 bg-white/80 backdrop-blur text-vivid-tangerine-700 border border-vanilla-custard-200 rounded-none font-bold text-sm hover:bg-vanilla-custard-50 hover:shadow-md transition-all shadow-sm">
-                View Trends
-              </Link>
+              {/* Feature Tags Strip */}
+              <div className="pt-6 border-t border-stone-200/60">
+                <div className="flex flex-wrap items-center gap-2">
+                  {["Daily Logs", "Weekly Reports", "Monthly Reports", "Progress Reports", "EVM", "S-Curve Analytics", "Claims Analysis", "Document Analysis"].map((t) => (
+                    <span
+                      key={t}
+                      className="text-[11px] font-semibold tracking-wide px-3 py-1 bg-stone-50 hover:bg-vanilla-custard-100 border border-stone-200/70 text-stone-700 rounded-md transition-colors"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-          </RevealWrapper>
-        </div>
 
-        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-vanilla-custard-50 to-transparent pointer-events-none" />
+            {/* Right Column: High-Tech Interactive Preview Console (Arrakis style) */}
+            <div className="w-full lg:w-5/12 xl:w-[46%] shrink-0 flex flex-col justify-between gap-4">
+
+              {/* Header Bar: Status & Telemetry */}
+              <div className="flex items-center justify-between px-4 py-2 bg-stone-900 text-stone-300 rounded-t-xl border border-stone-800 text-[11px] font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="tracking-wider uppercase text-stone-200 font-semibold">SITE ANALYTICS ENGINE</span>
+                </div>
+                <div className="flex items-center gap-2 text-stone-400">
+                  <span className="px-1.5 py-0.5 rounded bg-stone-800 text-[10px] text-amber-400 font-medium">LIVE</span>
+                </div>
+              </div>
+
+              {/* Main Technical Viewport / Mockup Card */}
+              <div className="relative rounded-b-xl border-x border-b border-stone-200/80 bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 text-white p-5 sm:p-6 shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
+
+                {/* Tech Grid Background inside card */}
+                <div
+                  className="absolute inset-0 opacity-[0.08] pointer-events-none"
+                  style={{
+                    backgroundImage: "linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)",
+                    backgroundSize: "24px 24px"
+                  }}
+                />
+
+                {/* Card Top Telemetry */}
+                <div className="relative z-10 flex items-center justify-between pb-4 border-b border-stone-800/80">
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400">HERMITE S-CURVE TELEMETRY</p>
+                    <h3 className="text-base font-bold text-white font-serif mt-0.5">Cumulative Earned vs Envisaged</h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-vivid-tangerine-500/20 text-vivid-tangerine-400 border border-vivid-tangerine-500/40">
+                    REAL-TIME
+                  </span>
+                </div>
+
+                {/* S-Curve Graphic Visualizer */}
+                <div className="relative z-10 py-5">
+                  <div className="h-44 sm:h-48 w-full flex items-center justify-center relative">
+                    {/* SVG Curve Canvas */}
+                    <svg className="w-full h-full overflow-visible" viewBox="0 0 400 160" fill="none">
+                      <defs>
+                        <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#fcba36" />
+                          <stop offset="60%" stopColor="#ff8400" />
+                          <stop offset="100%" stopColor="#ff9c33" />
+                        </linearGradient>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#ff8400" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#ff8400" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Grid Lines */}
+                      <line x1="20" y1="30" x2="380" y2="30" stroke="#333" strokeDasharray="3 3" strokeWidth="0.8" />
+                      <line x1="20" y1="75" x2="380" y2="75" stroke="#333" strokeDasharray="3 3" strokeWidth="0.8" />
+                      <line x1="20" y1="120" x2="380" y2="120" stroke="#333" strokeDasharray="3 3" strokeWidth="0.8" />
+
+                      {/* Actual Earned Production Area Under Curve (with realistic site fluctuations) */}
+                      <path
+                        d="M 20 140 C 38 138, 52 135, 68 134 C 84 133, 94 122, 112 119 C 128 116, 138 103, 154 99 C 170 95, 182 78, 202 70 C 214 65, 222 54, 230 46 C 245 36, 258 40, 276 33 C 294 26, 310 28, 332 21 C 350 16, 365 18, 380 14 L 380 145 L 20 145 Z"
+                        fill="url(#areaGradient)"
+                      />
+
+                      {/* Baseline Planned S-Curve (Smooth mathematical Hermite S-Curve benchmark) */}
+                      <path
+                        d="M 20 140 C 110 138, 170 100, 230 76 C 290 52, 340 40, 380 38"
+                        stroke="#71717a"
+                        strokeWidth="1.8"
+                        strokeDasharray="4 4"
+                        fill="none"
+                      />
+
+                      {/* Actual Production Curve (Realistic fluctuating site curve running above planned) */}
+                      <path
+                        d="M 20 140 C 38 138, 52 135, 68 134 C 84 133, 94 122, 112 119 C 128 116, 138 103, 154 99 C 170 95, 182 78, 202 70 C 214 65, 222 54, 230 46 C 245 36, 258 40, 276 33 C 294 26, 310 28, 332 21 C 350 16, 365 18, 380 14"
+                        stroke="url(#curveGradient)"
+                        strokeWidth="2.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+
+                      {/* Vertical Difference Indicator at same X point (x = 230) */}
+                      {/* Vertical Guide Extension to X axis */}
+                      <line x1="230" y1="76" x2="230" y2="140" stroke="#52525b" strokeDasharray="2 2" strokeWidth="0.8" />
+
+                      {/* Curly Brace between Actual (y=46) and Planned (y=76) */}
+                      <path
+                        d="M 231 47 C 233 47, 234 50, 234 54 L 234 57 C 234 59.5, 236 61, 238 61 C 236 61, 234 62.5, 234 65 L 234 68 C 234 72, 233 75, 231 75"
+                        stroke="#ff8400"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+
+                      {/* Top cap at Actual Point */}
+                      <circle cx="230" cy="46" r="3.5" fill="#ff8400" stroke="#ffffff" strokeWidth="1.5" />
+
+                      {/* Bottom cap at Planned Point */}
+                      <circle cx="230" cy="76" r="3" fill="#a1a1aa" stroke="#27272a" strokeWidth="1" />
+
+                      {/* Curve Legends */}
+                      <text x="380" y="13" fill="#ff9c33" fontSize="9" fontFamily="monospace" textAnchor="end" fontWeight="bold">Actual Production</text>
+                      <text x="380" y="50" fill="#a1a1aa" fontSize="9" fontFamily="monospace" textAnchor="end">Planned S-Curve</text>
+
+                      {/* Delta Callout Box at the vertical curly brace cusp */}
+                      <g transform="translate(243, 49)">
+                        <rect width="80" height="24" rx="4" fill="#18181b" stroke="#ff8400" strokeWidth="1" />
+                        <text x="40" y="16" fill="#34d399" fontSize="10" fontFamily="monospace" textAnchor="middle" fontWeight="bold">+12.4% Δ</text>
+                      </g>
+                    </svg>
+                  </div>
+
+                  {/* Velocity Metrics Row */}
+                  <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-stone-800">
+                    <div className="p-2 rounded bg-stone-900/80 border border-stone-800/80 text-center">
+                      <span className="block text-[9px] font-mono text-stone-400 uppercase">Velocity</span>
+                      <span className="text-xs font-bold text-amber-400 font-mono">1.18x Plan</span>
+                    </div>
+                    <div className="p-2 rounded bg-stone-900/80 border border-stone-800/80 text-center">
+                      <span className="block text-[9px] font-mono text-stone-400 uppercase">Production Variance</span>
+                      <span className="text-xs font-bold text-emerald-400 font-mono">+12.4%</span>
+                    </div>
+                    <div className="p-2 rounded bg-stone-900/80 border border-stone-800/80 text-center">
+                      <span className="block text-[9px] font-mono text-stone-400 uppercase">Concrete Casting</span>
+                      <span className="text-xs font-bold text-stone-200 font-mono">On Track</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Bottom: Operational Analytics Pill */}
+                <div className="relative z-10 p-3 rounded-lg bg-stone-900/90 border border-stone-800 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-vivid-tangerine-500 animate-pulse" />
+                    <span className="font-mono text-stone-300 text-[11px]">Vision NLP &amp; Trend Analysis</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-vivid-tangerine-400 font-semibold tracking-wider uppercase">ONLINE</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </section>
 
       {/* ── STATS ───────────────────────────────────── */}

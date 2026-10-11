@@ -294,12 +294,21 @@ class FinancialEngine:
             # 2. Rolling Target (Dynamic Milestone)
             if is_ongoing:
                 if len(group) > 0:
-                    last_day_match = re.search(r'(\d+)(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', group[-1]["label"], re.IGNORECASE)
-                    q = int(last_day_match.group(1)) if last_day_match else 0
+                    # Determine how many days into this month have already been reported
+                    if end_dt.year == year and end_dt.month == month_num:
+                        q = min(days_in_month, max(0, end_dt.day))
+                    elif (end_dt.year * 12 + end_dt.month) < (year * 12 + month_num):
+                        q = 0
+                    else:
+                        # Fallback parsing from end part of label
+                        parts = re.split(r'[-–—]', group[-1]["label"])
+                        end_part = parts[-1] if len(parts) >= 2 else group[-1]["label"]
+                        last_day_match = re.search(r'(\d+)', end_part)
+                        q = int(last_day_match.group(1)) if last_day_match else 0
                 else:
                     q = 0
                 
-                w = days_in_month - q
+                w = max(0, days_in_month - q)
                 H = k_rate * w
                 target_rolling_month_end = round(m_end_pct + H, 2)
                 production_required_rolling = round(H, 2)
