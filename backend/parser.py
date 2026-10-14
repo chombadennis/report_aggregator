@@ -38,7 +38,7 @@ class ReportParser:
           The TOTAL row at the bottom of the labour table MUST also be extracted and stored under the key "TOTAL".
 
         ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
-        ║   !!! CRITICAL WARNING: SECTION F and SECTION Q ARE COMPLETELY INDEPENDENT ENTITIES !!!         ║
+        ║   !!! CRITICAL WARNING: SECTION F and SUMMARY OF WORKS ARE INDEPENDENT ENTITIES !!!             ║
         ║                                                                                                  ║
         ║   Their content must NEVER be placed in the other's JSON field — however similar they appear.   ║
         ║   Content of each section MUST remain in its own section and must NOT be copied to the other,   ║
@@ -49,18 +49,18 @@ class ReportParser:
           → Writes to JSON field: "building_works"
           → This page title starts with the letter "F." and describes ONLY what was physically done TODAY on site.
           → Example content: "Steel fixing to raft foundation", "Casting of blinding", "Fixing of formwork"
-          → RULE: If the page title/header contains "Q." or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {{}} for that page. Do NOT read from it.
+          → RULE: If the page title/header contains "P.", "Q.", or "SUMMARY OF WORKS DONE TO DATE", set "building_works" to {{}} for that page. Do NOT read from it.
 
-        SECTION Q — "Q. SUMMARY OF WORKS DONE TO DATE"  
+        SUMMARY OF WORKS — "SUMMARY OF WORKS DONE TO DATE" (Section P in new format, Section Q in legacy format)
           → Writes to JSON field: "summary_of_works"
-          → This page title starts with the letter "Q." and lists CUMULATIVE work done since the start of the project, per block.
+          → This page title starts with "P. SUMMARY OF WORKS DONE TO DATE" or "Q. SUMMARY OF WORKS DONE TO DATE" and lists CUMULATIVE work done since the start of the project, per block.
           → Example content: "BLOCK B1: Site clearance; Setting out; Mass excavation...", "SWIMMING POOL: None"
           → CRITICAL: Separate multiple activities with a semicolon ( ; ).
           → RULE: If the page title/header contains "F." or "WORKS CARRIED OUT ON SITE", set "summary_of_works" to {{}} for that page. Do NOT read from it.
 
         FINAL VERIFICATION: Before returning your JSON, ask yourself:
           - Does "building_works" contain ONLY today's activities from Section F? (No block-by-block cumulative lists)
-          - Does "summary_of_works" contain ONLY the cumulative history from Section Q? (No today's tasks)
+          - Does "summary_of_works" contain ONLY the cumulative history from Section P or Q? (No today's tasks)
           If either answer is NO, correct your output before returning.
         ════════════════════════════════════════════════════════════════════════
 
@@ -71,7 +71,7 @@ class ReportParser:
           Always extract 'units' as the unit of measure ONLY (e.g. "ft", "tons", "pcs", "bags", "tippers"). NEVER leave 'units' empty if a unit is visible in the table.
 
         - VISITORS: Locate the visitors section and extract the exact text verbatim (e.g. "2 visitors on site").
-        - INTERNS: Locate the dedicated Intern/Interns section of the report (independent of the Labour table; it may be headed as 'INTERN', 'INTERNS', 'INTERN-SDHUD', 'INTERNS-SDHUD', or similar variations, case-insensitive). Extract the specific types of interns (e.g., 'TVETS', 'SDHUD') and their counts/names into the interns dictionary. Do NOT mix this with the Labour table.
+        - INTERNS: If a separate dedicated Intern/Interns section is present (e.g. 'INTERN', 'INTERNS', 'INTERN-SDHUD', 'INTERNS-SDHUD', independent of the Labour table), extract the specific types and counts. If no separate Interns section exists in the report, return an empty object {{}}. Do NOT extract from the Labour Turnover table into this field.
         
         Return the data in perfect JSON matching this schema:
         - If the page DOES NOT contain ANY of the target sections (e.g. it's just a cover page or photos), return an empty object {{}} or null for all fields. 
@@ -85,37 +85,37 @@ class ReportParser:
         
         !!! CRITICAL DATE MAPPING RULE !!!
         1. Read the COVER PAGE to identify the REPORTING PERIOD (e.g. 13th - 19th April 2026).
-           CRITICAL: IGNORE any dates found in 'Site Instructions' or 'Materials' tables when determining the year. ONLY use the Cover Page.
+            CRITICAL: IGNORE any dates found in 'Site Instructions' or 'Materials' tables when determining the year. ONLY use the Cover Page.
         2. Calculate the 7 dates for the week: Monday is the first date, Sunday is the last.
-           - Example: "30th March - 5th April 2026" -> 
-             * Monday 2026-03-30
-             * Tuesday 2026-03-31
-             * Wednesday 2026-04-01
-             * ... etc.
+            - Example: "30th March - 5th April 2026" -> 
+              * Monday 2026-03-30
+              * Tuesday 2026-03-31
+              * Wednesday 2026-04-01
+              * ... etc.
         3. YOU MUST USE THIS EXACT FORMAT "YYYY-MM-DD" AS KEYS in 'labour_daily' and 'weather_daily'.
-           - Example Key: "2026-03-30"
-           - NEVER use "Mon", "Monday", or "Day YYYY-MM-DD". 
-           - VERIFY THE YEAR: If the cover says 2026, all dates MUST be in 2026.
+            - Example Key: "2026-03-30"
+            - NEVER use "Mon", "Monday", or "Day YYYY-MM-DD". 
+            - VERIFY THE YEAR: If the cover says 2026, all dates MUST be in 2026.
         !!! END OF CRITICAL RULE !!!
 
         1. READ section A (Contract Details/Project Info) ONLY to extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done'. SKIP sections B to D.
         2. FOCUS ON the following sections: 
-           - CONTRACT DETAILS: Extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done' into the keys: time_lapsed_weeks, pct_period_elapsed, pct_work_done.
-           - SITE REPORT: Progress details.
-           - WORKS CARRIED OUT ON SITE: Day-by-day activities.
-           - MATERIALS DELIVERED TO SITE: Extract description, quantity, and units.
-           - LABOUR TURNOVER: Map Mon-Sun columns to the CORRECT "Day YYYY-MM-DD" dates.
-             * EXHAUSTIVE: Capture EVERY row in the table (Site Agent, Foreman, Mason, Electrician, Steel fixers, Unskilled, Security, Interns, TOTAL, etc).
-             * IMPORTANT: If the table spans multiple pages, extract every row visible on THIS page. Do not skip any rows.
-             * Values exactly as written (e.g. "4(m)", "13(12m,1f)"). "0" for dash.
-           - WEATHER: Map Mon-Sun to "Day YYYY-MM-DD" dates.
-           - MACHINES AND EQUIPMENT: Name, qty, condition, status.
-           - SITE INSTRUCTIONS: Ref No, Instruction, Date, Issued By.
-           - SECURITY / HEALTH AND SAFETY: Verbatim prose and incident counts.
-           - CHALLENGES / PENDING ISSUES: List of challenges.
-           - Q. SUMMARY OF WORKS DONE TO DATE: List the cumulative history per block.
-             * IMPORTANT: Separate each activity with a semicolon ( ; ).
-             * Example: "Setting out; Casting of foundation; Columns to 1st floor"
+            - CONTRACT DETAILS: Extract 'Time Lapsed in Weeks', '% contract period elapsed', and '% work done' into the keys: time_lapsed_weeks, pct_period_elapsed, pct_work_done.
+            - SITE REPORT: Progress details.
+            - WORKS CARRIED OUT ON SITE: Day-by-day activities.
+            - MATERIALS DELIVERED TO SITE: Extract description, quantity, and units.
+            - LABOUR TURNOVER: Map Mon-Sun columns to the CORRECT "Day YYYY-MM-DD" dates.
+              * EXHAUSTIVE: Capture EVERY row in the table (Site Agent, Foreman, Mason, Electrician, Steel fixers, Unskilled, Security, Interns, TOTAL, etc).
+              * IMPORTANT: If the table spans multiple pages, extract every row visible on THIS page. Do not skip any rows.
+              * Values exactly as written (e.g. "4(m)", "13(12m,1f)"). "0" for dash.
+            - WEATHER: Map Mon-Sun to "Day YYYY-MM-DD" dates.
+            - MACHINES AND EQUIPMENT: Name, qty, condition, status.
+            - SITE INSTRUCTIONS: Ref No, Instruction, Date, Issued By.
+            - SECURITY / HEALTH AND SAFETY: Verbatim prose and incident counts.
+            - CHALLENGES / PENDING ISSUES: List of challenges.
+            - SUMMARY OF WORKS DONE TO DATE (Section P in new format, Section Q in legacy format): List the cumulative history per block.
+              * IMPORTANT: Separate each activity with a semicolon ( ; ).
+              * Example: "Setting out; Casting of foundation; Columns to 1st floor"
         
         Return the data in perfect JSON matching this schema:
         {schema}

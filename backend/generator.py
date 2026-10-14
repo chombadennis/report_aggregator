@@ -187,9 +187,11 @@ class ReportGenerator:
         if summary_table:
             self._fill_summary_works_table(summary_table, data.get("summary_to_date", {}))
         else:
-            _, heading_para = self._find_para_by_text(doc, "Q. SUMMARY OF WORK")
-            if not heading_para:
-                _, heading_para = self._find_para_by_text(doc, "SUMMARY OF WORKS DONE TO DATE")
+            heading_para = None
+            for search_term in ["P. SUMMARY OF WORK", "Q. SUMMARY OF WORK", "SUMMARY OF WORKS DONE TO DATE", "SUMMARY OF WORK"]:
+                _, heading_para = self._find_para_by_text(doc, search_term)
+                if heading_para:
+                    break
             if heading_para and data.get("summary_to_date"):
                 self._insert_table_after_para(doc, heading_para, data.get("summary_to_date", {}))
 
