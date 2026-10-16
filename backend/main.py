@@ -179,7 +179,42 @@ async def ping():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 @app.get("/api/check-duplicate")
-async def check_duplicate(title: str, current_user: dict = Depends(get_current_user)):
+async def check_duplicate(
+    title: str = "",
+    mode: str = "weekly",
+    reporting_period: str = ""
+):
+    if mode == "monthly":
+        m_num, m_name, yr = monthly_aggregator.extract_full_month_and_year(reporting_period)
+        if not m_num or not yr:
+            m_num, m_name, yr = monthly_aggregator.extract_full_month_and_year(title)
+
+        if m_num and yr:
+            exists, existing_title, filename = monthly_aggregator.check_duplicate(m_num, yr)
+            if exists:
+                return {
+                    "exists": True,
+                    "month_name": m_name,
+                    "year": yr,
+                    "formatted_period": f"{m_name} {yr}",
+                    "title": existing_title,
+                    "message": f"Report for {m_name} {yr} already aggregated."
+                }
+            return {
+                "exists": False,
+                "month_name": m_name,
+                "year": yr,
+                "formatted_period": f"{m_name} {yr}",
+                "message": ""
+            }
+
+        is_shortcut = monthly_aggregator.has_shortcut_month(reporting_period) or monthly_aggregator.has_shortcut_month(title)
+        return {
+            "exists": False,
+            "has_shortcut": is_shortcut,
+            "message": "Shortcuts are not allowed. Please input a full month name and 4-digit year." if is_shortcut else ""
+        }
+
     exists = aggregator.check_duplicate(title)
     return {"exists": exists}
 
@@ -320,6 +355,32 @@ async def generate_monthly_stream(
 
     async def event_generator():
         try:
+            # 1. Strict title format check: MONTHLY REPORT (APRIL 2026)
+            is_valid_title, title_err, t_month, t_year = monthly_aggregator.validate_monthly_title(title)
+            if not is_valid_title:
+                yield f"data: {json.dumps({'status': 'error', 'msg': title_err})}\n\n"
+                return
+
+            # 2. Strict reporting period check: full month (not shortcut) and 4-digit year
+            if monthly_aggregator.has_shortcut_month(report_date):
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'Reporting Period contains an abbreviated/shortcut month name. Shortcuts are not allowed. Please enter the full month name (e.g. APRIL 2026).'})}\n\n"
+                return
+
+            p_month_num, p_month_name, p_year = monthly_aggregator.extract_full_month_and_year(report_date)
+            if not p_month_num or not p_year:
+                yield f"data: {json.dumps({'status': 'error', 'msg': 'Reporting Period must contain the full month name and 4-digit year (e.g. APRIL 2026). Scanning cannot proceed.'})}\n\n"
+                return
+
+            if t_month != p_month_name or t_year != p_year:
+                yield f"data: {json.dumps({'status': 'error', 'msg': f'Report Title month ({t_month} {t_year}) does not match Reporting Period ({p_month_name} {p_year}).'})}\n\n"
+                return
+
+            # 3. Duplicate check: prevent re-aggregating an existing monthly report
+            is_dup, dup_title, dup_file = monthly_aggregator.check_duplicate(p_month_num, p_year)
+            if is_dup:
+                yield f"data: {json.dumps({'status': 'error', 'msg': f'Report for {p_month_name} {p_year} is already aggregated. You cannot aggregate this month again.'})}\n\n"
+                return
+
             yield f"data: {json.dumps({'status': 'uploading', 'msg': '📦 Uploading reports to server...'})}\n\n"
             
             pdf_paths = []

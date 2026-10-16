@@ -1,6 +1,7 @@
 import json
 import os
 import hashlib
+from materials_normalizer import sum_materials
 
 class Aggregator:
     def __init__(self, history_dir="history"):
@@ -271,26 +272,10 @@ class Aggregator:
             })
 
         # 3. Materials Summation — robust unit extraction with fallback from quantity string
-        materials_summary = {}
-        for r in reports_by_day:
-            if not r: continue
-            for item in r.get("materials_delivered", []):
-                name = item.get("description", item.get("Description", "Unknown")).strip().upper()
-                raw_qty = str(item.get("quantity", item.get("Quantity", "0")) or "0").strip()
-                unit = str(item.get("units", item.get("Units", "")) or "").strip()
-                try:
-                    qty_parts = raw_qty.split()
-                    qty = float(qty_parts[0].replace(",", ""))
-                    # Fallback: pull unit from quantity string if parser left unit field empty
-                    if not unit and len(qty_parts) > 1:
-                        unit = qty_parts[1]
-                    if name not in materials_summary:
-                        materials_summary[name] = {"qty": 0.0, "unit": unit}
-                    materials_summary[name]["qty"] += qty
-                    # Keep the first non-empty unit seen for this material across all days
-                    if not materials_summary[name]["unit"] and unit:
-                        materials_summary[name]["unit"] = unit
-                except: continue
+        # Handles thousands commas, bundled multi-line rebar cells and rebar name variants
+        materials_summary = sum_materials(
+            [r.get("materials_delivered", []) for r in reports_by_day if r]
+        )
 
         # 4. Machinery Status
         machinery_final = {}

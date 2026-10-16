@@ -7,6 +7,12 @@ import calendar
 from typing import List, Dict, Any
 from schemas import WeeklyReportSchema, MonthlyReportSchema, SiteInstruction
 
+FULL_MONTHS = [
+    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+]
+SHORT_MONTHS = ["JAN", "FEB", "MAR", "APR", "JUN", "JUL", "AUG", "SEP", "SEPT", "OCT", "NOV", "DEC"]
+
 class MonthlyAggregator:
     def __init__(self, history_dir="history_monthly"):
         self.history_dir = history_dir
@@ -21,8 +27,96 @@ class MonthlyAggregator:
             json.dump(data, f, indent=2)
         return history_path
 
+    def extract_full_month_and_year(self, text: str):
+        """
+        Extracts month index (1-12), month name, and 4-digit year from text.
+        Requires the full month name (not shortcut).
+        """
+        if not text:
+            return None, None, None
+        upper = text.strip().upper()
+        
+        # Check 4-digit year
+        year_match = re.search(r"\b(20\d\d)\b", upper)
+        if not year_match:
+            return None, None, None
+        year = int(year_match.group(1))
+
+        # Check for full month name only with word boundary
+        for idx, m in enumerate(FULL_MONTHS, start=1):
+            if re.search(rf"\b{m}\b", upper):
+                return idx, m, year
+
+        return None, None, None
+
+    def has_shortcut_month(self, text: str) -> bool:
+        """
+        Returns True if the text contains an abbreviated/shortcut month name
+        that is NOT part of a full month name.
+        """
+        if not text:
+            return False
+        upper = text.strip().upper()
+        for s in SHORT_MONTHS:
+            if re.search(rf"\b{s}\b", upper):
+                return True
+        return False
+
+    def validate_monthly_title(self, title: str):
+        """
+        Strict validation for Report Title.
+        Must be exact format: MONTHLY REPORT (APRIL 2026) with full month name and 4-digit year.
+        Returns: (is_valid: bool, error_msg: Optional[str], month_name: Optional[str], year: Optional[int])
+        """
+        if not title:
+            return False, "Report Title is required.", None, None
+
+        trimmed = title.strip()
+        match = re.match(r"^MONTHLY REPORT \(([A-Z]+)\s+(\d{4})\)$", trimmed)
+        if not match:
+            return False, "Report Title must follow exact format: MONTHLY REPORT (MONTH YEAR), e.g. MONTHLY REPORT (APRIL 2026).", None, None
+
+        month_name = match.group(1)
+        year = int(match.group(2))
+
+        if month_name not in FULL_MONTHS:
+            return False, f"'{month_name}' is not a recognized full month name. Shortcuts are not allowed.", None, None
+
+        return True, None, month_name, year
+
+    def check_duplicate(self, month: int, year: int):
+        """
+        Checks if a monthly report for the given month (1-12) and year has already been aggregated.
+        Returns (exists: bool, title: Optional[str], filename: Optional[str]).
+        """
+        dirs_to_check = [self.history_dir]
+        if self.history_dir != "history_monthly" and os.path.exists("history_monthly"):
+            dirs_to_check.append("history_monthly")
+
+        for d in dirs_to_check:
+            if not os.path.exists(d):
+                continue
+            for f in os.listdir(d):
+                if f.endswith(".json"):
+                    f_path = os.path.join(d, f)
+                    try:
+                        with open(f_path, "r", encoding="utf-8") as jf:
+                            data = json.load(jf)
+                            # Check both title and reporting_period
+                            for field in [data.get("title", ""), data.get("reporting_period", "")]:
+                                m_num, m_name, yr = self.extract_full_month_and_year(field)
+                                if m_num == month and yr == year:
+                                    return True, data.get("title", f), f
+                    except Exception:
+                        continue
+        return False, None, None
+
     def _parse_month_year(self, title: str):
-        """Extracts month and year from 'MONTHLY REPORT (MARCH 2026)'"""
+        """Extracts month and year from 'MONTHLY REPORT (MARCH 2026)' or title string."""
+        m_num, m_name, year = self.extract_full_month_and_year(title)
+        if m_num and year:
+            return m_num, year
+
         match = re.search(r"\((.*?)\s+(\d{4})\)", title)
         if match:
             month_name = match.group(1).upper()

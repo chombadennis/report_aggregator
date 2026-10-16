@@ -10,6 +10,7 @@ from schemas import DailyReportSchema, WeeklyReportSchema
 import hashlib
 import uuid
 import re
+from materials_normalizer import normalize_materials
 
 logger = logging.getLogger(__name__)
 
@@ -424,14 +425,11 @@ class ReportParser:
                         qty_full = str(row[idx_qty]).strip() if row[idx_qty] else "0"
                         if not desc or desc.upper() == "DESCRIPTION": continue
                         
-                        # Split numeric quantity from units (e.g. "29.60 tons" -> "29.60", "tons")
-                        qty_match = re.match(r'^(\d+\.?\d*)\s*(.*)$', qty_full)
-                        if qty_match:
-                            materials_data.append({
-                                "description": desc,
-                                "quantity": qty_match.group(1),
-                                "units": qty_match.group(2).strip()
-                            })
+                        # Normalise: handles thousands commas ("2,000 pcs"), multi-line cells
+                        # (rebars per diameter) and rebar naming variants.
+                        normalized = normalize_materials([{"description": desc, "quantity": qty_full, "units": ""}])
+                        if normalized:
+                            materials_data.extend(normalized)
                         else:
                             materials_data.append({
                                 "description": desc,

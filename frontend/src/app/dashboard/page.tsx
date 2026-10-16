@@ -24,6 +24,12 @@ import Footer from '@/components/Footer';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
+const FULL_MONTHS = [
+  'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
+];
+const SHORT_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'JUN', 'JUL', 'AUG', 'SEP', 'SEPT', 'OCT', 'NOV', 'DEC'];
+
 export default function Home() {
   const router = useRouter();
   const { isLoaded, userId, getToken, signOut } = useAuth();
@@ -42,6 +48,15 @@ export default function Home() {
   const [pctPeriod, setPctPeriod] = useState('');
   const [pctWork, setPctWork] = useState('');
   const [isDuplicate, setIsDuplicate] = useState(false);
+  const [duplicateMonthInfo, setDuplicateMonthInfo] = useState<{
+    checked: boolean;
+    exists: boolean;
+    monthName?: string;
+    year?: number;
+    message?: string;
+  } | null>(null);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+  const [backendOffline, setBackendOffline] = useState(false);
   const [visitors, setVisitors] = useState<{ name: string, org: string, date: string }[]>([{ name: '', org: '', date: '' }]);
 
   // Correspondence & Document States
@@ -439,29 +454,190 @@ export default function Home() {
     }
   };
 
-  // Check for existing report title in history
+  // Helper to parse full month name and 4-digit year from text
+  const parseFullMonthAndYear = (text: string) => {
+    if (!text) return null;
+    const upper = text.trim().toUpperCase();
+    const yearMatch = upper.match(/\b(20\d\d)\b/);
+    if (!yearMatch) return null;
+    const year = parseInt(yearMatch[1], 10);
+
+    for (let i = 0; i < FULL_MONTHS.length; i++) {
+      const m = FULL_MONTHS[i];
+      const regex = new RegExp(`\\b${m}\\b`, 'i');
+      if (regex.test(upper)) {
+        return { monthNum: i + 1, monthName: m, year };
+      }
+    }
+    return null;
+  };
+
+  // Helper to detect if an abbreviated month shortcut was entered
+  const hasShortcutMonth = (text: string) => {
+    if (!text) return false;
+    const upper = text.trim().toUpperCase();
+    for (const s of SHORT_MONTHS) {
+      const regex = new RegExp(`\\b${s}\\b`, 'i');
+      if (regex.test(upper)) return true;
+    }
+    return false;
+  };
+
+  // Helper to strictly validate monthly title: exact format MONTHLY REPORT (MONTH YEAR)
+  const validateMonthlyTitle = (t: string, expectedMonth?: string, expectedYear?: number) => {
+    if (!t.trim()) {
+      return { valid: false, error: 'Report Title is required.' };
+    }
+    const match = t.trim().match(/^MONTHLY REPORT \(([A-Z]+)\s+(\d{4})\)$/);
+    if (!match) {
+      return {
+        valid: false,
+        error: 'Report Title must be in the exact format: MONTHLY REPORT (MONTH YEAR), e.g. MONTHLY REPORT (APRIL 2026).'
+      };
+    }
+    const mName = match[1];
+    const yr = parseInt(match[2], 10);
+    if (!FULL_MONTHS.includes(mName)) {
+      return {
+        valid: false,
+        error: `"${mName}" is not a recognized full month name. Shortcuts are not allowed.`
+      };
+    }
+    if (expectedMonth && expectedYear) {
+      if (mName !== expectedMonth || yr !== expectedYear) {
+        return {
+          valid: false,
+          error: `Title month (${mName} ${yr}) does not match Reporting Period (${expectedMonth} ${expectedYear}).`
+        };
+      }
+    }
+    return { valid: true, monthName: mName, year: yr };
+  };
+
+  // Derived status values for monthly validation
+  const monthlyPeriodInfo = mode === 'monthly' ? parseFullMonthAndYear(dates) : null;
+  const monthlyPeriodHasShortcut = mode === 'monthly' ? hasShortcutMonth(dates) : false;
+  const monthlyTitleValidation: { valid: boolean; error?: string; monthName?: string; year?: number } =
+    mode === 'monthly'
+      ? validateMonthlyTitle(title, monthlyPeriodInfo?.monthName, monthlyPeriodInfo?.year)
+      : { valid: true };
+  const isMonthlyBlocked = mode === 'monthly' && (
+    Boolean(duplicateMonthInfo?.exists) ||
+    !monthlyPeriodInfo ||
+    monthlyPeriodHasShortcut ||
+    !monthlyTitleValidation.valid ||
+    isCheckingDuplicate ||
+    backendOffline
+  );
+
+  // Check for existing report in history (both weekly by title and monthly by month/period)
   useEffect(() => {
-    const checkTitle = async () => {
-      if (title.length > 3) {
-        try {
-          const token = await getToken();
-          const resp = await fetch(`${BACKEND_URL}/api/check-duplicate?title=${encodeURIComponent(title)}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
+    let isMounted = true;
+    const checkReportDuplicate = async () => {
+      if (mode === 'monthly') {
+        const periodInfo = parseFullMonthAndYear(dates);
+        const titleInfo = parseFullMonthAndYear(title);
+        const targetInfo = periodInfo || titleInfo;
+
+        if (targetInfo) {
+          setIsCheckingDuplicate(true);
+          try {
+            const headers: Record<string, string> = {};
+            try {
+              const token = await getToken();
+              if (token) headers['Authorization'] = `Bearer ${token}`;
+            } catch {}
+
+            const resp = await fetch(
+              `${BACKEND_URL}/api/check-duplicate?mode=monthly&reporting_period=${encodeURIComponent(dates)}&title=${encodeURIComponent(title)}`,
+              { headers }
+            );
+            if (resp.ok) {
+              const data = await resp.json();
+              if (isMounted) {
+                setBackendOffline(false);
+                if (data.exists) {
+                  setDuplicateMonthInfo({
+                    checked: true,
+                    exists: true,
+                    monthName: data.month_name,
+                    year: data.year,
+                    message: data.message || `Report for ${data.month_name} ${data.year} already aggregated.`
+                  });
+                  setIsDuplicate(true);
+                } else {
+                  setDuplicateMonthInfo({
+                    checked: true,
+                    exists: false,
+                    monthName: data.month_name,
+                    year: data.year
+                  });
+                  setIsDuplicate(false);
+                }
+              }
+            } else {
+              if (isMounted) {
+                setBackendOffline(true);
+              }
             }
-          });
-          const data = await resp.json();
-          setIsDuplicate(data.exists);
-        } catch (e) {
-          console.error("Duplicate check failed", e);
+          } catch (e) {
+            console.error("Monthly duplicate check failed (backend offline or network error)", e);
+            if (isMounted) {
+              setBackendOffline(true);
+            }
+          } finally {
+            if (isMounted) setIsCheckingDuplicate(false);
+          }
+        } else {
+          if (isMounted) {
+            setDuplicateMonthInfo(null);
+            setIsDuplicate(false);
+            setBackendOffline(false);
+            setIsCheckingDuplicate(false);
+          }
         }
       } else {
-        setIsDuplicate(false);
+        // Weekly check by title
+        if (title.length > 3) {
+          try {
+            const headers: Record<string, string> = {};
+            try {
+              const token = await getToken();
+              if (token) headers['Authorization'] = `Bearer ${token}`;
+            } catch {}
+
+            const resp = await fetch(`${BACKEND_URL}/api/check-duplicate?mode=weekly&title=${encodeURIComponent(title)}`, {
+              headers
+            });
+            if (resp.ok) {
+              const data = await resp.json();
+              if (isMounted) {
+                setIsDuplicate(data.exists);
+                setDuplicateMonthInfo(null);
+                setBackendOffline(false);
+              }
+            } else {
+              if (isMounted) setBackendOffline(true);
+            }
+          } catch (e) {
+            console.error("Weekly duplicate check failed", e);
+            if (isMounted) setBackendOffline(true);
+          }
+        } else {
+          if (isMounted) {
+            setIsDuplicate(false);
+            setDuplicateMonthInfo(null);
+            setBackendOffline(false);
+          }
+        }
       }
     };
-    const timer = setTimeout(checkTitle, 500); // Debounce
-    return () => clearTimeout(timer);
-  }, [title, getToken]);
+    const timer = setTimeout(checkReportDuplicate, 350); // Debounce
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [title, dates, mode, getToken]);
 
   // File Handling
   const handleFileChange = (newFiles: FileList | null) => {
@@ -497,15 +673,37 @@ export default function Home() {
     const sPctWork = sanitize(pctWork);
 
     // 2. Strict Input Format Validation
-    if (sTitle.length < 5) {
-      setError('Report Title must be at least 5 characters long.');
-      return;
-    }
+    if (mode === 'monthly') {
+      if (duplicateMonthInfo?.exists) {
+        setError(duplicateMonthInfo.message || `Report for this month already aggregated. You cannot aggregate again.`);
+        return;
+      }
 
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JAN', 'FEB', 'MAR', 'APR', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    if (!months.some(m => sDates.toUpperCase().includes(m)) || !/\d{4}/.test(sDates)) {
-      setError(`Reporting Period must include a valid month and a 4-digit year. Example: ${mode === 'weekly' ? '6TH - 12TH APRIL 2026' : 'APRIL 2026'}`);
-      return;
+      if (monthlyPeriodHasShortcut) {
+        setError('Reporting Period contains an abbreviated/shortcut month name. Shortcuts are not allowed. Please enter the full month name and 4-digit year (e.g. "APRIL 2026").');
+        return;
+      }
+
+      if (!monthlyPeriodInfo) {
+        setError('Reporting Period must contain the full month name (not shortcuts) and a 4-digit year (e.g. "APRIL 2026"). Scanning cannot proceed.');
+        return;
+      }
+
+      if (!monthlyTitleValidation.valid) {
+        setError(monthlyTitleValidation.error || 'Report Title must follow exact format: MONTHLY REPORT (MONTH YEAR).');
+        return;
+      }
+    } else {
+      if (sTitle.length < 5) {
+        setError('Report Title must be at least 5 characters long.');
+        return;
+      }
+
+      const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER', 'JAN', 'FEB', 'MAR', 'APR', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      if (!months.some(m => sDates.toUpperCase().includes(m)) || !/\d{4}/.test(sDates)) {
+        setError('Reporting Period must include a valid month and a 4-digit year (e.g. "6TH - 12TH APRIL 2026").');
+        return;
+      }
     }
 
     if (!/^\d+(\.\d+)?\s*Weeks?$/i.test(sTimeLapsed)) {
@@ -825,14 +1023,16 @@ export default function Home() {
         <RevealWrapper direction="up" delay={0.1}>
           <div className="flex gap-4 mb-8">
             <button
-              onClick={() => { setMode('weekly'); setFiles([]); }}
-              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'weekly' ? 'bg-vivid-tangerine-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
+              onClick={() => { setMode('weekly'); setFiles([]); setDuplicateMonthInfo(null); setError(''); }}
+              disabled={loading}
+              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'weekly' ? 'bg-vivid-tangerine-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'} ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
             >
               Weekly Report
             </button>
             <button
-              onClick={() => { setMode('monthly'); setFiles([]); }}
-              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'monthly' ? 'bg-sunflower-gold-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'}`}
+              onClick={() => { setMode('monthly'); setFiles([]); setDuplicateMonthInfo(null); setError(''); }}
+              disabled={loading}
+              className={`px-6 py-2.5 rounded-none font-semibold transition-all shadow-md ${mode === 'monthly' ? 'bg-sunflower-gold-600 text-white' : 'bg-white/80 backdrop-blur-sm text-vivid-tangerine-700 hover:bg-vanilla-custard-100'} ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
             >
               Monthly Report
             </button>
@@ -843,35 +1043,128 @@ export default function Home() {
         <RevealWrapper direction="up" delay={0.2}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 mb-8 bg-white/90 backdrop-blur-sm p-4 sm:p-8 rounded-none shadow-xl shadow-vanilla-custard-200/40 border border-vanilla-custard-200">
             <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Report Title</label>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">
+                Report Title {mode === 'monthly' && <span className="text-[11px] font-normal normal-case text-vivid-tangerine-700/70 tracking-normal ml-1.5">(Format: MONTHLY REPORT (MONTH YEAR))</span>}
+              </label>
               <input
                 value={title} onChange={(e) => setTitle(e.target.value)}
-                disabled={!isAdmin}
-                className={`w-full bg-vanilla-custard-50 border-2 ${isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100'} rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
-                placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "e.g. MONTHLY REPORT (APRIL 2026)"}
+                disabled={!isAdmin || loading}
+                className={`w-full bg-vanilla-custard-50 border-2 ${duplicateMonthInfo?.exists ? 'border-amber-400 bg-amber-50/20' : (isDuplicate ? 'border-sunflower-gold-400' : 'border-vanilla-custard-100')} rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none transition-colors text-vivid-tangerine-950 ${!isAdmin || loading ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                placeholder={mode === 'weekly' ? "e.g. WEEK 20 PROGRESS REPORT" : "MONTHLY REPORT (APRIL 2026)"}
               />
-              {isDuplicate && (
+              {/* Monthly Duplicate Notification */}
+              {mode === 'monthly' && duplicateMonthInfo?.exists && (
+                <div className="mt-3 p-3.5 bg-amber-50/90 border border-amber-300 text-amber-950 rounded-none flex items-start gap-3 shadow-sm">
+                  <span className="text-lg flex-shrink-0 mt-0.5">⚠️</span>
+                  <div>
+                    <p className="font-semibold text-xs uppercase tracking-wider text-amber-900">Report Already Aggregated</p>
+                    <p className="text-sm font-medium mt-0.5 text-amber-950">
+                      Report for <strong>{duplicateMonthInfo.monthName} {duplicateMonthInfo.year}</strong> is already aggregated.
+                    </p>
+                    <p className="text-xs text-amber-800/80 mt-1">
+                      You are not allowed to aggregate this month again. Please select or input a month that has not been aggregated yet.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {/* Weekly Duplicate Notification */}
+              {mode === 'weekly' && isDuplicate && (
                 <div className="mt-2 text-vivid-tangerine-700 text-sm flex items-center gap-2 bg-vivid-tangerine-50 p-3 rounded-none border border-vivid-tangerine-200">
                   <span>⚡</span>
                   <span>A report for "<strong>{title}</strong>" already exists. This will create an update.</span>
                 </div>
               )}
+              {/* Monthly Title Format Status */}
+              {mode === 'monthly' && !duplicateMonthInfo?.exists && title.trim().length > 0 && (
+                monthlyTitleValidation.valid ? (
+                  <div className="mt-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-none flex items-center gap-1.5">
+                    <span>✓</span>
+                    <span>Exact required title verified: <strong>{title}</strong></span>
+                  </div>
+                ) : (
+                  <div className="mt-2 text-xs font-medium text-vivid-tangerine-800 bg-vanilla-custard-50 border border-vanilla-custard-200 p-2.5 rounded-none flex items-center gap-2">
+                    <span className="text-vivid-tangerine-500">ℹ️</span>
+                    <span>{monthlyTitleValidation.error}</span>
+                  </div>
+                )
+              )}
             </div>
             <div>
-              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Reporting Period</label>
+              <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">
+                Reporting Period {mode === 'monthly' && <span className="text-[11px] font-normal normal-case text-vivid-tangerine-700/70 tracking-normal ml-1.5">(Full Month &amp; Year, e.g. APRIL 2026)</span>}
+              </label>
               <input
                 value={dates} onChange={(e) => setDates(e.target.value)}
-                disabled={!isAdmin}
-                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                disabled={!isAdmin || loading}
+                className={`w-full bg-vanilla-custard-50 border-2 ${duplicateMonthInfo?.exists ? 'border-amber-400 bg-amber-50/20' : (monthlyPeriodHasShortcut ? 'border-amber-300' : 'border-vanilla-custard-100')} rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin || loading ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
                 placeholder={mode === 'weekly' ? "e.g. 6TH – 12TH APRIL 2026" : "e.g. APRIL 2026"}
               />
+              {/* Monthly Period Validation & Helpers */}
+              {mode === 'monthly' && (
+                <>
+                  {monthlyPeriodHasShortcut && (
+                    <div className="mt-2 text-xs font-medium text-amber-900 bg-amber-50/80 border border-amber-200 p-2.5 rounded-none flex items-center gap-2">
+                      <span className="text-amber-600">ℹ️</span>
+                      <span>Please use the full month name rather than shortcuts (e.g. <strong>APRIL 2026</strong> instead of <em>"{dates}"</em>).</span>
+                    </div>
+                  )}
+                  {!monthlyPeriodHasShortcut && dates.trim().length > 0 && !monthlyPeriodInfo && (
+                    <div className="mt-2 text-xs font-medium text-vivid-tangerine-800 bg-vanilla-custard-50 border border-vanilla-custard-200 p-2.5 rounded-none flex items-center gap-2">
+                      <span className="text-vivid-tangerine-500">ℹ️</span>
+                      <span>Please include both the full month name and 4-digit year (e.g. <strong>APRIL 2026</strong>).</span>
+                    </div>
+                  )}
+                  {monthlyPeriodInfo && (
+                    <>
+                      {isCheckingDuplicate && (
+                        <div className="mt-2 text-xs font-medium text-vivid-tangerine-700 bg-vanilla-custard-50 border border-vanilla-custard-200 p-2 rounded-none flex items-center gap-2">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-vivid-tangerine-600 flex-shrink-0" />
+                          <span>Checking history for <strong>{monthlyPeriodInfo.monthName} {monthlyPeriodInfo.year}</strong>...</span>
+                        </div>
+                      )}
+
+                      {backendOffline && !isCheckingDuplicate && (
+                        <div className="mt-2 text-xs font-medium text-amber-900 bg-amber-50 border border-amber-300 p-2.5 rounded-none flex items-start gap-2">
+                          <span className="text-amber-600 mt-0.5">⚠️</span>
+                          <div>
+                            <p className="font-bold">Backend Server is Offline</p>
+                            <p className="text-[11px] opacity-90 mt-0.5">
+                              Cannot connect to <code>{BACKEND_URL}</code>. Please run the backend server (<code>python main.py</code> inside <code>venv</code>) to verify historical reports.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isCheckingDuplicate && !backendOffline && duplicateMonthInfo?.checked && !duplicateMonthInfo.exists && (
+                        <div className="mt-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-none flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-1.5">
+                            <span>✓</span>
+                            <span>Month verified: <strong>{monthlyPeriodInfo.monthName} {monthlyPeriodInfo.year}</strong> (Not aggregated yet)</span>
+                          </span>
+                          {title !== `MONTHLY REPORT (${monthlyPeriodInfo.monthName} ${monthlyPeriodInfo.year})` && (
+                            <button
+                              type="button"
+                              onClick={() => setTitle(`MONTHLY REPORT (${monthlyPeriodInfo.monthName} ${monthlyPeriodInfo.year})`)}
+                              disabled={!isAdmin || loading}
+                              className={`text-[11px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1 transition-all ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                            >
+                              Auto-fill Exact Title
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                </>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">Time Lapsed (Weeks)</label>
               <input
                 value={timeLapsed} onChange={(e) => setTimeLapsed(e.target.value)}
-                disabled={!isAdmin}
-                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                disabled={!isAdmin || loading}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin || loading ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
                 placeholder="e.g. 20 Weeks"
               />
             </div>
@@ -879,8 +1172,8 @@ export default function Home() {
               <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Period Elapsed</label>
               <input
                 value={pctPeriod} onChange={(e) => setPctPeriod(e.target.value)}
-                disabled={!isAdmin}
-                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                disabled={!isAdmin || loading}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin || loading ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
                 placeholder="e.g. 19.43%"
               />
             </div>
@@ -888,8 +1181,8 @@ export default function Home() {
               <label className="block text-xs font-bold text-vivid-tangerine-800 mb-2 uppercase tracking-widest">% Work Done</label>
               <input
                 value={pctWork} onChange={(e) => setPctWork(e.target.value)}
-                disabled={!isAdmin}
-                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
+                disabled={!isAdmin || loading}
+                className={`w-full bg-vanilla-custard-50 border-2 border-vanilla-custard-100 rounded-none px-4 py-3 focus:border-vivid-tangerine-500 outline-none text-vivid-tangerine-950 ${!isAdmin || loading ? 'opacity-60 bg-slate-100/50 cursor-not-allowed' : ''}`}
                 placeholder="e.g. 7.29%"
               />
             </div>
@@ -923,9 +1216,9 @@ export default function Home() {
                             newV[i].name = e.target.value;
                             setVisitors(newV);
                           }}
-                          disabled={!isAdmin}
+                          disabled={!isAdmin || loading}
                           placeholder="Name"
-                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </td>
                       <td className="py-3 pr-2">
@@ -936,9 +1229,9 @@ export default function Home() {
                             newV[i].org = e.target.value;
                             setVisitors(newV);
                           }}
-                          disabled={!isAdmin}
+                          disabled={!isAdmin || loading}
                           placeholder="Organisation"
-                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </td>
                       <td className="py-3 pr-2">
@@ -950,8 +1243,8 @@ export default function Home() {
                             newV[i].date = e.target.value;
                             setVisitors(newV);
                           }}
-                          disabled={!isAdmin}
-                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950"
+                          disabled={!isAdmin || loading}
+                          className="w-full bg-transparent border-b border-dashed border-vanilla-custard-200 focus:border-vivid-tangerine-400 outline-none px-1 py-1 text-sm text-vivid-tangerine-950 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </td>
                       <td className="py-3 text-right">
@@ -960,8 +1253,8 @@ export default function Home() {
                             const newV = visitors.filter((_, idx) => idx !== i);
                             setVisitors(newV.length ? newV : [{ name: '', org: '', date: '' }]);
                           }}
-                          disabled={!isAdmin}
-                          className="text-vivid-tangerine-400 hover:text-red-500 transition-colors p-1"
+                          disabled={!isAdmin || loading}
+                          className={`text-vivid-tangerine-400 hover:text-red-500 transition-colors p-1 ${!isAdmin || loading ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -974,7 +1267,8 @@ export default function Home() {
             {isAdmin && (
               <button
                 onClick={() => setVisitors([...visitors, { name: '', org: '', date: '' }])}
-                className="mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-none transition-colors border border-sunflower-gold-100"
+                disabled={loading}
+                className={`mt-4 flex items-center gap-2 text-xs font-bold text-sunflower-gold-600 hover:text-sunflower-gold-700 bg-sunflower-gold-50 px-3 py-2 rounded-none transition-colors border border-sunflower-gold-100 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
               >
                 <Plus className="w-4 h-4" /> Add Visitor
               </button>
@@ -990,14 +1284,16 @@ export default function Home() {
             }`}>
             <input
               type="file" multiple accept=".pdf"
-              onChange={(e) => isAdmin && handleFileChange(e.target.files)}
+              onChange={(e) => isAdmin && !loading && handleFileChange(e.target.files)}
               className="hidden" id="file-upload"
               disabled={!isAdmin || loading}
             />
             {isAdmin ? (
-              <label htmlFor="file-upload" className="cursor-pointer">
+              <label htmlFor={loading ? undefined : "file-upload"} className={loading ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
                 <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📁</div>
-                <div className="text-lg font-bold text-vivid-tangerine-900 mb-1">Upload Site Logs</div>
+                <div className="text-lg font-bold text-vivid-tangerine-900 mb-1">
+                  {loading ? 'Processing Uploaded Logs...' : 'Upload Site Logs'}
+                </div>
                 <div className="text-vivid-tangerine-400 font-medium text-sm mb-2">
                   {isReady ? `Documents verified ✅` : mode === 'weekly' ? `${files.length} of 7 files ready` : `${files.length} of 4-6 files ready`}
                 </div>
@@ -1025,7 +1321,7 @@ export default function Home() {
               {files.map((file, idx) => (
                 <div key={idx} className="flex justify-between items-center text-sm bg-vanilla-custard-50 p-3 rounded-none border border-vanilla-custard-100">
                   <span className="truncate max-w-[80%] font-medium text-vivid-tangerine-800">📄 {file.name}</span>
-                  <button onClick={() => removeFile(idx)} disabled={loading} className={`p-1.5 rounded-none transition-colors ${loading ? 'opacity-50 cursor-not-allowed text-slate-400' : 'bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100'}`}>✕</button>
+                  <button onClick={() => removeFile(idx)} disabled={loading} className={`p-1.5 rounded-none transition-colors ${loading ? 'opacity-40 cursor-not-allowed pointer-events-none text-slate-400' : 'bg-vivid-tangerine-50 text-vivid-tangerine-600 hover:bg-vivid-tangerine-100'}`}>✕</button>
                 </div>
               ))}
             </div>
@@ -1051,33 +1347,44 @@ export default function Home() {
         </div>
 
         {/* Action Area */}
-        <div className="mt-8 flex flex-col items-center gap-4">
+        <div className="mt-8 flex flex-col items-center gap-3">
           {!isReady && !loading && isAdmin && (
-            <div className="text-vivid-tangerine-400 font-bold bg-vanilla-custard-100/50 px-4 py-2 rounded-full text-xs uppercase tracking-wider">
-              {mode === 'weekly' ? `Missing ${7 - files.length} more reports...` : `Upload 4-6 weekly reports`}
+            <div className="text-vivid-tangerine-600/90 font-semibold bg-vanilla-custard-100/70 border border-vanilla-custard-200 px-3.5 py-1.5 rounded-none text-xs tracking-wide shadow-sm">
+              {mode === 'weekly' ? `Missing ${7 - files.length} more daily reports...` : `Upload 4–6 weekly reports`}
+            </div>
+          )}
+
+          {!loading && isAdmin && mode === 'monthly' && isMonthlyBlocked && isReady && !duplicateMonthInfo?.exists && (
+            <div className="text-vivid-tangerine-700/80 font-medium bg-vanilla-custard-100/70 border border-vanilla-custard-200 px-3 py-1 rounded-none text-xs flex items-center gap-1.5 shadow-sm">
+              <span>ℹ️</span>
+              <span>Provide full month &amp; exact title to enable scanning</span>
             </div>
           )}
 
           <button
             onClick={handleUpload}
-            disabled={loading || !isReady || !isAdmin}
-            className={`w-full max-w-md py-4 rounded-none font-bold text-lg transition-all shadow-xl ${!isAdmin
+            disabled={loading || !isReady || !isAdmin || isMonthlyBlocked}
+            className={`py-3 px-8 rounded-none font-bold text-base transition-all shadow-md min-w-[220px] max-w-sm ${!isAdmin
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
-              : isReady && !loading
-                ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95'
-                : 'bg-vanilla-custard-200 text-vanilla-custard-400 cursor-not-allowed'
+              : mode === 'monthly' && duplicateMonthInfo?.exists
+                ? 'bg-slate-700 text-slate-300 cursor-not-allowed border border-slate-600'
+                : isReady && !isMonthlyBlocked && !loading
+                  ? 'bg-gradient-to-r from-sunflower-gold-500 to-vivid-tangerine-600 text-white hover:scale-[1.01] active:scale-95 shadow-vivid-tangerine-600/20'
+                  : 'bg-vanilla-custard-200 text-vivid-tangerine-400 cursor-not-allowed'
               }`}
           >
             {!isAdmin
-              ? '🔒 Execution & Generation Locked'
+              ? '🔒 Execution Locked'
               : loading
                 ? 'Processing Vision Data...'
-                : isReady
-                  ? '🚀 Execute & Generate'
-                  : 'Waiting for Files'}
+                : mode === 'monthly' && duplicateMonthInfo?.exists
+                  ? 'Report Already Aggregated'
+                  : isReady && !isMonthlyBlocked
+                    ? '🚀 Execute & Generate'
+                    : 'Execute & Generate'}
           </button>
 
-          {isReady && !loading && isAdmin && (
+          {isReady && !loading && isAdmin && !isMonthlyBlocked && (
             <p className="text-vivid-tangerine-400 text-xs font-semibold uppercase tracking-widest">Document Integrity Verified</p>
           )}
         </div>

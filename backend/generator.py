@@ -553,6 +553,8 @@ class ReportGenerator:
         for i, (name, m_data) in enumerate(materials.items()):
             qty_val = m_data.get("qty", 0)
             unit = m_data.get("unit", "")
+            if isinstance(qty_val, (int, float)):
+                qty_val = f"{qty_val:,.2f}".rstrip("0").rstrip(".")
             qty_text = f"{qty_val} {unit}".strip()
             row = table.add_row()
             row.cells[0].text = str(i + 1)
