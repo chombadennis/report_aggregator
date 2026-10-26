@@ -19,19 +19,22 @@ class AnalyticsEngine:
         if isinstance(v, dict):
             day_sum = 0
             night_sum = 0
-            days_of_week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+            from day_utils import detect_weekday, distinct_days as _distinct_days
+            # Header day names are unreliable (e.g. Tuesday report headed 'Mon-Day').
+            # Only filter by weekday when keys reference MORE THAN ONE distinct day.
+            apply_day_filter = bool(expected_day) and len(_distinct_days(v.keys())) > 1
+            exp_idx = detect_weekday(expected_day) if expected_day else None
             for key, val in v.items():
                 key_lower = str(key).lower()
                 
-                # If expected_day is provided, filter out other days
-                if expected_day:
-                    exp_lower = expected_day.lower()[:3]
-                    found_day = next((d for d in days_of_week if d in key_lower), None)
-                    if found_day and found_day != exp_lower:
+                if apply_day_filter:
+                    found_day = detect_weekday(key)
+                    if found_day is not None and found_day != exp_idx:
                         continue
                         
+                from day_utils import detect_shift
                 val_int = self._clean_val(val, expected_day)
-                if "night" in key_lower:
+                if detect_shift(key) == "NIGHT":
                     night_sum += val_int
                 elif "day" in key_lower:
                     day_sum += val_int
@@ -60,6 +63,11 @@ class AnalyticsEngine:
             d = int(day_match.group(1)) if day_match else 0
             n = int(night_match.group(1)) if night_match else 0
             return d + n
+
+        # Compiled weekly format: "Day(5), Night(3)"
+        dn = re.fullmatch(r"day\((.*?)\),\s*night\((.*?)\)", val_lower)
+        if dn:
+            return sum(int(m.group(0)) if (m := re.search(r"\d+", part)) else 0 for part in dn.groups())
 
         m = re.search(r"\d+", val_str)
         return int(m.group(0)) if m else 0
@@ -96,6 +104,45 @@ class AnalyticsEngine:
             return unified
             
         return []
+
+    def _attribute_daily_labour(self, entries, parse_date) -> Dict[str, int]:
+        """
+        Totals daily labour per calendar date, tolerant of mislabeled headers.
+        - A report whose labour headers reference at most ONE weekday (even a wrong one,
+          e.g. 'Mon-Day' in a Tuesday report) is credited entirely to the report's own date.
+        - A report whose headers span SEVERAL weekdays (e.g. 'Mon-Night', 'Tue-Day') has each
+          column credited to the date of the weekday it names (nearest to the report date),
+          so a late-entered Monday night counts toward Monday.
+        """
+        from day_utils import detect_weekday, distinct_days as _distinct_days
+        totals: Dict[str, int] = {}
+        seen = set()
+        for entry in entries:
+            dt = parse_date(entry.get("date", ""))
+            if not dt:
+                continue
+            if dt.strftime("%Y-%m-%d") in seen:
+                continue
+            seen.add(dt.strftime("%Y-%m-%d"))
+            labour = entry.get("labour", {}) or {}
+            for cat, val in labour.items():
+                if str(cat).upper() in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"]:
+                    continue
+                if isinstance(val, dict):
+                    trust = len(_distinct_days(val.keys())) > 1
+                    for k, v in val.items():
+                        target = dt
+                        if trust:
+                            tok = detect_weekday(k)
+                            if tok is not None:
+                                offset = (tok - dt.weekday() + 3) % 7 - 3
+                                target = dt + timedelta(days=offset)
+                        key = target.strftime("%Y-%m-%d")
+                        totals[key] = totals.get(key, 0) + self._clean_val(v)
+                else:
+                    key = dt.strftime("%Y-%m-%d")
+                    totals[key] = totals.get(key, 0) + self._clean_val(val)
+        return totals
 
     def get_daily_trends(self):
         raw_dailies = self._get_all_data(source="daily")
@@ -137,6 +184,8 @@ class AnalyticsEngine:
                 except: pass
             return None
         
+        attributed_totals = self._attribute_daily_labour(raw_dailies, _parse_daily_date)
+
         # PROCESS DAILY FILES DIRECTLY
         for entry in raw_dailies:
             dt = _parse_daily_date(entry.get("date", ""))
@@ -147,7 +196,10 @@ class AnalyticsEngine:
             
             expected_day = dt.strftime("%A")
             labour = compiled_labour_lookup.get(date_key) or entry.get("labour", {})
-            total_labour = sum(self._clean_val(val, expected_day) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+            if date_key in compiled_labour_lookup:
+                total_labour = sum(self._clean_val(val, expected_day) for k, val in labour.items() if str(k).upper() not in ["TOTAL", "SUB-TOTAL", "SUBTOTAL"])
+            else:
+                total_labour = attributed_totals.get(date_key, 0)
             
             mat_count = len(entry.get("materials_delivered", []))
             

@@ -126,19 +126,10 @@ class Aggregator:
 
         # Build day-by-day values
         def _get_shift_target(key, default_day_idx):
-            key_upper = str(key).upper()
-            target_day_idx = default_day_idx
-            
-            day_names = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-            for idx, d_name in enumerate(day_names):
-                if d_name in key_upper:
-                    target_day_idx = idx
-                    break
-            
-            shift_type = "DAY"
-            if "NIGHT" in key_upper or "NITE" in key_upper:
-                shift_type = "NIGHT"
-            return target_day_idx, shift_type
+            from day_utils import detect_weekday, detect_shift
+            d = detect_weekday(key)
+            target_day_idx = d if d is not None else default_day_idx
+            return target_day_idx, detect_shift(key)
 
         # 1. Gather all categories present in the reports
         all_categories = list(LABOUR_CANONICAL_ORDER)
@@ -188,10 +179,17 @@ class Aggregator:
                         
                 if is_dict:
                     is_single_value = len(val) == 1
+                    # Header names are unreliable (e.g. Tuesday report headed 'Mon-Day').
+                    # Only honour day tokens if the keys reference MORE THAN ONE distinct day
+                    # (genuine multi-day layout); otherwise the report's own date wins.
+                    from day_utils import distinct_days as _distinct_days
+                    trust_key_days = len(_distinct_days(val.keys())) > 1
                     for k, v in val.items():
                         target_day_idx, shift_type = _get_shift_target(k, day_idx)
-                        if is_single_value:
+                        if is_single_value or not trust_key_days:
                             target_day_idx = day_idx
+                        if target_day_idx != day_idx and _extract_numeric(v) == 0:
+                            continue
                         if shift_type == "NIGHT":
                             temp_matrix[cat][target_day_idx]["Night"] = str(v).strip()
                         else:

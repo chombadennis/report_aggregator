@@ -399,10 +399,21 @@ class ReportParser:
                             # Multi-column format (e.g., Category, Day, Night)
                             # Store as a sub-dict mapping header name to value
                             val_dict = {}
+                            from day_utils import detect_weekday, detect_shift, DAY_TOKENS
+                            hdr_days = [
+                                detect_weekday(headers[c] if c < len(headers) else "")
+                                for c in range(1, len(row))
+                            ]
+                            multi_day = len({d for d in hdr_days if d is not None}) > 1
                             for i in range(1, len(row)):
                                 h_name = headers[i] if i < len(headers) else f"Col_{i}"
-                                # Clean up common variations like "No.-Day" or "No-Day" to "Day"
-                                h_norm = h_name.replace("NO.-", "").replace("NO-", "").capitalize()
+                                shift = "Night" if detect_shift(h_name) == "NIGHT" else "Day"
+                                # Headers may carry wrong weekday names (e.g. 'Mon-Day' in a Tuesday
+                                # report) so a single weekday token is dropped (report date decides).
+                                # Only when headers span SEVERAL days (e.g. 'Mon-Night' + 'Tue-Day',
+                                # Monday's night entered late) is the weekday token kept.
+                                tok = hdr_days[i - 1]
+                                h_norm = f"{DAY_TOKENS[tok].capitalize()}-{shift}" if (multi_day and tok is not None) else shift
                                 val_dict[h_norm] = str(row[i]).strip() if row[i] else "0"
                             val = val_dict
                         else:
@@ -601,14 +612,12 @@ class ReportParser:
                         for col_idx in range(1, len(raw_rows[0])):
                             cell_text = str(raw_rows[0][col_idx] or "").strip().upper()
                             # Find which day this column corresponds to
-                            matched_day_idx = -1
-                            for d_idx, d_name in enumerate(days_of_week):
-                                if d_name in cell_text:
-                                    matched_day_idx = d_idx
-                                    break
+                            from day_utils import detect_weekday, detect_shift
+                            d_found = detect_weekday(cell_text)
+                            matched_day_idx = d_found if d_found is not None else -1
                             
                             if matched_day_idx != -1:
-                                shift_type = "NIGHT" if "NIGHT" in cell_text or "NITE" in cell_text else "DAY"
+                                shift_type = detect_shift(cell_text)
                                 col_mappings[col_idx] = (matched_day_idx, shift_type)
                         
                         last_col_mappings = col_mappings
